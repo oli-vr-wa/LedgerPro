@@ -1,3 +1,5 @@
+using LedgerPro.Core.Enums;
+
 namespace LedgerPro.Core.Entities
 {
     public class BankTransaction
@@ -7,6 +9,7 @@ namespace LedgerPro.Core.Entities
         public string Description { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public string TransactionType { get; set; } = string.Empty; 
+        public BankTransactionStatus Status { get; set; } = BankTransactionStatus.Pending;
 
         public Guid BankSourceId { get; set; }        
         public BankSource BankSource { get; set; } = null!;
