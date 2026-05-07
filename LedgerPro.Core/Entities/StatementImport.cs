@@ -3,9 +3,8 @@ namespace LedgerPro.Core.Entities
     /// <summary>
     /// Represents an import of a bank statement file. Contains metadata about the import and a collection of transactions imported from the statement.
     /// </summary>
-    public class StatementImport
+    public class StatementImport : BaseGuidEntity
     {
-        public Guid Id { get; set; }
         public string FileName { get; set; } = string.Empty;
         public DateTime ImportDate { get; set; }
 

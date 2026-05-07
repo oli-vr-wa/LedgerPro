@@ -6,9 +6,8 @@ namespace LedgerPro.Core.Entities
     /// Represents a general ledger item in the accounting system. 
     /// Each item has a unique identifier, a transaction date, a reference, a description, an amount, and a side (debit or credit).
     /// </summary>
-    public class GeneralLedgerItem
+    public class GeneralLedgerItem : BaseGuidEntity
     {
-        public Guid Id { get; set; }
         public DateTime TransactionDate { get; set; }
         public string Reference { get; set; } = string.Empty; // e.g., invoice number, receipt number, etc.
         public string Description { get; set; } = string.Empty; // Detailed description of the transaction

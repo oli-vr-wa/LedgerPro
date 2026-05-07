@@ -5,9 +5,8 @@ namespace LedgerPro.Core.Entities
     /// <summary>
     /// Represents a financial period, such as a month, quarter, or year. Used for organizing financial data and reporting.
     /// </summary>
-    public class FinancialPeriod
+    public class FinancialPeriod : BaseGuidEntity
     {
-        public Guid Id { get; set; }
         public string DisplayName { get; set; } = string.Empty; // e.g. "January 2024", "Q1 2024", "FY 2024"
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
