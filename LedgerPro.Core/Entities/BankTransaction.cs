@@ -13,5 +13,8 @@ namespace LedgerPro.Core.Entities
 
         public Guid BankSourceId { get; set; }        
         public BankSource BankSource { get; set; } = null!;
+
+        public Guid StatementImportId { get; set; }
+        public StatementImport StatementImport { get; set; } = null!;
     }
 }
