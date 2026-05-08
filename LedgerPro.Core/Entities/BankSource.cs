@@ -1,3 +1,5 @@
+using LedgerPro.Core.Enums;
+
 namespace LedgerPro.Core.Entities;
 
 /// <summary>
@@ -8,6 +10,7 @@ public class BankSource : BaseGuidEntity
     public string AccountName { get; set; } = string.Empty;
     public string AccountNumber { get; set; } = string.Empty;
     public string BankName { get; set; } = string.Empty;  
+    public BankType BankType { get; set; } = BankType.Generic; // Enum to specify the type of bank, e.g., NAB, ANZ, CBA, etc.    
 
     public virtual ICollection<BankTransaction> BankTransactions { get; set; } = new List<BankTransaction>();  // Navigation property to transactions associated with this bank source
     public virtual ICollection<StatementImport> StatementImports { get; set; } = new List<StatementImport>(); // Navigation property to statement imports associated with this bank source     

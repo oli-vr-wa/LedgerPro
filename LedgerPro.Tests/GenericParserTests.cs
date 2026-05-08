@@ -1,19 +1,18 @@
-using Xunit;
 using LedgerPro.Infrastructure.Parsers;
 using LedgerPro.Core.Enums;
 using System.Text;
 
 namespace LedgerPro.Tests
 {
-    public class NabParserTests
+    public class GenericParserTests
     {
         [Fact]
-        public void Parse_ValidNabCsv_ReturnsBankTransactions()
+        public void Parse_ValidGenericCsv_ReturnsBankTransactions()
         {
             // Arrange
-            var csvContent = "Date,Amount,Account Number,,Transaction Type,Transaction Details,Balance\n" +
-                                "01 Jan 24,-102.53,123456789,,EFTPOS DEBIT,COLES 1234,1000.00\n" +
-                                "02 Jan 24,2500.00,123456789,,DIRECT CREDIT,Wages,3500.00\n";
+            var csvContent = "Date,Amount,Description,Transaction Type\n" +
+                                "01/01/2024,-102.53,COLES 1234,EFTPOS DEBIT\n" +
+                                "02/01/2024,2500.00,Wages,DIRECT CREDIT\n";
 
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(csvContent));
 
@@ -21,7 +20,7 @@ namespace LedgerPro.Tests
             var bankSourceId = Guid.NewGuid();
 
             // Act
-            var result = parser.Parse(stream, bankSourceId, BankType.NAB);
+            var result = parser.Parse(stream, bankSourceId, BankType.Generic);
 
             // Assert
             Assert.Equal(2, result.Count());
