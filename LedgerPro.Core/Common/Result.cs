@@ -24,9 +24,6 @@ namespace LedgerPro.Core.Common
             if (success && error != string.Empty)
                 throw new InvalidOperationException("Successful result cannot have an error message.");
 
-            if (!success && value != null)
-                throw new InvalidOperationException("Failed result cannot have a value.");
-
             IsSuccess = success;
             Value = value;
             Error = error;
