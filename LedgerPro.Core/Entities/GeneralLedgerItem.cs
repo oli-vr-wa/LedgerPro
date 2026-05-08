@@ -13,6 +13,7 @@ namespace LedgerPro.Core.Entities
         public string Description { get; set; } = string.Empty; // Detailed description of the transaction
         public decimal Amount { get; set; }
         public TransactionSide Side { get; set; } // Debit or Credit
+        public bool IsReconciled { get; set; } = false; // Indicates whether this ledger item has been reconciled with a bank transaction
 
         public int GeneralLedgerAccountId { get; set; } // Foreign key to the associated general ledger account
         public GeneralLedgerAccount GeneralLedgerAccount { get; set; } = null!; // Navigation property to the associated general ledger account
