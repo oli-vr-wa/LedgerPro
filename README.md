@@ -22,9 +22,9 @@ This project follows **Clean Architecture** principles to ensure the business lo
 - **Parsing:** CsvHelper for robust file ingestion
 
 ## Roadmap
-- [ ] Core Domain Modeling (Current)
+- [x] Core Domain Modeling (Current)
 - [ ] Bank Statement Parsing Service
-- [ ] SQLite Integration & Migrations
+- [x] SQLite Integration & Migrations
 - [ ] Categorization Engine (Auto-mapping descriptions to accounts)
 - [ ] Basic Financial Reporting API (Monthly Totals)
 
