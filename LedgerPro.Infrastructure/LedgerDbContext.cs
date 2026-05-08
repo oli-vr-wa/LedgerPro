@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using LedgerPro.Core.Entities;
+using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Infrastructure;
 
-public class LedgerDbContext : DbContext
+public class LedgerDbContext : DbContext, ILedgerDbContext
 {
     public LedgerDbContext(DbContextOptions<LedgerDbContext> options) : base(options)
     {        
