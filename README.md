@@ -21,7 +21,7 @@ This project follows **Clean Architecture** principles to ensure the business lo
 
 ## Roadmap
 - [x] Core Domain Modeling (Current)
-- [ ] Bank Statement Parsing Service
+- [x] Bank Statement Parsing Service
 - [x] SQLite Integration & Migrations
 - [ ] Categorization Engine (Auto-mapping descriptions to accounts)
 - [ ] Basic Financial Reporting API (Monthly Totals)
