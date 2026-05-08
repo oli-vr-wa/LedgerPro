@@ -10,6 +10,7 @@ namespace LedgerPro.Infrastructure.Parsers
             Map(m => m.TransactionDate).Name("Date");
             Map(m => m.Amount).Name("Amount");
             Map(m => m.Description).Name("Transaction details");
+            Map(m => m.TransactionType).Name("Transaction type");
 
             // Set the BankSourceId for all records
             Map(m => m.BankSourceId).Constant(bankSourceId);
