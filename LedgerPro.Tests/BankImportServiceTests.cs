@@ -97,6 +97,12 @@ namespace LedgerPro.Tests
             // Assert
             Assert.True(result.IsSuccess);
             Assert.Equal(transactions.Count, result.Value);
+
+            // Verify that the transactions were added to the database context
+            _dbContext.BankTransactions.Received(1).AddRange(Arg.Is<IEnumerable<BankTransaction>>(t => t.Count() == transactions.Count()));
+
+            // Verify that SaveChangesAsync was called
+            await _dbContext.Received(1).SaveChangesAsync();
         }
     }
 }
