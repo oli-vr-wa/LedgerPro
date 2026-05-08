@@ -2,4 +2,5 @@
   <Project Path="LedgerPro.Api/LedgerPro.Api.csproj" />
   <Project Path="LedgerPro.Core/LedgerPro.Core.csproj" />
   <Project Path="LedgerPro.Infrastructure/LedgerPro.Infrastructure.csproj" />
+  <Project Path="LedgerPro.Tests/LedgerPro.Tests.csproj" />
 </Solution>

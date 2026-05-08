@@ -5,14 +5,12 @@ A modern General Ledger system built with **.NET 10** that automates the transit
 ## The Vision
 Provide a clean, automated pipeline to ingest CSV bank statements from multiple sources (Bank accounts, Credit Cards) and map them to a standardized Chart of Accounts.
 
-
 ## Architecture
 This project follows **Clean Architecture** principles to ensure the business logic (Accounting Rules) remains independent of infrastructure (File Parsing/Databases).
 
 - **LedgerPro.Core**: Domain entities (Transactions, Accounts) and business interfaces.
 - **LedgerPro.Infrastructure**: Data access (EF Core/SQLite) and Bank CSV parsing logic.
 - **LedgerPro.Api**: RESTful endpoints for uploading statements and generating reports.
-
 
 ## Tech Stack & Tools
 - **Framework:** .NET 10 (C#)
