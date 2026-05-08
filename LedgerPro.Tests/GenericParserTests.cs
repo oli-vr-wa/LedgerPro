@@ -23,15 +23,17 @@ namespace LedgerPro.Tests
             var result = parser.Parse(stream, bankSourceId, BankType.Generic);
 
             // Assert
-            Assert.Equal(2, result.Count());
-            Assert.Equal(new DateTime(2024, 1, 1), result.First().TransactionDate);
-            Assert.Equal(new DateTime(2024, 1, 2), result.Skip(1).First().TransactionDate);
-            Assert.Equal(-102.53m, result.First().Amount);
-            Assert.Equal(2500.00m, result.Skip(1).First().Amount);
-            Assert.Equal("COLES 1234", result.First().Description);
-            Assert.Equal("Wages", result.Skip(1).First().Description);
-            Assert.Equal("EFTPOS DEBIT", result.First().TransactionType);
-            Assert.Equal("DIRECT CREDIT", result.Skip(1).First().TransactionType);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Value);
+            Assert.Equal(2, result.Value.Count());
+            Assert.Equal(new DateTime(2024, 1, 1), result.Value.First().TransactionDate);
+            Assert.Equal(new DateTime(2024, 1, 2), result.Value.Skip(1).First().TransactionDate);
+            Assert.Equal(-102.53m, result.Value.First().Amount);
+            Assert.Equal(2500.00m, result.Value.Skip(1).First().Amount);
+            Assert.Equal("COLES 1234", result.Value.First().Description);
+            Assert.Equal("Wages", result.Value.Skip(1).First().Description);
+            Assert.Equal("EFTPOS DEBIT", result.Value.First().TransactionType);
+            Assert.Equal("DIRECT CREDIT", result.Value.Skip(1).First().TransactionType);
         }
     }
 }
