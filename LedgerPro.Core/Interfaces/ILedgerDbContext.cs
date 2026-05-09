@@ -7,6 +7,8 @@ namespace LedgerPro.Core.Interfaces
     {
         DbSet<BankSource> BankSources { get; }
         DbSet<BankTransaction> BankTransactions { get; }
+        DbSet<BankTransactionMapping> BankTransactionMappings { get; }
+        DbSet<GeneralLedgerItem> GeneralLedgerItems { get; }
         
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
