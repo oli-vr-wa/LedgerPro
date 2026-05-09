@@ -11,6 +11,8 @@ namespace LedgerPro.Core.Entities
         public BankTransactionMatchStrategy MatchStrategy { get; set; } // Strategy to use for matching bank transactions
         public int TargetGeneralLedgerAccountId { get; set; } // Foreign key to the target general ledger account
         public GeneralLedgerAccount TargetGeneralLedgerAccount { get; set; } = null!;
+        public string DescriptionTemplate { get; set; } = string.Empty; // Template for the description of the created ledger item
+        public string ReferenceTemplate { get; set; } = string.Empty; // Template for the reference of the created ledger item
 
         public int Priority { get; set; } = 1; // Priority of the mapping (lower number means higher priority)
     }
