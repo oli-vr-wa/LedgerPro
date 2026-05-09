@@ -69,7 +69,7 @@ namespace LedgerPro.Application.Services
                 }
             }
 
-            // Save the transactions to the database
+            // Save the transactions & general ledger items to the database
             await _bankRepository.AddTransactionsAsync(transactions);
             await _bankRepository.AddGLItemsAsync(ledgerItemsToAdd);
             await _bankRepository.SaveChangesAsync();
