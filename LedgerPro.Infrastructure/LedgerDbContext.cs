@@ -4,7 +4,7 @@ using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Infrastructure;
 
-public class LedgerDbContext : DbContext, ILedgerDbContext
+public class LedgerDbContext : DbContext
 {
     public LedgerDbContext(DbContextOptions<LedgerDbContext> options) : base(options)
     {        
