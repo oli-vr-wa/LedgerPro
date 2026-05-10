@@ -49,7 +49,7 @@ namespace LedgerPro.Tests
             Assert.Equal("GROCERY-WOOLIES", result.Reference);
             Assert.Equal("Grocery Expense - Woolworths", result.Description);
             Assert.Equal(134.56m, result.Amount); // Amount should be positive in the ledger item
-            Assert.Equal(bankTransaction.Id, result.BankTransactionId);
+            Assert.Equal(bankTransaction, result.BankTransaction);
             Assert.Equal(5000, result.GeneralLedgerAccountId);
             Assert.Equal(TransactionSide.Debit, result.Side);
             Assert.Equal(BankTransactionStatus.Categorized, bankTransaction.Status); // Ensure the transaction status is updated to Categorized            
@@ -140,7 +140,7 @@ namespace LedgerPro.Tests
             Assert.Equal("TRANSPORT-UBER", result.Reference);
             Assert.Equal("Travel Expense - Uber", result.Description);
             Assert.Equal(20.00m, result.Amount); // Amount should be positive in the ledger item
-            Assert.Equal(bankTransaction.Id, result.BankTransactionId);
+            Assert.Equal(bankTransaction, result.BankTransaction);
             Assert.Equal(6000, result.GeneralLedgerAccountId);
             Assert.Equal(TransactionSide.Debit, result.Side);
             Assert.Equal(BankTransactionStatus.Categorized, bankTransaction.Status); // Ensure the transaction status is updated to Categorized
@@ -200,7 +200,7 @@ namespace LedgerPro.Tests
             Assert.Equal("GROCERY-WOOLIES", result.Reference); // Should match the higher priority mapping
             Assert.Equal("Grocery Expense - Woolworths", result.Description);
             Assert.Equal(150.00m, result.Amount); // Amount should be positive in the ledger item
-            Assert.Equal(bankTransaction.Id, result.BankTransactionId);
+            Assert.Equal(bankTransaction, result.BankTransaction);
             Assert.Equal(5000, result.GeneralLedgerAccountId); // Should match the higher priority mapping's account ID
             Assert.Equal(TransactionSide.Debit, result.Side);
         }

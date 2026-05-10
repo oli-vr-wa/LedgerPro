@@ -6,6 +6,7 @@ using LedgerPro.Core.Services;
 using LedgerPro.Infrastructure;
 using LedgerPro.Infrastructure.Parsers;
 using LedgerPro.Infrastructure.Repositories;
+using LedgerPro.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -19,6 +20,7 @@ builder.Services.AddScoped<IBankRepository, BankRepository>();
 builder.Services.AddScoped<IBankStatementParser, BankStatementParser>();
 builder.Services.AddScoped<ITransactionMatchService, TransactionMatchService>();
 builder.Services.AddScoped<IBankImportService, BankImportService>();
+builder.Services.AddScoped<IFileHasher, FileHasher>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

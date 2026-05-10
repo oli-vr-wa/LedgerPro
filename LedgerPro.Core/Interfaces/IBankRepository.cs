@@ -13,6 +13,7 @@ namespace LedgerPro.Core.Interfaces
         Task<List<BankTransactionMapping>> GetBankTransactionMappingsAsync();
         Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions);
         Task AddGLItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);
+        Task AddStatementImportAsync(StatementImport statementImport);
         Task<int> SaveChangesAsync();
     }
 }

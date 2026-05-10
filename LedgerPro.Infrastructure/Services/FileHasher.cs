@@ -3,6 +3,9 @@ using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Infrastructure.Services
 {
+    /// <summary>
+    /// Implements the IFileHasher interface to provide functionality for calculating a hash value for a given file stream.
+    /// </summary>
     public class FileHasher : IFileHasher
     {
         /// <summary>

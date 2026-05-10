@@ -35,12 +35,23 @@ namespace LedgerPro.Infrastructure.Repositories
             await _dbContext.BankSources.ToListAsync();
 
         /// <summary>
-        /// Retrieves all BankTransactionMapping entities from the database. This method is typically used to get the mapping rules that are applied when importing bank transactions, allowing the application to determine how to categorize and create GeneralLedgerItems based on the imported transactions.
+        /// Retrieves all BankTransactionMapping entities from the database. This method is typically used to get the mapping rules that are applied when importing 
+        /// bank transactions, allowing the application to determine how to categorize and create GeneralLedgerItems based on the imported transactions.
         /// </summary>
         /// <returns>List of BankTransactionMapping entities.</returns>
         public async Task<List<BankTransactionMapping>> GetBankTransactionMappingsAsync() =>        
             await _dbContext.BankTransactionMappings.ToListAsync();
         
+        /// <summary>
+        /// Adds a StatementImport entity to the database context. This method is used during the bank statement import process to create a record of the import operation, 
+        /// including details such as the bank source, import date, file hash, and transaction count. 
+        /// The StatementImport record can be used for auditing and tracking purposes to keep a history of imported statements.
+        /// </summary>
+        /// <param name="statementImport"></param>
+        /// <returns></returns>
+        public async Task AddStatementImportAsync(StatementImport statementImport) =>
+            await _dbContext.StatementImports.AddAsync(statementImport);
+
         /// <summary>
         /// Adds a collection of BankTransaction entities to the database context. This method is used during the bank statement import process to add the parsed transactions to the context before saving them to the database.
         /// </summary>
