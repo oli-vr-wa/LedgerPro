@@ -9,6 +9,7 @@ namespace LedgerPro.Core.Interfaces
     public interface IBankRepository
     {
         Task<BankSource?> GetBankSourceByIdAsync(Guid bankSourceId);
+        Task<List<BankSource>> GetBankSourcesAsync();
         Task<List<BankTransactionMapping>> GetBankTransactionMappingsAsync();
         Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions);
         Task AddGLItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);

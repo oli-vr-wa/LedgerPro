@@ -49,10 +49,10 @@ namespace LedgerPro.Core.Services
                         TransactionDate = bankTransaction.TransactionDate,
                         Reference = mapping.ReferenceTemplate,
                         Description = mapping.DescriptionTemplate,
-                        Amount = Math.Abs(bankTransaction.Amount),
-                        BankTransactionId = bankTransaction.Id,
+                        Amount = Math.Abs(bankTransaction.Amount),                        
                         GeneralLedgerAccountId = mapping.TargetGeneralLedgerAccountId,
                         Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit,                        
+                        BankTransaction = bankTransaction,
                     };
                 }
             }

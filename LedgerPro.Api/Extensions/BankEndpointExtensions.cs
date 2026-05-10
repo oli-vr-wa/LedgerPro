@@ -1,5 +1,6 @@
 using LedgerPro.Application.Interfaces;
 using LedgerPro.Application.DTOs;
+using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Api.Extensions
 {
@@ -28,6 +29,12 @@ namespace LedgerPro.Api.Extensions
                     : Results.BadRequest(new { error = result.Error });
             })
             .DisableAntiforgery();
+
+            group.MapGet("/debug-sources", async (IBankRepository repo) => 
+            {
+                var sources = await repo.GetBankSourcesAsync(); // Or a GetSources method
+                return Results.Ok(sources);
+            });
         }
     }
 }

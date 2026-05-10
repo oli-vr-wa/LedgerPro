@@ -41,9 +41,14 @@ namespace LedgerPro.Application.Services
             // Find the bank source
             var bankSource = await _bankRepository.GetBankSourceByIdAsync(request.BankSourceId);
 
-            if (bankSource == null)            
+            if (bankSource == null)   
+            {
+                var allsources = await _bankRepository.GetBankSourcesAsync();
+                Console.WriteLine($"[DEBUG] Available bank sources: {string.Join(", ", allsources.Select(s => $"{s.Id} ({s.BankName})"))}");
+                Console.WriteLine($"[DEBUG] Looked for {request.BankSourceId} but found nothing.");         
                 return Result<int>.Failure($"Bank source with ID {request.BankSourceId} not found.");
-            
+            }            
+
             // Parse the bank statement
             var parseResult = _bankStatementParser.Parse(request.FileStream, request.BankSourceId, bankSource.BankType);
 
@@ -51,6 +56,16 @@ namespace LedgerPro.Application.Services
                 return Result<int>.Failure(parseResult.Error);            
             
             var transactions = parseResult.Value!;
+
+            // Create Statement Import record
+            var statementImport = new StatementImport
+            {
+                BankSourceId = request.BankSourceId,
+                ImportDate = DateTime.Now,
+                //FileHash = request.FileHash,
+                FileName = request.FileName,
+                TransactionCount = transactions.Count()
+            };            
 
             // Get all the BankTransactionMappings
             var mappings = await _bankRepository.GetBankTransactionMappingsAsync();
