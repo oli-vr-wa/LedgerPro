@@ -11,11 +11,10 @@ namespace LedgerPro.Application.Services
     /// </summary>
     public class BankImportService : IBankImportService
     {
-        private readonly IBankStatementParser _bankStatementParser;
-        
+        private readonly IBankStatementParser _bankStatementParser;        
         private readonly IBankRepository _bankRepository;
-
         private readonly ITransactionMatchService _transactionMatchService;
+        private readonly IFileHasher _fileHasher;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BankImportService"/> class.
@@ -23,11 +22,13 @@ namespace LedgerPro.Application.Services
         /// <param name="bankStatementParser">The bank statement parser.</param>
         /// <param name="transactionMatchService">The transaction match service.</param>
         /// <param name="bankRepository">The bank repository.</param>
-        public BankImportService(IBankStatementParser bankStatementParser, ITransactionMatchService transactionMatchService, IBankRepository bankRepository)
+        /// <param name="fileHasher">The file hasher.</param>
+        public BankImportService(IBankStatementParser bankStatementParser, ITransactionMatchService transactionMatchService, IBankRepository bankRepository, IFileHasher fileHasher)
         {
             _bankStatementParser = bankStatementParser;
             _bankRepository = bankRepository;
             _transactionMatchService = transactionMatchService;
+            _fileHasher = fileHasher;
         }
 
         /// <summary>
@@ -41,9 +42,12 @@ namespace LedgerPro.Application.Services
             // Find the bank source
             var bankSource = await _bankRepository.GetBankSourceByIdAsync(request.BankSourceId);
 
-            if (bankSource == null)            
-                return Result<int>.Failure($"Bank source with ID {request.BankSourceId} not found.");
-            
+            if (bankSource == null)                                       
+                return Result<int>.Failure($"Bank source with ID {request.BankSourceId} not found.");                        
+
+            // Calculate the file hash
+            var fileHash = await _fileHasher.CalculateHashAsync(request.FileStream);
+
             // Parse the bank statement
             var parseResult = _bankStatementParser.Parse(request.FileStream, request.BankSourceId, bankSource.BankType);
 
@@ -51,6 +55,17 @@ namespace LedgerPro.Application.Services
                 return Result<int>.Failure(parseResult.Error);            
             
             var transactions = parseResult.Value!;
+
+            // Create Statement Import record
+            var statementImport = new StatementImport
+            {
+                BankSourceId = request.BankSourceId,
+                ImportDate = DateTime.Now,
+                FileHash = fileHash,
+                FileName = request.FileName,
+                TransactionCount = transactions.Count(),
+                Transactions = transactions.ToList() // Establish the relationship between the StatementImport and BankTransactions
+            };            
 
             // Get all the BankTransactionMappings
             var mappings = await _bankRepository.GetBankTransactionMappingsAsync();
@@ -69,7 +84,8 @@ namespace LedgerPro.Application.Services
                 }
             }
 
-            // Save the transactions to the database
+            // Save the transactions & general ledger items to the database
+            await _bankRepository.AddStatementImportAsync(statementImport);
             await _bankRepository.AddTransactionsAsync(transactions);
             await _bankRepository.AddGLItemsAsync(ledgerItemsToAdd);
             await _bankRepository.SaveChangesAsync();

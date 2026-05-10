@@ -13,11 +13,12 @@ namespace LedgerPro.Tests
         private readonly IBankStatementParser _bankStatementParser = Substitute.For<IBankStatementParser>();
         private readonly IBankRepository _bankRepository = Substitute.For<IBankRepository>();
         private readonly ITransactionMatchService _transactionMatchService = Substitute.For<ITransactionMatchService>();
+        private readonly IFileHasher _fileHasher = Substitute.For<IFileHasher>();
         private readonly BankImportService _bankImportService;
 
         public BankImportServiceTests()
         {
-            _bankImportService = new BankImportService(_bankStatementParser, _transactionMatchService, _bankRepository);
+            _bankImportService = new BankImportService(_bankStatementParser, _transactionMatchService, _bankRepository, _fileHasher);
         }
 
         /// <summary>
@@ -52,6 +53,9 @@ namespace LedgerPro.Tests
             var bankSourceId = Guid.NewGuid();
             var request = new UploadBankStatementRequest(bankSourceId, Stream.Null, "test.csv");
 
+            // Mock the file hasher to return a specific hash value
+            _fileHasher.CalculateHashAsync(request.FileStream).Returns("hashedvalue");
+
             // Set the mock to return a valid bank source
             _bankRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
 
@@ -79,6 +83,9 @@ namespace LedgerPro.Tests
 
             // Set the mock to return a valid bank source
             _bankRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
+
+            // Mock the file hasher to return a specific hash value
+            _fileHasher.CalculateHashAsync(request.FileStream).Returns("hashedvalue");
 
             // Set the parser to return a successful result with some transactions
             var transactions = new List<BankTransaction>
@@ -115,6 +122,9 @@ namespace LedgerPro.Tests
 
             // Set the mock to return a valid bank source
             _bankRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
+
+            // Mock the file hasher to return a specific hash value
+            _fileHasher.CalculateHashAsync(request.FileStream).Returns("hashedvalue");
 
             // Set the parser to return a successful result with some transactions
             var transactions = new List<BankTransaction>
