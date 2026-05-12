@@ -4,7 +4,7 @@ using LedgerPro.Core.Enums;
 using LedgerPro.Core.Common;
 using LedgerPro.Application.Services;
 using NSubstitute;
-using LedgerPro.Application.DTOs;
+using LedgerPro.Application.DTOs.BankStatement;
 
 namespace LedgerPro.Tests.Application.Services;
 

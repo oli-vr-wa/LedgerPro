@@ -1,5 +1,6 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.DTOs.Common;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -34,7 +35,7 @@ public static class GeneralLedgerEndpointExtensions
     /// </summary>
     /// <param name="repo">The repository used to access general ledger items.</param>
     /// <returns>A list of GeneralLedgerItem entities.</returns>
-    private static async Task<IResult> GetGeneralLedgerItemsAsync(IGeneralLedgerRepository repo)
+    internal static async Task<IResult> GetGeneralLedgerItemsAsync(IGeneralLedgerRepository repo)
     {
         var items = await repo.GetGeneralLedgerItemsAsync();
         return Results.Ok(items);
@@ -46,10 +47,10 @@ public static class GeneralLedgerEndpointExtensions
     /// <param name="account">The GeneralLedgerAccount entity to add.</param>
     /// <param name="repo">The repository used to access general ledger accounts.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    private static async Task<IResult> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account, IGeneralLedgerRepository repo)
+    internal static async Task<IResult> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account, IGeneralLedgerRepository repo)
     {
         await repo.AddGeneralLedgerAccountAsync(account);
-        return Results.Ok(new { Message = "General ledger account added successfully." });
+        return Results.Ok(new ActionResponse("General ledger account added successfully."));
     }
 
     /// <summary>
@@ -57,7 +58,7 @@ public static class GeneralLedgerEndpointExtensions
     /// </summary>
     /// <param name="repo">The repository used to access general ledger accounts.</param>
     /// <returns>A list of GeneralLedgerAccount entities.</returns>
-    private static async Task<IResult> GetGeneralLedgerAccountsAsync(IGeneralLedgerRepository repo)
+    internal static async Task<IResult> GetGeneralLedgerAccountsAsync(IGeneralLedgerRepository repo)
     {
         var accounts = await repo.GetGeneralLedgerAccountsAsync();
         return Results.Ok(accounts);

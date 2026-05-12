@@ -1,6 +1,6 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Interfaces;
-
+using LedgerPro.Application.DTOs.Common;
 namespace LedgerPro.Api.Extensions;
 
 /// <summary>
@@ -62,6 +62,6 @@ public static class BankTransactionEndpointExtensions
     private static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, IBankTransactionRepository repo)
     {
         await repo.AddBankTransactionMappingAsync(mapping);
-        return Results.Ok(new { Message = "Bank transaction mapping added successfully." });
+        return Results.Ok(new ActionResponse("Bank transaction mapping added successfully."));
     }
 }

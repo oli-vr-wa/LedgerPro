@@ -1,5 +1,6 @@
 using LedgerPro.Application.Interfaces;
-using LedgerPro.Application.DTOs;
+using LedgerPro.Application.DTOs.Common;
+using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Interfaces;
 using LedgerPro.Core.Entities;
 
@@ -40,8 +41,8 @@ public static class BankSourceEndpointExtensions
         var result = await bankImportService.ImportBankStatementAsync(request);
 
         return result.IsSuccess
-            ? Results.Ok(new { Message = "Bank statement imported successfully.", count = result.Value })
-            : Results.BadRequest(new { error = result.Error });
+            ? Results.Ok(new ImportBankStatementResponse("Bank statement imported successfully.", result.Value))
+            : Results.BadRequest(new ErrorResponse(result.Error));
     }
 
     /// <summary>

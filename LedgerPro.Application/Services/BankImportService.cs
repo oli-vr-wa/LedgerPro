@@ -1,5 +1,5 @@
 using LedgerPro.Application.Interfaces;
-using LedgerPro.Application.DTOs;
+using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Common;
 using LedgerPro.Core.Interfaces;
 using LedgerPro.Core.Entities;

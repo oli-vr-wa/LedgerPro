@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 *.db
 *.db-shm
 *.db-wal
+
+# Visual Studio Code files for those working on multiple tools
+.vscode/settings.json

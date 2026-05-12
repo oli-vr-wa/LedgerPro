@@ -16,6 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>LedgerPro.Tests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\LedgerPro.Infrastructure\LedgerPro.Infrastructure.csproj" />
     <ProjectReference Include="..\LedgerPro.Application\LedgerPro.Application.csproj" />
   </ItemGroup>
