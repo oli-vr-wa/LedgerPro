@@ -12,23 +12,36 @@ namespace LedgerPro.Application.Services
     public class BankImportService : IBankImportService
     {
         private readonly IBankStatementParser _bankStatementParser;        
-        private readonly IBankRepository _bankRepository;
+        private readonly IBankSourceRepository _bankSourceRepository;
+        private readonly IBankTransactionRepository _bankTransactionRepository;
         private readonly ITransactionMatchService _transactionMatchService;
+        private readonly IGeneralLedgerRepository _generalLedgerRepository;
         private readonly IFileHasher _fileHasher;
+        private readonly IUnitOfWork _unitOfWork;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BankImportService"/> class.
         /// </summary>
         /// <param name="bankStatementParser">The bank statement parser.</param>
         /// <param name="transactionMatchService">The transaction match service.</param>
-        /// <param name="bankRepository">The bank repository.</param>
+        /// <param name="bankSourceRepository">The bank source repository.</param>
         /// <param name="fileHasher">The file hasher.</param>
-        public BankImportService(IBankStatementParser bankStatementParser, ITransactionMatchService transactionMatchService, IBankRepository bankRepository, IFileHasher fileHasher)
+        public BankImportService(
+            IBankStatementParser bankStatementParser, 
+            ITransactionMatchService transactionMatchService, 
+            IBankSourceRepository bankSourceRepository, 
+            IBankTransactionRepository bankTransactionRepository,
+            IGeneralLedgerRepository generalLedgerRepository,
+            IFileHasher fileHasher,
+            IUnitOfWork unitOfWork)
         {
             _bankStatementParser = bankStatementParser;
-            _bankRepository = bankRepository;
+            _bankSourceRepository = bankSourceRepository;
             _transactionMatchService = transactionMatchService;
+            _bankTransactionRepository = bankTransactionRepository;
+            _generalLedgerRepository = generalLedgerRepository;
             _fileHasher = fileHasher;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -40,7 +53,7 @@ namespace LedgerPro.Application.Services
         public async Task<Result<int>> ImportBankStatementAsync(UploadBankStatementRequest request)
         {
             // Find the bank source
-            var bankSource = await _bankRepository.GetBankSourceByIdAsync(request.BankSourceId);
+            var bankSource = await _bankSourceRepository.GetBankSourceByIdAsync(request.BankSourceId);
 
             if (bankSource == null)                                       
                 return Result<int>.Failure($"Bank source with ID {request.BankSourceId} not found.");                        
@@ -68,7 +81,7 @@ namespace LedgerPro.Application.Services
             };            
 
             // Get all the BankTransactionMappings
-            var mappings = await _bankRepository.GetBankTransactionMappingsAsync();
+            var mappings = await _bankTransactionRepository.GetBankTransactionMappingsAsync();
 
             // Ledger Items to be added to the database
             var ledgerItemsToAdd = new List<GeneralLedgerItem>();
@@ -85,10 +98,10 @@ namespace LedgerPro.Application.Services
             }
 
             // Save the transactions & general ledger items to the database
-            await _bankRepository.AddStatementImportAsync(statementImport);
-            await _bankRepository.AddTransactionsAsync(transactions);
-            await _bankRepository.AddGLItemsAsync(ledgerItemsToAdd);
-            await _bankRepository.SaveChangesAsync();
+            await _bankTransactionRepository.AddStatementImportAsync(statementImport);
+            await _bankTransactionRepository.AddTransactionsAsync(transactions);
+            await _generalLedgerRepository.AddGeneralLedgerItemsAsync(ledgerItemsToAdd);
+            await _unitOfWork.CommitAsync();
 
             return Result<int>.Success(transactions.Count());
         }

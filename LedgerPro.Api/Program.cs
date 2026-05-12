@@ -16,7 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<LedgerDbContext>(options => 
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IBankRepository, BankRepository>();
+builder.Services.AddScoped<IBankSourceRepository, BankSourceRepository>();
+builder.Services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
+builder.Services.AddScoped<IGeneralLedgerRepository, GeneralLedgerRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBankStatementParser, BankStatementParser>();
 builder.Services.AddScoped<ITransactionMatchService, TransactionMatchService>();
 builder.Services.AddScoped<IBankImportService, BankImportService>();
@@ -36,7 +39,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-app.MapBankEndpoints();
+// Map endpoints
+app.MapBankSourcesEndpoints();
+app.MapBankTransactionEndpoints();
+app.MapGeneralLedgerEndpoints();
 
 app.Run();
 

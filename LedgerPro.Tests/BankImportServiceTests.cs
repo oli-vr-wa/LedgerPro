@@ -11,14 +11,25 @@ namespace LedgerPro.Tests
     public class BankImportServiceTests
     {
         private readonly IBankStatementParser _bankStatementParser = Substitute.For<IBankStatementParser>();
-        private readonly IBankRepository _bankRepository = Substitute.For<IBankRepository>();
+        private readonly IBankTransactionRepository _bankTransactionRepository = Substitute.For<IBankTransactionRepository>();
+        private readonly IBankSourceRepository _bankSourceRepository = Substitute.For<IBankSourceRepository>();
+        private readonly IGeneralLedgerRepository _generalLedgerRepository = Substitute.For<IGeneralLedgerRepository>();
+        private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
         private readonly ITransactionMatchService _transactionMatchService = Substitute.For<ITransactionMatchService>();
         private readonly IFileHasher _fileHasher = Substitute.For<IFileHasher>();
         private readonly BankImportService _bankImportService;
 
         public BankImportServiceTests()
         {
-            _bankImportService = new BankImportService(_bankStatementParser, _transactionMatchService, _bankRepository, _fileHasher);
+            _bankImportService = new BankImportService(
+                _bankStatementParser, 
+                _transactionMatchService, 
+                _bankSourceRepository, 
+                _bankTransactionRepository,
+                _generalLedgerRepository,                
+                _fileHasher,
+                _unitOfWork
+                );
         }
 
         /// <summary>
@@ -32,7 +43,7 @@ namespace LedgerPro.Tests
             var request = new UploadBankStatementRequest(Guid.NewGuid(), Stream.Null, "test.csv");
 
             // Set the mock to return null for the bank source
-            _bankRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns((BankSource)null!);
+            _bankSourceRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns((BankSource)null!);
 
             // Act
             var result = await _bankImportService.ImportBankStatementAsync(request);
@@ -57,7 +68,7 @@ namespace LedgerPro.Tests
             _fileHasher.CalculateHashAsync(request.FileStream).Returns("hashedvalue");
 
             // Set the mock to return a valid bank source
-            _bankRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
+            _bankSourceRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
 
             // Set the parser to return a failure result
             _bankStatementParser.Parse(request.FileStream, request.BankSourceId, BankType.Generic).Returns(Result<IEnumerable<BankTransaction>>.Failure("Parsing error"));
@@ -82,7 +93,7 @@ namespace LedgerPro.Tests
             var request = new UploadBankStatementRequest(bankSourceId, Stream.Null, "test.csv");
 
             // Set the mock to return a valid bank source
-            _bankRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
+            _bankSourceRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
 
             // Mock the file hasher to return a specific hash value
             _fileHasher.CalculateHashAsync(request.FileStream).Returns("hashedvalue");
@@ -97,7 +108,7 @@ namespace LedgerPro.Tests
             _bankStatementParser.Parse(request.FileStream, request.BankSourceId, BankType.Generic).Returns(Result<IEnumerable<BankTransaction>>.Success(transactions));
 
             // Set the SaveChangesAsync to return the number of transactions added
-            _bankRepository.SaveChangesAsync().Returns(transactions.Count);
+            _unitOfWork.CommitAsync().Returns(transactions.Count);
 
             // Act
             var result = await _bankImportService.ImportBankStatementAsync(request);
@@ -107,10 +118,10 @@ namespace LedgerPro.Tests
             Assert.Equal(transactions.Count, result.Value);
 
             // Verify that the transactions were added to the database context
-            await _bankRepository.Received(1).AddTransactionsAsync(Arg.Is<IEnumerable<BankTransaction>>(t => t.Count() == transactions.Count()));;
+            await _bankTransactionRepository.Received(1).AddTransactionsAsync(Arg.Is<IEnumerable<BankTransaction>>(t => t.Count() == transactions.Count()));;
 
             // Verify that SaveChangesAsync was called
-            await _bankRepository.Received(1).SaveChangesAsync();
+            await _unitOfWork.Received(1).CommitAsync();
         }
 
         [Fact]
@@ -121,7 +132,7 @@ namespace LedgerPro.Tests
             var request = new UploadBankStatementRequest(bankSourceId, Stream.Null, "test.csv");
 
             // Set the mock to return a valid bank source
-            _bankRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
+            _bankSourceRepository.GetBankSourceByIdAsync(request.BankSourceId).Returns(new BankSource { Id = bankSourceId, BankType = BankType.Generic });
 
             // Mock the file hasher to return a specific hash value
             _fileHasher.CalculateHashAsync(request.FileStream).Returns("hashedvalue");
@@ -159,7 +170,7 @@ namespace LedgerPro.Tests
                 }
             };   
             // Set the repository to return the mappings
-            _bankRepository.GetBankTransactionMappingsAsync().Returns(mappings);       
+            _bankTransactionRepository.GetBankTransactionMappingsAsync().Returns(mappings);       
             
             // Set the transaction match service to return a GeneralLedgerItem when a match is found
             _transactionMatchService.MatchAndCreateLedgerItem(Arg.Is<BankTransaction>(t => t.Description.Contains("Woolworths")), mappings)
@@ -172,9 +183,9 @@ namespace LedgerPro.Tests
             Assert.True(result.IsSuccess);
             
             // Verify that GeneralLedgerItems were created for the matched transactions
-            await _bankRepository
+            await _generalLedgerRepository
                 .Received(1)
-                .AddGLItemsAsync(Arg.Is<IEnumerable<GeneralLedgerItem>>(gli => gli.Any(item => item.Description.Contains("Grocery purchase - Woolworths"))));
+                .AddGeneralLedgerItemsAsync(Arg.Is<IEnumerable<GeneralLedgerItem>>(gli => gli.Any(item => item.Description.Contains("Grocery purchase - Woolworths"))));
         }
     }
 }
