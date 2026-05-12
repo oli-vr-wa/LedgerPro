@@ -1,12 +1,11 @@
 using LedgerPro.Core.Entities;
 
-namespace LedgerPro.Core.Interfaces
+namespace LedgerPro.Core.Interfaces;
+
+public interface IGeneralLedgerRepository
 {
-    public interface IGeneralLedgerRepository
-    {
-        Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsAsync();
-        Task AddGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);
-        Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync();
-        Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount glAccount);
-    }
+    Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsAsync();
+    Task AddGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);
+    Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync();
+    Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount glAccount);
 }

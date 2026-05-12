@@ -23,6 +23,7 @@
     <ProjectReference Include="..\LedgerPro.Core\LedgerPro.Core.csproj" />
     <ProjectReference Include="..\LedgerPro.Infrastructure\LedgerPro.Infrastructure.csproj" />
     <ProjectReference Include="..\LedgerPro.Application\LedgerPro.Application.csproj" />
+    <ProjectReference Include="..\LedgerPro.Api\LedgerPro.Api.csproj" />
   </ItemGroup>
 
 </Project>

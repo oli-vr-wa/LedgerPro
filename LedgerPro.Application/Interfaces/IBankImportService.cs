@@ -1,10 +1,9 @@
 using LedgerPro.Application.DTOs;
 using LedgerPro.Core.Common;
 
-namespace LedgerPro.Application.Interfaces
+namespace LedgerPro.Application.Interfaces;
+
+public interface IBankImportService
 {
-    public interface IBankImportService
-    {
-        Task<Result<int>> ImportBankStatementAsync(UploadBankStatementRequest request);
-    }
+    Task<Result<int>> ImportBankStatementAsync(UploadBankStatementRequest request);
 }
