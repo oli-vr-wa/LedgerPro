@@ -30,6 +30,14 @@ namespace LedgerPro.Infrastructure.Repositories
             await _dbContext.GeneralLedgerItems.AddRangeAsync(ledgerItems);
 
         /// <summary>
+        /// Retrieves all GeneralLedgerAccount entities from the database. This method is used to get the list of available 
+        /// general ledger accounts.
+        /// </summary>
+        /// <returns>A list of GeneralLedgerAccount entities.</returns>
+        public async Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync() =>
+            await _dbContext.GeneralLedgerAccounts.ToListAsync();
+
+        /// <summary>
         /// Adds a new GeneralLedgerAccount entity to the database context. 
         /// This method is used to create a new general ledger account that can be associated with GeneralLedgerItems for categorization and reporting purposes.
         /// </summary>

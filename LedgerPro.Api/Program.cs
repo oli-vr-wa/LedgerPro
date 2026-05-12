@@ -39,7 +39,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Map endpoints
 app.MapBankSourcesEndpoints();
+app.MapBankTransactionEndpoints();
+app.MapGeneralLedgerEndpoints();
 
 app.Run();
 

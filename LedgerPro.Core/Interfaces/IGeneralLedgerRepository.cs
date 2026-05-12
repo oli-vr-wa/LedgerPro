@@ -6,6 +6,7 @@ namespace LedgerPro.Core.Interfaces
     {
         Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsAsync();
         Task AddGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);
+        Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync();
         Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount glAccount);
     }
 }
