@@ -1,10 +1,9 @@
 
-namespace LedgerPro.Core.Enums
+namespace LedgerPro.Core.Enums;
+
+public enum PeriodClassification
 {
-    public enum PeriodClassification
-    {
-        Month,
-        Quarter,
-        Year
-    }
+    Month,
+    Quarter,
+    Year
 }

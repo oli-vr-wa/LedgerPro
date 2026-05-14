@@ -1,7 +1,6 @@
-namespace LedgerPro.Core.Interfaces
+namespace LedgerPro.Core.Interfaces;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task<int> CommitAsync(CancellationToken cancellationToken = default);
-    }
+    Task<int> CommitAsync(CancellationToken cancellationToken = default);
 }

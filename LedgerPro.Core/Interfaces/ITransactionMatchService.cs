@@ -1,10 +1,8 @@
-
 using LedgerPro.Core.Entities;
 
-namespace LedgerPro.Core.Interfaces
+namespace LedgerPro.Core.Interfaces;
+
+public interface ITransactionMatchService
 {
-    public interface ITransactionMatchService
-    {
-        GeneralLedgerItem? MatchAndCreateLedgerItem(BankTransaction bankTransaction, IEnumerable<BankTransactionMapping> mappings);
-    }
+    GeneralLedgerItem? MatchAndCreateLedgerItem(BankTransaction bankTransaction, IEnumerable<BankTransactionMapping> mappings);
 }

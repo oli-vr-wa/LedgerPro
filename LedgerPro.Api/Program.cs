@@ -23,6 +23,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBankStatementParser, BankStatementParser>();
 builder.Services.AddScoped<ITransactionMatchService, TransactionMatchService>();
 builder.Services.AddScoped<IBankImportService, BankImportService>();
+builder.Services.AddScoped<IGeneralLedgerService, GeneralLedgerService>();
 builder.Services.AddScoped<IFileHasher, FileHasher>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
