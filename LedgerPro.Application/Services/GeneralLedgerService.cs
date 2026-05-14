@@ -25,6 +25,9 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     /// <returns>A result indicating success or failure, containing the added account if successful.</returns>
     public async Task<Result<GeneralLedgerAccount>> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account)
     {
+        if (account == null)
+            return Result<GeneralLedgerAccount>.Failure("Account cannot be null.");
+
         bool isInUse = await _generalLedgerRepository.IsGeneralLedgerAccountIdInUseAsync(account.Id);
         if (isInUse)
             return Result<GeneralLedgerAccount>.Failure($"General ledger account with ID {account.Id} is already in use and cannot be added.");
