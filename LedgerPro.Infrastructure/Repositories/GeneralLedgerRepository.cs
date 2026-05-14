@@ -45,4 +45,15 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount glAccount) =>
         await _dbContext.GeneralLedgerAccounts.AddAsync(glAccount);
+
+    /// <summary>
+    /// Checks if a given general ledger account ID is currently in use by any GeneralLedgerItem entities. 
+    /// This method is used to prevent the deletion of general ledger accounts that are still referenced by existing ledger items, ensuring data integrity.
+    /// </summary>
+    /// <param name="accountId">The ID of the general ledger account to check.</param>
+    /// <returns>A task representing the asynchronous operation, containing a boolean value indicating whether the account is in use.</returns>
+    public async Task<bool> IsGeneralLedgerAccountIdInUseAsync(int accountId)
+    {
+        return await _dbContext.GeneralLedgerItems.AnyAsync(item => item.GeneralLedgerAccountId == accountId);
+    }
 }

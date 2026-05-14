@@ -49,6 +49,10 @@ public static class GeneralLedgerEndpointExtensions
     /// <returns>A result indicating the success of the operation.</returns>
     internal static async Task<IResult> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account, IGeneralLedgerRepository repo)
     {
+        bool isInUse = await repo.IsGeneralLedgerAccountIdInUseAsync(account.Id);
+        if (isInUse)        
+            return Results.BadRequest(new ErrorResponse($"General ledger account with ID {account.Id} is already in use and cannot be added."));        
+
         await repo.AddGeneralLedgerAccountAsync(account);
         return Results.Ok(new ActionResponse("General ledger account added successfully."));
     }

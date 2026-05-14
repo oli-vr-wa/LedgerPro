@@ -8,4 +8,5 @@ public interface IGeneralLedgerRepository
     Task AddGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);
     Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync();
     Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount glAccount);
+    Task<bool> IsGeneralLedgerAccountIdInUseAsync(int accountId);
 }
