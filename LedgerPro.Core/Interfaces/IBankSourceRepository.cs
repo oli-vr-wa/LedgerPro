@@ -10,5 +10,6 @@ public interface IBankSourceRepository
 {
     Task<BankSource?> GetBankSourceByIdAsync(Guid bankSourceId);
     Task<List<BankSource>> GetBankSourcesAsync();
-    Task AddBankSourceAsync(BankSource bankSource);    
+    Task AddBankSourceAsync(BankSource bankSource);   
+     Task<bool> IsBankSourceNameInUseAsync(string name);
 }

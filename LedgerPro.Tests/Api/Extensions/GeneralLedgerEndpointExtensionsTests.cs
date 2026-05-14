@@ -1,4 +1,5 @@
 using NSubstitute;
+using LedgerPro.Core.Common;
 using LedgerPro.Core.Interfaces;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
@@ -12,6 +13,7 @@ namespace LedgerPro.Tests.Api.Extensions;
 public class GeneralLedgerEndpointExtensionsTests
 {
     private readonly IGeneralLedgerRepository _generalLedgerRepository = Substitute.For<IGeneralLedgerRepository>();
+    private readonly IGeneralLedgerService _generalLedgerService = Substitute.For<IGeneralLedgerService>();
 
     /// <summary>
     /// Tests that the GetGeneralLedgerItemsAsync method returns an Ok result containing a list of GeneralLedgerItem entities when the repository returns items successfully.
@@ -79,20 +81,20 @@ public class GeneralLedgerEndpointExtensionsTests
     {
         // Arrange
         var newAccount = new GeneralLedgerAccount { Id = 5003, Name = "Office Supplies expense", AccountType = GeneralLedgerAccountType.Expense };
+        _generalLedgerService.AddGeneralLedgerAccountAsync(newAccount).Returns(Result<GeneralLedgerAccount>.Success(newAccount));
 
         // Act
-        var result = await GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerRepository);
+        var result = await GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerService);
 
         // Assert
-        var okResult = Assert.IsType<Ok<ActionResponse>>(result);  // Assert that the result is an Ok result containing an object
-        Assert.NotNull(okResult.Value);                    // Assert that the returned value is not null
+        var createdResult = Assert.IsType<Created<GeneralLedgerAccount>>(result);   // Assert that the result is a Created result containing a GeneralLedgerAccount
+        Assert.NotNull(createdResult.Value);                                        // Assert that the returned value is not null
+        Assert.Equal(newAccount.Id, createdResult.Value.Id);                        // Assert that the returned account has the same ID as the new account
+        Assert.Equal(newAccount.Name, createdResult.Value.Name);                    // Assert that the returned account has the same Name as the new account
+        Assert.Equal(newAccount.AccountType, createdResult.Value.AccountType);      // Assert that the returned account has the same AccountType as the new account
 
-        // Assert that the returned value contains a message indicating success
-        var messageProperty = okResult.Value.GetType().GetProperty("Message");
-        Assert.NotNull(messageProperty);
-
-        // Verify that the repository method was called once with the correct account
-        await _generalLedgerRepository.Received(1).AddGeneralLedgerAccountAsync(newAccount);
+        // Verify that the service method was called once with the correct account        
+        await _generalLedgerService.Received(1).AddGeneralLedgerAccountAsync(newAccount);
     }
 
     /// <summary>
@@ -106,24 +108,47 @@ public class GeneralLedgerEndpointExtensionsTests
         // Arrange
         var newAccount = new GeneralLedgerAccount { Id = 5000, Name = "Duplicate Account", AccountType = GeneralLedgerAccountType.Expense };
 
-        // Mock the repository to indicate that the account ID is already in use
-        _generalLedgerRepository.IsGeneralLedgerAccountIdInUseAsync(newAccount.Id).Returns(true);
+        string expectedErrorMessage = $"General ledger account with ID {newAccount.Id} is already in use and cannot be added.";
+
+        // Set up the service to return a failure result indicating the account ID is already in use
+        _generalLedgerService.AddGeneralLedgerAccountAsync(newAccount)
+            .Returns(Result<GeneralLedgerAccount>.Failure(expectedErrorMessage));
 
         // Act
-        var result = await GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerRepository);
+        var result = await GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerService);
 
         // Assert
-        var badRequestResult = Assert.IsType<BadRequest<ErrorResponse>>(result);  // Assert that the result is a BadRequest result containing an ErrorResponse
-        Assert.NotNull(badRequestResult.Value);                                            // Assert that the returned value is not null
+        var badRequestResult = Assert.IsType<BadRequest<ErrorResponse>>(result);    // Assert that the result is a BadRequest result containing an ErrorResponse
+        Assert.NotNull(badRequestResult.Value);                                     // Assert that the returned value is not null
+        Assert.Equal(expectedErrorMessage, badRequestResult.Value.Error);           // Assert that the error message matches the expected message        
+        // Verify that the service method was called once with the correct account
+        await _generalLedgerService.Received(1).AddGeneralLedgerAccountAsync(newAccount);        
+    }
 
-        // Assert that the error message indicates the account ID is already in use
-        var expectedMessage = $"General ledger account with ID {newAccount.Id} is already in use and cannot be added.";
-        Assert.Equal(expectedMessage, badRequestResult.Value.Error);
+    /// <summary>
+    /// Tests that the AddGeneralLedgerAccountAsync method returns a BadRequest result with an error message when the service 
+    /// returns a successful result but with a null value.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task AddGeneralLedgerAccountAsync_ReturnsBadRequest_WhenServiceReturnsNull()
+    {
+        // Arrange
+        var newAccount = new GeneralLedgerAccount { Id = 5004, Name = "New Account", AccountType = GeneralLedgerAccountType.Expense };
 
-        // Verify that the repository method to check if the account ID is in use was called once with the correct account ID
-        await _generalLedgerRepository.Received(1).IsGeneralLedgerAccountIdInUseAsync(newAccount.Id);
+        // Set up the service to return a successful result with a null value
+        _generalLedgerService.AddGeneralLedgerAccountAsync(newAccount)
+            .Returns(Result<GeneralLedgerAccount>.Success(null!));
 
-        // Verify that the repository method to add the account was not called since the account ID is in use
-        await _generalLedgerRepository.DidNotReceive().AddGeneralLedgerAccountAsync(Arg.Any<GeneralLedgerAccount>());
+        // Act
+        var result = await GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerService);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequest<ErrorResponse>>(result);    // Assert that the result is a BadRequest result containing an ErrorResponse
+        Assert.NotNull(badRequestResult.Value);                                     // Assert that the returned value is not null
+        Assert.Equal("Failed to create account", badRequestResult.Value.Error);     // Assert that the error message matches the expected message
+
+        // Verify that the service method was called once with the correct account
+        await _generalLedgerService.Received(1).AddGeneralLedgerAccountAsync(newAccount);
     }
 }

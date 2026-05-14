@@ -32,4 +32,13 @@ public class BankSourceRepository(LedgerDbContext dbContext) : IBankSourceReposi
     /// <returns>All BankSource entities.</returns>
     public async Task<List<BankSource>> GetBankSourcesAsync() =>
         await _dbContext.BankSources.ToListAsync();
+    
+    /// <summary>
+    /// Checks if a bank source name is already in use. 
+    /// This method is used to ensure that bank source names are unique when adding new bank sources to the system.
+    /// </summary>
+    /// <param name="name">The name of the bank source to check.</param>
+    /// <returns>True if the bank source name is already in use; otherwise, false.</returns>
+    public async Task<bool> IsBankSourceNameInUseAsync(string name) =>
+        await _dbContext.BankSources.AnyAsync(bs => bs.BankName == name);
 }
