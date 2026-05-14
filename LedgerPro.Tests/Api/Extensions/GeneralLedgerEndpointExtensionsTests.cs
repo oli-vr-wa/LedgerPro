@@ -94,4 +94,36 @@ public class GeneralLedgerEndpointExtensionsTests
         // Verify that the repository method was called once with the correct account
         await _generalLedgerRepository.Received(1).AddGeneralLedgerAccountAsync(newAccount);
     }
+
+    /// <summary>
+    /// Tests that the AddGeneralLedgerAccountAsync method returns a BadRequest result with an error message when attempting to add a 
+    /// general ledger account with an ID that is already in use.
+    /// </summary>
+    /// <returns></returns>
+    [Fact]
+    public async Task AddGeneralLedgerAccountAsync_ReturnsBadRequest_WhenAccountIdInUse()
+    {
+        // Arrange
+        var newAccount = new GeneralLedgerAccount { Id = 5000, Name = "Duplicate Account", AccountType = GeneralLedgerAccountType.Expense };
+
+        // Mock the repository to indicate that the account ID is already in use
+        _generalLedgerRepository.IsGeneralLedgerAccountIdInUseAsync(newAccount.Id).Returns(true);
+
+        // Act
+        var result = await GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerRepository);
+
+        // Assert
+        var badRequestResult = Assert.IsType<BadRequest<ErrorResponse>>(result);  // Assert that the result is a BadRequest result containing an ErrorResponse
+        Assert.NotNull(badRequestResult.Value);                                            // Assert that the returned value is not null
+
+        // Assert that the error message indicates the account ID is already in use
+        var expectedMessage = $"General ledger account with ID {newAccount.Id} is already in use and cannot be added.";
+        Assert.Equal(expectedMessage, badRequestResult.Value.Error);
+
+        // Verify that the repository method to check if the account ID is in use was called once with the correct account ID
+        await _generalLedgerRepository.Received(1).IsGeneralLedgerAccountIdInUseAsync(newAccount.Id);
+
+        // Verify that the repository method to add the account was not called since the account ID is in use
+        await _generalLedgerRepository.DidNotReceive().AddGeneralLedgerAccountAsync(Arg.Any<GeneralLedgerAccount>());
+    }
 }
