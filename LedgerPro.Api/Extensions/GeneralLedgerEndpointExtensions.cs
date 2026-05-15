@@ -42,21 +42,18 @@ public static class GeneralLedgerEndpointExtensions
     }
 
     /// <summary>
-    /// Adds a new GeneralLedgerAccount entity to the database using the IGeneralLedgerRepository.
+    /// Adds a new GeneralLedgerAccount entity to the database using the IGeneralLedgerService.
     /// </summary>
     /// <param name="account">The GeneralLedgerAccount entity to add.</param>
-    /// <param name="repo">The repository used to access general ledger accounts.</param>
+    /// <param name="service">The service used to handle business logic for general ledger accounts.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    internal static async Task<IResult> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account, IGeneralLedgerService service)
+    internal static async Task<IResult> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account, IGeneralLedgerService service, IUnitOfWork unitOfWork)
     {
-        var result = await service.AddGeneralLedgerAccountAsync(account);
-        if (!result.IsSuccess)
-            return Results.BadRequest(new ErrorResponse(result.Error));
+        await service.AddGeneralLedgerAccountAsync(account);
+        await unitOfWork.CommitAsync();
 
-        if (result.Value == null)
-            return Results.BadRequest(new ErrorResponse("Failed to create account"));
-
-        return Results.Created($"/api/v1/ledger/accounts/{result.Value.Id}", result.Value);
+        return Results.Created($"/api/v1/ledger/accounts/{account.Id}", account);
     }
 
     /// <summary>

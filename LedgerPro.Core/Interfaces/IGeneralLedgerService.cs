@@ -5,5 +5,5 @@ namespace LedgerPro.Core.Interfaces;
 
 public interface IGeneralLedgerService
 {
-    Task<Result<GeneralLedgerAccount>> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account);
+    Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount account);
 }

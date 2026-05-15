@@ -54,14 +54,17 @@ public static class BankTransactionEndpointExtensions
     }
 
     /// <summary>
-    /// Adds a new bank transaction mapping to the database using the IBankTransactionRepository and returns a success message in the response.
+    /// Adds a new bank transaction mapping to the database using the IBankTransactionService and commits the transaction using the IUnitOfWork.
     /// </summary>
     /// <param name="mapping">The bank transaction mapping to add.</param>
-    /// <param name="repo">The repository used to access bank transaction mappings.</param>
+    /// <param name="service">The service used to manage bank transaction mappings.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    private static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, IBankTransactionRepository repo)
+    private static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, IBankTransactionService service, IUnitOfWork unitOfWork)
     {
-        await repo.AddBankTransactionMappingAsync(mapping);
+        await service.AddBankTransactionMappingAsync(mapping);
+        await unitOfWork.CommitAsync();
+
         return Results.Ok(new ActionResponse("Bank transaction mapping added successfully."));
     }
 }
