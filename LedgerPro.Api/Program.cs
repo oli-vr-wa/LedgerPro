@@ -1,4 +1,5 @@
 using LedgerPro.Api.Extensions;
+using LedgerPro.Api.Middleware;
 using LedgerPro.Application.Interfaces;
 using LedgerPro.Application.Services;
 using LedgerPro.Core.Interfaces;
@@ -16,6 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<LedgerDbContext>(options => 
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
+
+builder.Services.AddScoped<IBankSourceRepository, BankSourceRepository>();
 builder.Services.AddScoped<IBankSourceRepository, BankSourceRepository>();
 builder.Services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
 builder.Services.AddScoped<IGeneralLedgerRepository, GeneralLedgerRepository>();
@@ -30,6 +35,8 @@ builder.Services.AddScoped<IFileHasher, FileHasher>();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
