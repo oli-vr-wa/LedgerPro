@@ -1,6 +1,5 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Interfaces;
-using LedgerPro.Application.DTOs.Common;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -9,7 +8,7 @@ namespace LedgerPro.Api.Extensions;
 /// This class defines the routes and handlers for operations such as retrieving general ledger items,
 /// retrieving general ledger accounts, and adding new general ledger accounts.
 /// </summary>
-public static class GeneralLedgerEndpointExtensions
+public static class GeneralLedgerEndpointExtensions 
 {
     /// <summary>
     /// Maps the endpoints related to the general ledger, including retrieving general ledger items, retrieving general ledger accounts, 

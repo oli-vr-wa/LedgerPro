@@ -3,6 +3,7 @@ using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Application.Services;
 using NSubstitute;
+using LedgerPro.Core.Exceptions;
 
 namespace LedgerPro.Tests.Application.Services;
 
@@ -29,7 +30,7 @@ public class GeneralLedgerServiceTests
         _generalLedgerRepository.IsGeneralLedgerAccountIdInUseAsync(account.Id).Returns(true);
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _generalLedgerService.AddGeneralLedgerAccountAsync(account));
+        var exception = await Assert.ThrowsAsync<BusinessException>(() => _generalLedgerService.AddGeneralLedgerAccountAsync(account));
         Assert.Equal($"General ledger account with ID {account.Id} is already in use and cannot be added.", exception.Message);        
 
         // Verify that the AddGeneralLedgerAccountAsync method was not called since the account ID is in use

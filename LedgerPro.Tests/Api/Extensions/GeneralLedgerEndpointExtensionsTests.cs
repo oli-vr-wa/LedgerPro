@@ -7,6 +7,7 @@ using LedgerPro.Api.Extensions;
 using Microsoft.AspNetCore.Http.HttpResults;
 using LedgerPro.Application.DTOs.Common;
 using NSubstitute.ExceptionExtensions;
+using LedgerPro.Core.Exceptions;
 
 
 namespace LedgerPro.Tests.Api.Extensions;
@@ -107,7 +108,7 @@ public class GeneralLedgerEndpointExtensionsTests
     /// general ledger account with an ID that is already in use.
     /// </summary>
     /// <returns></returns>
-    /*[Fact]
+    [Fact]
     public async Task AddGeneralLedgerAccountAsync_ReturnsBadRequest_WhenAccountIdInUse()
     {
         // Arrange
@@ -116,19 +117,18 @@ public class GeneralLedgerEndpointExtensionsTests
         string expectedErrorMessage = $"General ledger account with ID {newAccount.Id} is already in use and cannot be added.";
 
         // Set up the service to return a failure result indicating the account ID is already in use
-        _generalLedgerService.AddGeneralLedgerAccountAsync(newAccount).ThrowsAsync(new InvalidOperationException(expectedErrorMessage));
+        _generalLedgerService.AddGeneralLedgerAccountAsync(newAccount).ThrowsAsync(new BusinessException(expectedErrorMessage));
 
-        // Act
-        var result = await GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerService, _unitOfWork);
+        // Act - We expect an exception to be thrown since the service will throw a BusinessException when attempting to add an account with an ID that is already in use
+        var exception = await Assert.ThrowsAsync<BusinessException>(() => GeneralLedgerEndpointExtensions.AddGeneralLedgerAccountAsync(newAccount, _generalLedgerService, _unitOfWork));
 
         // Assert
-        var badRequestResult = Assert.IsType<BadRequest<ErrorResponse>>(result);    // Assert that the result is a BadRequest result containing an ErrorResponse
-        Assert.NotNull(badRequestResult.Value);                                     // Assert that the returned value is not
-        Assert.Equal(expectedErrorMessage, badRequestResult.Value.Error);           // Assert that the error message matches the expected message
-     
+        Assert.Equal(expectedErrorMessage, exception.Message);    // Assert that the exception message matches the expected error message        
+
         // Verify that the service method was called once with the correct account
-        await _generalLedgerService.Received(1).AddGeneralLedgerAccountAsync(newAccount);        
-    }*/
+        await _generalLedgerService.Received(1).AddGeneralLedgerAccountAsync(newAccount);  
+        await _unitOfWork.DidNotReceive().CommitAsync();  // Verify that the unit of work's CommitAsync method was not called since the operation should have failed before reaching the commit step      
+    }
 
     /// <summary>
     /// Tests that the AddGeneralLedgerAccountAsync method returns a BadRequest result with an error message when the service 
