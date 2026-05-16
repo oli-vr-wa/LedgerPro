@@ -19,6 +19,9 @@ public class BankTransactionService(IBankTransactionRepository bankTransactionRe
     /// <exception cref="BusinessException">Thrown if a duplicate bank transaction mapping is found.</exception>
     public async Task AddBankTransactionMappingAsync(BankTransactionMapping mapping)
     {
+        if (mapping == null)
+            throw new ArgumentNullException(nameof(mapping), "The bank transaction mapping cannot be null.");
+
         bool isDuplicate = await _bankTransactionRepository.IsBankTransactionMappingDuplicateAsync(mapping);
 
         if (isDuplicate)        

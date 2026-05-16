@@ -1,4 +1,5 @@
 using LedgerPro.Core.Entities;
+using LedgerPro.Core.Exceptions;
 using LedgerPro.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,12 +21,15 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     /// Adds a new BankTransactionMapping entity to the database context. This method is used to create a new mapping rule 
     /// that defines how certain bank transactions should be categorized and matched to GeneralLedgerItems during the import process.
     /// Before adding the new mapping, the method checks for duplicates to prevent adding the same mapping multiple times. 
-    /// If a duplicate is found, an InvalidOperationException is thrown.
+    /// If a duplicate is found, a BusinessException is thrown.
     /// </summary>
     /// <param name="mapping">The BankTransactionMapping entity to add.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping) 
     {
+        if (mapping == null)
+            throw new ArgumentNullException(nameof(mapping), "The bank transaction mapping cannot be null.");
+
         bool isDuplicate = await _dbContext.BankTransactionMappings.AnyAsync(m =>
             m.SearchTerm == mapping.SearchTerm &&
             m.DescriptionTemplate == mapping.DescriptionTemplate &&
@@ -33,7 +37,7 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
             m.TargetGeneralLedgerAccountId == mapping.TargetGeneralLedgerAccountId);
 
         if (isDuplicate)        
-            throw new InvalidOperationException("The bank transaction mapping already exists.");
+            throw new BusinessException("The bank transaction mapping already exists.");
 
         await _dbContext.BankTransactionMappings.AddAsync(mapping);        
         return mapping;
