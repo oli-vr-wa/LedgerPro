@@ -486,5 +486,6 @@ $RECYCLE.BIN/
 *.db-shm
 *.db-wal
 
-# Visual Studio Code files for those working on multiple tools
-.vscode/settings.json
+# Visual Studio code cache files
+*.lscache
+.vsCode/settings.json
