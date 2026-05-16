@@ -69,8 +69,10 @@ public class BankTransactionServiceTests
             MatchStrategy = BankTransactionMatchStrategy.Exact
         };
         
+        // Set up the repository to return false for duplicate check and to return the mapping when adding
         _bankTransactionRepository.IsBankTransactionMappingDuplicateAsync(mapping).Returns(false);
-        _bankTransactionRepository.AddBankTransactionMappingAsync(mapping).Returns(Task.CompletedTask);
+        // Set up the repository to return the mapping when AddBankTransactionMappingAsync is called
+        _bankTransactionRepository.AddBankTransactionMappingAsync(mapping).Returns(mapping);
 
         // Act
         await _bankTransactionService.AddBankTransactionMappingAsync(mapping);
@@ -89,7 +91,7 @@ public class BankTransactionServiceTests
     {
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => _bankTransactionService.AddBankTransactionMappingAsync(null!));
-        Assert.Equal("Value cannot be null. (Parameter 'mapping')", exception.Message);
+        Assert.Equal("The bank transaction mapping cannot be null. (Parameter 'mapping')", exception.Message);
 
         // Verify that the IsBankTransactionMappingDuplicateAsync method was not called since the mapping is null
         await _bankTransactionRepository.DidNotReceive().IsBankTransactionMappingDuplicateAsync(Arg.Any<BankTransactionMapping>());
