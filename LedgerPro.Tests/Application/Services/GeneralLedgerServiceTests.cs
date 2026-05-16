@@ -3,18 +3,18 @@ using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Application.Services;
 using NSubstitute;
+using LedgerPro.Core.Exceptions;
 
 namespace LedgerPro.Tests.Application.Services;
 
 public class GeneralLedgerServiceTests
 {
     private readonly IGeneralLedgerRepository _generalLedgerRepository = Substitute.For<IGeneralLedgerRepository>();
-    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly GeneralLedgerService _generalLedgerService;
 
     public GeneralLedgerServiceTests()
     {
-        _generalLedgerService = new GeneralLedgerService(_generalLedgerRepository, _unitOfWork);
+        _generalLedgerService = new GeneralLedgerService(_generalLedgerRepository);
     }
 
     /// <summary>
@@ -29,16 +29,12 @@ public class GeneralLedgerServiceTests
         var account = new GeneralLedgerAccount { Id = 5000, Name = "Duplicate Expense Account", AccountType = GeneralLedgerAccountType.Expense };
         _generalLedgerRepository.IsGeneralLedgerAccountIdInUseAsync(account.Id).Returns(true);
 
-        // Act
-        var result = await _generalLedgerService.AddGeneralLedgerAccountAsync(account);
-
-        // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal($"General ledger account with ID {account.Id} is already in use and cannot be added.", result.Error);
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<BusinessException>(() => _generalLedgerService.AddGeneralLedgerAccountAsync(account));
+        Assert.Equal($"General ledger account with ID {account.Id} is already in use and cannot be added.", exception.Message);        
 
         // Verify that the AddGeneralLedgerAccountAsync method was not called since the account ID is in use
         await _generalLedgerRepository.DidNotReceive().AddGeneralLedgerAccountAsync(Arg.Any<GeneralLedgerAccount>());
-        await _unitOfWork.DidNotReceive().CommitAsync();
     }
 
     /// <summary>
@@ -51,19 +47,13 @@ public class GeneralLedgerServiceTests
         // Arrange
         var account = new GeneralLedgerAccount { Id = 5001, Name = "New Expense Account", AccountType = GeneralLedgerAccountType.Expense };
         _generalLedgerRepository.IsGeneralLedgerAccountIdInUseAsync(account.Id).Returns(false);
-        _generalLedgerRepository.AddGeneralLedgerAccountAsync(account).Returns(Task.CompletedTask);
-        _unitOfWork.CommitAsync().Returns(1);   // Simulate successful commit by returning 1 to indicate one change was saved
+        _generalLedgerRepository.AddGeneralLedgerAccountAsync(account).Returns(Task.CompletedTask);       
 
         // Act
-        var result = await _generalLedgerService.AddGeneralLedgerAccountAsync(account);
+        await _generalLedgerService.AddGeneralLedgerAccountAsync(account);
 
         // Assert
-        Assert.True(result.IsSuccess);
-        Assert.Equal(account, result.Value);
-
-        // Verify that the AddGeneralLedgerAccountAsync method was called with the correct account and that CommitAsync was called
         await _generalLedgerRepository.Received(1).AddGeneralLedgerAccountAsync(account);
-        await _unitOfWork.Received(1).CommitAsync();
     }
 
     /// <summary>
@@ -74,15 +64,12 @@ public class GeneralLedgerServiceTests
     [Fact]
     public async Task AddGeneralLedgerAccountAsync_WhenAccountIsNull_ReturnsFailure()
     {
-        // Act
-        var result = await _generalLedgerService.AddGeneralLedgerAccountAsync(null!);
-
-        // Assert
-        Assert.True(result.IsFailure);
-        Assert.Equal("Account cannot be null.", result.Error);
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => _generalLedgerService.AddGeneralLedgerAccountAsync(null!));
+        Assert.Equal("Account cannot be null. (Parameter 'account')", exception.Message);
 
         // Verify that the AddGeneralLedgerAccountAsync method was not called since the account is null
-        await _generalLedgerRepository.DidNotReceive().AddGeneralLedgerAccountAsync(Arg.Any<GeneralLedgerAccount>());
-        await _unitOfWork.DidNotReceive().CommitAsync();
+        await _generalLedgerRepository.DidNotReceive().IsGeneralLedgerAccountIdInUseAsync(Arg.Any<int>());
+        await _generalLedgerRepository.DidNotReceive().AddGeneralLedgerAccountAsync(Arg.Any<GeneralLedgerAccount>());        
     }
 }

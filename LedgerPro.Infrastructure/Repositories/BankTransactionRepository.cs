@@ -19,11 +19,25 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     /// <summary>
     /// Adds a new BankTransactionMapping entity to the database context. This method is used to create a new mapping rule 
     /// that defines how certain bank transactions should be categorized and matched to GeneralLedgerItems during the import process.
+    /// Before adding the new mapping, the method checks for duplicates to prevent adding the same mapping multiple times. 
+    /// If a duplicate is found, an InvalidOperationException is thrown.
     /// </summary>
     /// <param name="mapping">The BankTransactionMapping entity to add.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task AddBankTransactionMappingAsync(BankTransactionMapping mapping) =>
-        await _dbContext.BankTransactionMappings.AddAsync(mapping);
+    public async Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping) 
+    {
+        bool isDuplicate = await _dbContext.BankTransactionMappings.AnyAsync(m =>
+            m.SearchTerm == mapping.SearchTerm &&
+            m.DescriptionTemplate == mapping.DescriptionTemplate &&
+            m.ReferenceTemplate == mapping.ReferenceTemplate &&
+            m.TargetGeneralLedgerAccountId == mapping.TargetGeneralLedgerAccountId);
+
+        if (isDuplicate)        
+            throw new InvalidOperationException("The bank transaction mapping already exists.");
+
+        await _dbContext.BankTransactionMappings.AddAsync(mapping);        
+        return mapping;
+    }
     
     /// <summary>
     /// Adds a StatementImport entity to the database context. This method is used during the bank statement import process to create a record of the import operation, 
@@ -49,6 +63,20 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     /// <param name="transactions">The collection of BankTransaction entities to add.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions) =>
-        await _dbContext.BankTransactions.AddRangeAsync(transactions);    
+        await _dbContext.BankTransactions.AddRangeAsync(transactions); 
+
+    /// <summary>
+    /// Checks if a given BankTransactionMapping already exists in the database to prevent duplicates. 
+    /// This method is used before adding a new mapping to ensure that the same mapping is not added multiple times.
+    /// </summary>
+    /// <param name="mapping">The BankTransactionMapping entity to check for duplicates.</param>
+    /// <returns>A task representing the asynchronous operation, containing a boolean value indicating whether the mapping is a duplicate.</returns>
+    public async Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping) =>    
+        await _dbContext.BankTransactionMappings.AnyAsync(m =>
+            m.SearchTerm == mapping.SearchTerm &&
+            m.DescriptionTemplate == mapping.DescriptionTemplate &&
+            m.ReferenceTemplate == mapping.ReferenceTemplate &&
+            m.TargetGeneralLedgerAccountId == mapping.TargetGeneralLedgerAccountId);
+    
 
 }

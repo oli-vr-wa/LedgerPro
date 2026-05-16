@@ -1,6 +1,5 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Interfaces;
-using LedgerPro.Application.DTOs.Common;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -9,7 +8,7 @@ namespace LedgerPro.Api.Extensions;
 /// This class defines the routes and handlers for operations such as retrieving general ledger items,
 /// retrieving general ledger accounts, and adding new general ledger accounts.
 /// </summary>
-public static class GeneralLedgerEndpointExtensions
+public static class GeneralLedgerEndpointExtensions 
 {
     /// <summary>
     /// Maps the endpoints related to the general ledger, including retrieving general ledger items, retrieving general ledger accounts, 
@@ -25,7 +24,7 @@ public static class GeneralLedgerEndpointExtensions
 
         group.MapGet("/items", GetGeneralLedgerItemsAsync);
         group.MapGet("/accounts", GetGeneralLedgerAccountsAsync);
-        group.MapPost("/accounts", AddGeneralLedgerAccountAsync);
+        group.MapPost("/account", AddGeneralLedgerAccountAsync);
 
         return app;
     }
@@ -42,21 +41,18 @@ public static class GeneralLedgerEndpointExtensions
     }
 
     /// <summary>
-    /// Adds a new GeneralLedgerAccount entity to the database using the IGeneralLedgerRepository.
+    /// Adds a new GeneralLedgerAccount entity to the database using the IGeneralLedgerService.
     /// </summary>
     /// <param name="account">The GeneralLedgerAccount entity to add.</param>
-    /// <param name="repo">The repository used to access general ledger accounts.</param>
+    /// <param name="service">The service used to handle business logic for general ledger accounts.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    internal static async Task<IResult> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account, IGeneralLedgerService service)
+    internal static async Task<IResult> AddGeneralLedgerAccountAsync(GeneralLedgerAccount account, IGeneralLedgerService service, IUnitOfWork unitOfWork)
     {
-        var result = await service.AddGeneralLedgerAccountAsync(account);
-        if (!result.IsSuccess)
-            return Results.BadRequest(new ErrorResponse(result.Error));
+        await service.AddGeneralLedgerAccountAsync(account);
+        await unitOfWork.CommitAsync();
 
-        if (result.Value == null)
-            return Results.BadRequest(new ErrorResponse("Failed to create account"));
-
-        return Results.Created($"/api/v1/ledger/accounts/{result.Value.Id}", result.Value);
+        return Results.Created($"/api/v1/ledger/account/{account.Id}", account);
     }
 
     /// <summary>
