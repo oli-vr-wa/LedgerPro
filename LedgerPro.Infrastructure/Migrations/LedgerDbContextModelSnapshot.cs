@@ -40,7 +40,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BankSources");
+                    b.ToTable("BankSources", (string)null);
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.BankTransaction", b =>
@@ -78,7 +78,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.HasIndex("StatementImportId");
 
-                    b.ToTable("BankTransactions");
+                    b.ToTable("BankTransactions", (string)null);
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.BankTransactionMapping", b =>
@@ -112,7 +112,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.HasIndex("TargetGeneralLedgerAccountId");
 
-                    b.ToTable("BankTransactionMappings");
+                    b.ToTable("BankTransactionMappings", (string)null);
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.FinancialPeriod", b =>
@@ -142,7 +142,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FinancialPeriods");
+                    b.ToTable("FinancialPeriods", (string)null);
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.GeneralLedgerAccount", b =>
@@ -164,7 +164,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("GeneralLedgerAccounts");
+                    b.ToTable("GeneralLedgerAccounts", (string)null);
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.GeneralLedgerItem", b =>
@@ -205,7 +205,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.HasIndex("GeneralLedgerAccountId");
 
-                    b.ToTable("GeneralLedgerItems");
+                    b.ToTable("GeneralLedgerItems", (string)null);
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.StatementImport", b =>
@@ -235,7 +235,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.HasIndex("BankSourceId");
 
-                    b.ToTable("StatementImports");
+                    b.ToTable("StatementImports", (string)null);
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.BankTransaction", b =>
