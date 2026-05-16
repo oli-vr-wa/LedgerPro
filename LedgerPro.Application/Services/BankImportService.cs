@@ -17,7 +17,6 @@ public class BankImportService : IBankImportService
     private readonly ITransactionMatchService _transactionMatchService;
     private readonly IGeneralLedgerRepository _generalLedgerRepository;
     private readonly IFileHasher _fileHasher;
-    private readonly IUnitOfWork _unitOfWork;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BankImportService"/> class.
@@ -32,8 +31,7 @@ public class BankImportService : IBankImportService
         IBankSourceRepository bankSourceRepository, 
         IBankTransactionRepository bankTransactionRepository,
         IGeneralLedgerRepository generalLedgerRepository,
-        IFileHasher fileHasher,
-        IUnitOfWork unitOfWork)
+        IFileHasher fileHasher)
     {
         _bankStatementParser = bankStatementParser;
         _bankSourceRepository = bankSourceRepository;
@@ -41,7 +39,6 @@ public class BankImportService : IBankImportService
         _bankTransactionRepository = bankTransactionRepository;
         _generalLedgerRepository = generalLedgerRepository;
         _fileHasher = fileHasher;
-        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -101,7 +98,6 @@ public class BankImportService : IBankImportService
         await _bankTransactionRepository.AddStatementImportAsync(statementImport);
         await _bankTransactionRepository.AddTransactionsAsync(transactions);
         await _generalLedgerRepository.AddGeneralLedgerItemsAsync(ledgerItemsToAdd);
-        await _unitOfWork.CommitAsync();
 
         return Result<int>.Success(transactions.Count());
     }
