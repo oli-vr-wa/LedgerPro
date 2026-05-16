@@ -68,6 +68,9 @@ public static class BankSourceEndpointExtensions
     /// <returns>Result indicating the outcome of the operation</returns>
     internal static async Task<IResult> AddBankSourceAsync(BankSource bankSource, IBankSourceRepository repo)
     {
+        if (bankSource == null)        
+            return Results.BadRequest(new ErrorResponse("Bank source data is required."));
+
         bool isInUse = await repo.IsBankSourceNameInUseAsync(bankSource.BankName);
         if (isInUse)        
             return Results.BadRequest(new ErrorResponse($"Bank source with name '{bankSource.BankName}' is already in use and cannot be added."));
