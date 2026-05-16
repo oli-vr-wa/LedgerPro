@@ -1,12 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using LedgerPro.Core.Enums;
+using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Application.DTOs.Reports;
 
-public class AccountSummaryRowDto
+public class AccountSummaryRowDto : IAccountSummaryRowDto
 {
     public int AccountId { get; set; }
     public string AccountName { get; set; } = string.Empty;

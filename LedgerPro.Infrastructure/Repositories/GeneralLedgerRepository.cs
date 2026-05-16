@@ -1,5 +1,7 @@
 using LedgerPro.Core.Entities;
+using LedgerPro.Core.Enums;
 using LedgerPro.Core.Interfaces;
+using LedgerPro.Infrastructure.Projections;
 using Microsoft.EntityFrameworkCore;
 
 namespace LedgerPro.Infrastructure.Repositories;
@@ -56,4 +58,29 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     {
         return await _dbContext.GeneralLedgerItems.AnyAsync(item => item.GeneralLedgerAccountId == accountId);
     }
+
+    /// <summary>
+    /// Retrieves financial totals (total debits and total credits) for each general ledger account within a specified date range.
+    /// </summary>
+    /// <param name="startDate">The start date of the period for which to calculate totals.</param>
+    /// <param name="endDate">The end date of the period for which to calculate totals.</param>
+    /// <returns>A list of financial totals for each general ledger account.</returns>
+    public async Task<List<IGlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate)    
+    {
+        return await _dbContext.GeneralLedgerAccounts
+            .Select(account => new GlAccountFinancialTotal
+            {
+                AccountId = account.Id,
+                AccountName = account.Name,
+                AccountType = account.AccountType,
+                TotalDebits = account.GeneralLedgerItems
+                    .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.Side == TransactionSide.Debit)
+                    .Sum(item => item.Amount),
+                TotalCredits = account.GeneralLedgerItems
+                    .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.Side == TransactionSide.Credit)
+                    .Sum(item => item.Amount),
+            })
+            .Cast<IGlAccountFinancialTotal>()
+            .ToListAsync();
+    }  
 }
