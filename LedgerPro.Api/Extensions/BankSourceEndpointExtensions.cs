@@ -29,17 +29,20 @@ public static class BankSourceEndpointExtensions
     /// <param name="id">Bank source identifier</param>
     /// <param name="file">Bank statement file</param>
     /// <param name="bankImportService">Bank import service</param>
-    /// <returns></returns>
-    private static async Task<IResult> ImportBankStatementAsync(Guid id, IFormFile file, IBankImportService bankImportService, IUnitOfWork unitOfWork)
+    /// <param name="unitOfWork">Unit of work for committing changes</param>
+    /// <returns>Result of the import operation</returns>
+    internal static async Task<IResult> ImportBankStatementAsync(Guid id, IFormFile file, IBankImportService bankImportService, IUnitOfWork unitOfWork)
     {
         if (file == null || file.Length == 0)
-            return Results.BadRequest("No file uploaded.");
+            return Results.BadRequest(new ErrorResponse("No file uploaded."));
         
         using var stream = file.OpenReadStream();
         var request = new UploadBankStatementRequest(id, stream, file.FileName);
 
         var result = await bankImportService.ImportBankStatementAsync(request);
-        await unitOfWork.CommitAsync();
+        // Only commit if the import was successful
+        if (result.IsSuccess)
+            await unitOfWork.CommitAsync();
 
         return result.IsSuccess
             ? Results.Ok(new ImportBankStatementResponse("Bank statement imported successfully.", result.Value))
@@ -51,7 +54,7 @@ public static class BankSourceEndpointExtensions
     /// </summary>
     /// <param name="repo">The bank source repository</param>
     /// <returns>Result containing the list of bank sources</returns>
-    private static async Task<IResult> GetBankSourcesAsync(IBankSourceRepository repo)
+    internal static async Task<IResult> GetBankSourcesAsync(IBankSourceRepository repo)
     {
         var sources = await repo.GetBankSourcesAsync();
         return Results.Ok(sources);
@@ -63,7 +66,7 @@ public static class BankSourceEndpointExtensions
     /// <param name="bankSource">The bank source to add</param>
     /// <param name="repo">The bank source repository</param>
     /// <returns>Result indicating the outcome of the operation</returns>
-    private static async Task<IResult> AddBankSourceAsync(BankSource bankSource, IBankSourceRepository repo)
+    internal static async Task<IResult> AddBankSourceAsync(BankSource bankSource, IBankSourceRepository repo)
     {
         bool isInUse = await repo.IsBankSourceNameInUseAsync(bankSource.BankName);
         if (isInUse)        
