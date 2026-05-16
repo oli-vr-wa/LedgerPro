@@ -24,7 +24,7 @@ public static class GeneralLedgerEndpointExtensions
 
         group.MapGet("/items", GetGeneralLedgerItemsAsync);
         group.MapGet("/accounts", GetGeneralLedgerAccountsAsync);
-        group.MapPost("/accounts", AddGeneralLedgerAccountAsync);
+        group.MapPost("/account", AddGeneralLedgerAccountAsync);
 
         return app;
     }
@@ -52,7 +52,7 @@ public static class GeneralLedgerEndpointExtensions
         await service.AddGeneralLedgerAccountAsync(account);
         await unitOfWork.CommitAsync();
 
-        return Results.Created($"/api/v1/ledger/accounts/{account.Id}", account);
+        return Results.Created($"/api/v1/ledger/account/{account.Id}", account);
     }
 
     /// <summary>

@@ -21,12 +21,12 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddScoped<IBankSourceRepository, BankSourceRepository>();
-builder.Services.AddScoped<IBankSourceRepository, BankSourceRepository>();
 builder.Services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
 builder.Services.AddScoped<IGeneralLedgerRepository, GeneralLedgerRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IBankStatementParser, BankStatementParser>();
 builder.Services.AddScoped<ITransactionMatchService, TransactionMatchService>();
+builder.Services.AddScoped<IBankTransactionService, BankTransactionService>();
 builder.Services.AddScoped<IBankImportService, BankImportService>();
 builder.Services.AddScoped<IGeneralLedgerService, GeneralLedgerService>();
 builder.Services.AddScoped<IFileHasher, FileHasher>();
