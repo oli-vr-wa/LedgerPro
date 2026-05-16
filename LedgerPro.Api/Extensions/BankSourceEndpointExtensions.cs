@@ -30,7 +30,7 @@ public static class BankSourceEndpointExtensions
     /// <param name="file">Bank statement file</param>
     /// <param name="bankImportService">Bank import service</param>
     /// <returns></returns>
-    private static async Task<IResult> ImportBankStatementAsync(Guid id, IFormFile file, IBankImportService bankImportService)
+    private static async Task<IResult> ImportBankStatementAsync(Guid id, IFormFile file, IBankImportService bankImportService, IUnitOfWork unitOfWork)
     {
         if (file == null || file.Length == 0)
             return Results.BadRequest("No file uploaded.");
@@ -39,6 +39,7 @@ public static class BankSourceEndpointExtensions
         var request = new UploadBankStatementRequest(id, stream, file.FileName);
 
         var result = await bankImportService.ImportBankStatementAsync(request);
+        await unitOfWork.CommitAsync();
 
         return result.IsSuccess
             ? Results.Ok(new ImportBankStatementResponse("Bank statement imported successfully.", result.Value))

@@ -36,7 +36,7 @@ public static class BankTransactionEndpointExtensions
     /// <param name="bankSourceId">The ID of the bank source for which to retrieve transactions.</param>
     /// <param name="repo">The repository used to access bank transactions.</param>
     /// <returns>A result containing the bank transactions.</returns>
-    private static async Task<IResult> GetBankTransactionsAsync(Guid bankSourceId, IBankTransactionRepository repo)
+    internal static async Task<IResult> GetBankTransactionsAsync(Guid bankSourceId, IBankTransactionRepository repo)
     {
         var transactions = await repo.GetBankTransactionsAsync(bankSourceId);
         return Results.Ok(transactions);
@@ -47,7 +47,7 @@ public static class BankTransactionEndpointExtensions
     /// </summary>
     /// <param name="repo">The repository used to access bank transaction mappings.</param>
     /// <returns>A result containing the bank transaction mappings.</returns>
-    private static async Task<IResult> GetBankTransactionMappingsAsync(IBankTransactionRepository repo)
+    internal static async Task<IResult> GetBankTransactionMappingsAsync(IBankTransactionRepository repo)
     {
         var mappings = await repo.GetBankTransactionMappingsAsync();
         return Results.Ok(mappings);
@@ -60,11 +60,11 @@ public static class BankTransactionEndpointExtensions
     /// <param name="service">The service used to manage bank transaction mappings.</param>
     /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    private static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, IBankTransactionService service, IUnitOfWork unitOfWork)
+    internal static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, IBankTransactionService service, IUnitOfWork unitOfWork)
     {
         await service.AddBankTransactionMappingAsync(mapping);
         await unitOfWork.CommitAsync();
 
-        return Results.Ok(new ActionResponse("Bank transaction mapping added successfully."));
+        return Results.Created($"/api/v1/banktransactions/mappings/{mapping.Id}", new ActionResponse("Bank transaction mapping added successfully."));
     }
 }

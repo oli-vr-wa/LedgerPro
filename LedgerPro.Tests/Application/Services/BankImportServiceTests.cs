@@ -14,7 +14,6 @@ public class BankImportServiceTests
     private readonly IBankTransactionRepository _bankTransactionRepository = Substitute.For<IBankTransactionRepository>();
     private readonly IBankSourceRepository _bankSourceRepository = Substitute.For<IBankSourceRepository>();
     private readonly IGeneralLedgerRepository _generalLedgerRepository = Substitute.For<IGeneralLedgerRepository>();
-    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly ITransactionMatchService _transactionMatchService = Substitute.For<ITransactionMatchService>();
     private readonly IFileHasher _fileHasher = Substitute.For<IFileHasher>();
     private readonly BankImportService _bankImportService;
@@ -27,8 +26,7 @@ public class BankImportServiceTests
             _bankSourceRepository, 
             _bankTransactionRepository,
             _generalLedgerRepository,                
-            _fileHasher,
-            _unitOfWork
+            _fileHasher
             );
     }
 
@@ -107,9 +105,6 @@ public class BankImportServiceTests
 
         _bankStatementParser.Parse(request.FileStream, request.BankSourceId, BankType.Generic).Returns(Result<IEnumerable<BankTransaction>>.Success(transactions));
 
-        // Set the SaveChangesAsync to return the number of transactions added
-        _unitOfWork.CommitAsync().Returns(transactions.Count);
-
         // Act
         var result = await _bankImportService.ImportBankStatementAsync(request);
 
@@ -119,9 +114,6 @@ public class BankImportServiceTests
 
         // Verify that the transactions were added to the database context
         await _bankTransactionRepository.Received(1).AddTransactionsAsync(Arg.Is<IEnumerable<BankTransaction>>(t => t.Count() == transactions.Count()));;
-
-        // Verify that SaveChangesAsync was called
-        await _unitOfWork.Received(1).CommitAsync();
     }
 
     [Fact]
