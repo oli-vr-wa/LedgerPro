@@ -8,9 +8,11 @@ Provide a clean, automated pipeline to ingest CSV bank statements from multiple 
 ## Architecture
 This project follows **Clean Architecture** principles to ensure the business logic (Accounting Rules) remains independent of infrastructure (File Parsing/Databases).
 
-- **LedgerPro.Core**: Domain entities (Transactions, Accounts) and business interfaces.
-- **LedgerPro.Infrastructure**: Data access (EF Core/SQLite) and Bank CSV parsing logic.
-- **LedgerPro.Api**: RESTful endpoints for uploading statements and generating reports.
+- **LedgerPro.Core**: Contains domain entities (Transactions, Accounts), custom business exceptions, and core repository interfaces.
+- **LedgerPro.Application**: The orchestrator. Coordinates system use cases, executes business logic, manages DTO mapping, and handles transaction boundaries via the Unit of Work.
+- **LedgerPro.Infrastructure**: The data and external service layer. Implements repository interfaces using EF Core/SQLite and contains the underlying bank CSV parsing logic.
+- **LedgerPro.Api**: The entry point. Features lightweight Minimal API endpoints for uploading statements and generating reports, backed by centralized global exception handling middleware.
+- **LedgerPro.Tests**: The automated test suite. Combines lightweight unit tests for business logic with robust WebApplicationFactory integration tests to ensure API contract and data integrity.
 
 ## Tech Stack & Tools
 - **Framework:** .NET 10 (C#)
@@ -23,8 +25,13 @@ This project follows **Clean Architecture** principles to ensure the business lo
 - [x] Core Domain Modeling (Current)
 - [x] Bank Statement Parsing Service
 - [x] SQLite Integration & Migrations
-- [ ] Categorization Engine (Auto-mapping descriptions to accounts)
-- [ ] Basic Financial Reporting API (Monthly Totals)
+- [x] Categorization Engine (Auto-mapping descriptions to accounts)
+- [ ] Advanced Read-Model Aggregations (UI Bridge)
+- [ ] Basic Financial Report API
+- [ ] LedgerPro Web UI
+- [ ] Account Register View
+- [ ] Statement Upload Portal
+- [ ] Reporting Dashboard
 
 ## Local Setup
 1. Clone the repository.
