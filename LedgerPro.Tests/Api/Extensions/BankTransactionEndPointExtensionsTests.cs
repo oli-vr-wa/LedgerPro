@@ -144,7 +144,7 @@ public class BankTransactionEndPointExtensionsTests : IClassFixture<WebApplicati
         var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => 
             BankTransactionEndpointExtensions.AddBankTransactionMappingAsync(mapping, _bankTransactionService, _unitOfWork));
 
-        Assert.Equal($"{expectedErrorMessage}. (Parameter 'mapping')", exception.Message);
+        Assert.Equal($"{expectedErrorMessage} (Parameter 'mapping')", exception.Message);
         // Verify that the service method was called with the null mapping
         await _bankTransactionService.Received(1).AddBankTransactionMappingAsync(mapping);
         await _unitOfWork.DidNotReceive().CommitAsync();        
