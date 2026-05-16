@@ -1,10 +1,9 @@
-namespace LedgerPro.Core.Enums
+namespace LedgerPro.Core.Enums;
+
+public enum BankType
 {
-    public enum BankType
-    {
-        Generic,
-        NAB,
-        ANZ,
-        CBA
-    }
+    Generic,
+    NAB,
+    ANZ,
+    CBA
 }
