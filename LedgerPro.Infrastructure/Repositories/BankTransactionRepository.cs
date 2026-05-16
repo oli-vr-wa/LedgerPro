@@ -30,11 +30,7 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         if (mapping == null)
             throw new ArgumentNullException(nameof(mapping), "The bank transaction mapping cannot be null.");
 
-        bool isDuplicate = await _dbContext.BankTransactionMappings.AnyAsync(m =>
-            m.SearchTerm == mapping.SearchTerm &&
-            m.DescriptionTemplate == mapping.DescriptionTemplate &&
-            m.ReferenceTemplate == mapping.ReferenceTemplate &&
-            m.TargetGeneralLedgerAccountId == mapping.TargetGeneralLedgerAccountId);
+        bool isDuplicate = await IsBankTransactionMappingDuplicateAsync(mapping);
 
         if (isDuplicate)        
             throw new BusinessException("The bank transaction mapping already exists.");
