@@ -1,4 +1,5 @@
 using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Validation;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -21,11 +22,15 @@ public static class ReportsEndpointExtensions
     /// <returns>A result containing the financial year accounts summary or a Bad Request response if the parameter is invalid.</returns>
     internal static async Task<IResult> GetAccountsSummaryAsync(IGeneralLedgerService service, int? financialYearEnding)
     {
-        if (financialYearEnding != null && (financialYearEnding < 1900 || financialYearEnding > 2100))
-        {
-            return Results.BadRequest("Financial year ending must be between 1900 and 2100.");
-        }
+        // Validate the input parameter using the GetBankTransactionsRequestValidator
+        var validationTarget = new GetBankTransactionsRequest(Guid.Empty, financialYearEnding);
+        var validator = new GetBankTransactionsRequestValidator();
+        var validationResult = await validator.ValidateAsync(validationTarget);
 
+        if (!validationResult.IsValid)        
+            return Results.BadRequest(validationResult.Errors);
+        
+        // Call the service to get the financial year accounts summary based on the validated financial year ending parameter
         var fySummary = await service.GetFinancialYearAccountsSummaryAsync(financialYearEnding);
 
         return Results.Ok(fySummary);

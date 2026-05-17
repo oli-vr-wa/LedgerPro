@@ -2,6 +2,7 @@ using LedgerPro.Core.Entities;
 using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Common;
+using LedgerPro.Application.Validation;
 namespace LedgerPro.Api.Extensions;
 
 /// <summary>
@@ -80,8 +81,16 @@ public static class BankTransactionEndpointExtensions
     /// <param name="financialYearEnding">The ending year of the financial year to be reported.</param>
     /// <param name="repo">The repository used to access bank transactions.</param>
     /// <returns>A result containing the bank transactions for the specified financial year.</returns>
-    internal static async Task<IResult> GetBankTransactionsForFinancialYearAsync(Guid bankSourceId, int financialYearEnding, IBankTransactionRepository repo)
-    {
+    internal static async Task<IResult> GetBankTransactionsForFinancialYearAsync(Guid bankSourceId, int? financialYearEnding, IBankTransactionRepository repo)
+    {   
+        // Validate the input parameters using the GetBankTransactionsRequestValidator
+        var validationTarget = new GetBankTransactionsRequest(bankSourceId, financialYearEnding);
+        var validator = new GetBankTransactionsRequestValidator();
+        var validationResult = await validator.ValidateAsync(validationTarget);
+
+        if (!validationResult.IsValid)        
+            return Results.BadRequest(validationResult.Errors);        
+
         var transactions = await repo.GetBankTransactionRowsAsync(bankSourceId, financialYearEnding);
         return Results.Ok(transactions);
     }
