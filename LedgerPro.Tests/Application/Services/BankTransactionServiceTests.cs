@@ -1,9 +1,8 @@
 using NSubstitute;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 using LedgerPro.Application.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
-using NSubstitute.ExceptionExtensions;
 using LedgerPro.Core.Exceptions;
 
 namespace LedgerPro.Tests.Application.Services;

@@ -1,10 +1,9 @@
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 using LedgerPro.Core.Entities;   
 using LedgerPro.Core.Enums;
 using LedgerPro.Application.Services;
 using NSubstitute;
 using LedgerPro.Core.Exceptions;
-using LedgerPro.Application.DTOs.Reports;
 using LedgerPro.Infrastructure.Projections;
 
 namespace LedgerPro.Tests.Application.Services;

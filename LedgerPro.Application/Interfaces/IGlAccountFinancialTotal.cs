@@ -1,6 +1,6 @@
 using LedgerPro.Core.Enums;
 
-namespace LedgerPro.Core.Interfaces;
+namespace LedgerPro.Application.Interfaces;
 
 public interface IGlAccountFinancialTotal
 {

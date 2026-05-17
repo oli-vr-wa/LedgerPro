@@ -1,7 +1,6 @@
-using System.Runtime.CompilerServices;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Exceptions;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 
 namespace LedgerPro.Application.Services;
 

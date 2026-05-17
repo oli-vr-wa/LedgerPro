@@ -1,5 +1,5 @@
 using LedgerPro.Application.DTOs.Reports;
-using LedgerPro.Core.Common;
+using LedgerPro.Application.Interfaces;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Core.Exceptions;

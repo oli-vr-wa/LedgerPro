@@ -1,5 +1,5 @@
 using LedgerPro.Core.Enums;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 
 namespace LedgerPro.Application.DTOs.Reports;
 

@@ -1,6 +1,6 @@
 using LedgerPro.Core.Entities;
 
-namespace LedgerPro.Core.Interfaces;
+namespace LedgerPro.Application.Interfaces;
 
 public interface IBankTransactionService
 {

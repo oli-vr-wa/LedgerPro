@@ -1,6 +1,6 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Exceptions;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace LedgerPro.Infrastructure.Repositories;

@@ -4,7 +4,7 @@ using LedgerPro.Api.Extensions;
 using LedgerPro.Application.DTOs.Common;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Exceptions;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

@@ -1,5 +1,4 @@
-
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 
 namespace LedgerPro.Api.Extensions;
 

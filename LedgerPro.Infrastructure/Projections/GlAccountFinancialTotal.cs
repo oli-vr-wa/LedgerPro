@@ -1,4 +1,4 @@
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 using LedgerPro.Core.Enums;
 
 namespace LedgerPro.Infrastructure.Projections;

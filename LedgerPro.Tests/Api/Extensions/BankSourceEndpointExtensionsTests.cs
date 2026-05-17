@@ -1,5 +1,4 @@
 using LedgerPro.Application.Interfaces;
-using LedgerPro.Core.Interfaces;
 using LedgerPro.Application.DTOs.BankStatement;
 using NSubstitute;
 using LedgerPro.Api.Extensions;
