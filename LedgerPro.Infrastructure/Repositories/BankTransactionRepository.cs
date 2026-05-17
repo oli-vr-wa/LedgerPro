@@ -2,6 +2,8 @@ using LedgerPro.Core.Entities;
 using LedgerPro.Core.Exceptions;
 using LedgerPro.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
+using LedgerPro.Application.DTOs.Reports;
+using System.Data.Common;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -78,5 +80,36 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
             m.ReferenceTemplate == mapping.ReferenceTemplate &&
             m.TargetGeneralLedgerAccountId == mapping.TargetGeneralLedgerAccountId);
     
+    /// <summary>
+    /// Retrieves a list of BankTransactionRowDto objects for a specific BankSourceId. 
+    /// This method is used to get the transaction data in a format suitable for display in the UI,
+    /// including details such as transaction date, description, amount, type, status, and associated general ledger accounts.
+    /// </summary>
+    /// <param name="bankSourceId">The ID of the bank source for which to retrieve transaction rows.</param>
+    /// <returns>A list of BankTransactionRowDto objects.</returns>
+    public async Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId) {
+        var bankTransactions = await _dbContext.BankTransactions
+            .Where(t => t.BankSourceId == bankSourceId)
+            .Select(t => new
+            {
+                t.Id,
+                t.TransactionDate,
+                t.Description,
+                t.Amount,
+                t.TransactionType,
+                t.Status,
+                GeneralLedgerAccounts = t.GeneralLedgerItems.Select(item => item.GeneralLedgerAccount.Name).ToList()   
+            })
+            .ToListAsync();
 
+        return bankTransactions.Select(t => new BankTransactionRowDto(
+            t.Id,
+            t.TransactionDate,
+            t.Description,
+            t.Amount,
+            t.TransactionType,
+            t.Status,
+            string.Join(", ", t.GeneralLedgerAccounts) // Concatenate account names into a single string
+        )).ToList();
+    }
 }

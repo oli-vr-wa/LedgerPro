@@ -1,3 +1,4 @@
+using LedgerPro.Application.DTOs.Reports;
 using LedgerPro.Core.Entities;
 
 namespace LedgerPro.Application.Interfaces.Repositories;
@@ -10,4 +11,5 @@ public interface IBankTransactionRepository
     Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping);
     Task AddStatementImportAsync(StatementImport statementImport);
     Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping);
+    Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId);
 }
