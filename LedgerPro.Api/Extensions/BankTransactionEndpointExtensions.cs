@@ -76,7 +76,7 @@ public static class BankTransactionEndpointExtensions
         var validationResult = await validator.ValidateAsync(validationTarget);
 
         if (!validationResult.IsValid)        
-            return Results.BadRequest(validationResult.Errors);        
+            return Results.BadRequest(new ErrorResponse("Invalid request parameters.", validationResult.Errors));        
 
         var transactions = await repo.GetBankTransactionRowsAsync(bankSourceId, financialYearEnding);
         return Results.Ok(transactions);
