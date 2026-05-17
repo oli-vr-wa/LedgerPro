@@ -1,5 +1,5 @@
 using LedgerPro.Core.Entities;
-using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace LedgerPro.Infrastructure.Repositories;

@@ -1,9 +1,9 @@
 using LedgerPro.Application.DTOs.Reports;
-using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Repositories;
+using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Core.Exceptions;
-using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Application.Services;
 

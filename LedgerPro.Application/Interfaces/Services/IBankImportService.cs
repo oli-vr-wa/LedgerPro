@@ -1,7 +1,7 @@
 using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Common;
 
-namespace LedgerPro.Application.Interfaces;
+namespace LedgerPro.Application.Interfaces.Services;
 
 public interface IBankImportService
 {

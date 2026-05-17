@@ -1,6 +1,8 @@
 using LedgerPro.Api.Extensions;
 using LedgerPro.Api.Middleware;
 using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Repositories;
+using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Services;
 using LedgerPro.Core.Interfaces;
 using LedgerPro.Core.Services;

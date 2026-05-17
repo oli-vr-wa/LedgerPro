@@ -1,6 +1,6 @@
 using LedgerPro.Core.Entities;
 
-namespace LedgerPro.Application.Interfaces;
+namespace LedgerPro.Application.Interfaces.Repositories;
 
 /// <summary>
 /// Defines the contract for a repository that handles data access related to bank sources, transactions, and mappings. 

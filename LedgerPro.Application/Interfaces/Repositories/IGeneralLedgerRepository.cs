@@ -1,7 +1,7 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Application.DTOs.Reports;
 
-namespace LedgerPro.Application.Interfaces;
+namespace LedgerPro.Application.Interfaces.Repositories;
 
 public interface IGeneralLedgerRepository
 {

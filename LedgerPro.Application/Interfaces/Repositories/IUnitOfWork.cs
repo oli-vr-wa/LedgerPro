@@ -1,4 +1,4 @@
-namespace LedgerPro.Application.Interfaces;
+namespace LedgerPro.Application.Interfaces.Repositories;
 
 public interface IUnitOfWork
 {

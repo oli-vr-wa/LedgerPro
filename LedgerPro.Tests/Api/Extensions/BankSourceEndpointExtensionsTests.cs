@@ -1,4 +1,5 @@
-using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.BankStatement;
 using NSubstitute;
 using LedgerPro.Api.Extensions;

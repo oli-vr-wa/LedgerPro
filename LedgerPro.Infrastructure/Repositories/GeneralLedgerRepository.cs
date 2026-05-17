@@ -1,6 +1,6 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
-using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Reports;
 using Microsoft.EntityFrameworkCore;
 

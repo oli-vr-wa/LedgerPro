@@ -1,5 +1,6 @@
 using NSubstitute;
-using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Api.Extensions;

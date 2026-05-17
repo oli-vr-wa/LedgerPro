@@ -1,4 +1,4 @@
-using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Repositories;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
