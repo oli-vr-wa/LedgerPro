@@ -1,103 +1,20 @@
-using System.Net;
-using System.Net.Http.Json;
-using LedgerPro.Api.Extensions;
-using LedgerPro.Application.DTOs.Common;
-using LedgerPro.Core.Entities;
-using LedgerPro.Core.Exceptions;
-using LedgerPro.Application.Interfaces.Services;
-using LedgerPro.Application.Interfaces.Repositories;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using Microsoft.AspNetCore.Mvc.Testing;
+using LedgerPro.Core.Entities;
+using LedgerPro.Api.Extensions;
+using Microsoft.AspNetCore.Http.HttpResults;
+using LedgerPro.Application.DTOs.Common;
 using NSubstitute.ExceptionExtensions;
+using LedgerPro.Core.Exceptions;
+using System.Net.Http.Json;
+using System.Net;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
-namespace LedgerPro.Tests.Api.Extensions;
+namespace LedgerPro.Tests.Api.Extensions.BankTransactionEndpointExtensionsTests;
 
-public class BankTransactionEndPointExtensionsTests : IClassFixture<WebApplicationFactory<Program>>
+public class AddBankTransactionMappingTests(WebApplicationFactory<Program> factory) : BankTransactionEndpointExtensionsTestsBase(factory)
 {
-    private readonly WebApplicationFactory<Program> _factory;
-    private readonly IBankTransactionRepository _bankTransactionRepository = Substitute.For<IBankTransactionRepository>();
-    private readonly IBankTransactionService _bankTransactionService = Substitute.For<IBankTransactionService>();
-    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
-
-    public BankTransactionEndPointExtensionsTests(WebApplicationFactory<Program> factory)
-    {
-        _factory = factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureTestServices(services =>
-            {
-                // Replace the actual services with the mocked ones
-                services.AddScoped(_ => _bankTransactionRepository);
-                services.AddScoped(_ => _bankTransactionService);
-                services.AddScoped(_ => _unitOfWork);
-            });
-        });
-    }
-
-    /// <summary>
-    /// Tests the GetBankTransactionsAsync method of the BankTransactionEndpointExtensions class to ensure it returns an Ok result with the expected 
-    /// list of bank transactions for a given bank source ID. The test sets up the repository to return a predefined list of transactions, invokes the method, 
-    /// and asserts that the result is an Ok result containing the correct transactions. It also verifies that the repository method was called with the correct bank source ID.
-    /// </summary>
-    /// <returns></returns>
-    [Fact]
-    public async Task GetBankTransactionsAsync_ReturnsOkResultWithTransactions()
-    {
-        // Arrange
-        var bankSourceId = Guid.NewGuid();
-        var expectedTransactions = new List<BankTransaction>
-        {
-            new BankTransaction { Id = Guid.NewGuid(), BankSourceId = bankSourceId, Amount = 100, Description = "Test Transaction 1" },
-            new BankTransaction { Id = Guid.NewGuid(), BankSourceId = bankSourceId, Amount = 200, Description = "Test Transaction 2" }
-        };
-
-        _bankTransactionRepository.GetBankTransactionsAsync(bankSourceId).Returns(expectedTransactions);
-
-        // Act
-        var result = await BankTransactionEndpointExtensions.GetBankTransactionsAsync(bankSourceId, _bankTransactionRepository);
-
-        // Assert
-        var okResult = Assert.IsType<Ok<List<BankTransaction>>>(result);
-        var actualTransactions = Assert.IsType<List<BankTransaction>>(okResult.Value, exactMatch: false);
-        Assert.Equal(expectedTransactions.Count, actualTransactions.Count);
-
-        // Verify that the repository method was called with the correct bank source ID
-        await _bankTransactionRepository.Received(1).GetBankTransactionsAsync(bankSourceId);
-    }
-
-    /// <summary>
-    /// Tests the GetBankTransactionMappingsAsync method of the BankTransactionEndpointExtensions class to ensure it returns an Ok result with the expected 
-    /// list of bank transaction mappings.
-    /// </summary>
-    /// <returns></returns>
-    [Fact]
-    public async Task GetBankTransactionMappingsAsync_ReturnsOkResultWithMappings()
-    {
-        // Arrange
-        var expectedMappings = new List<BankTransactionMapping>
-        {
-            new BankTransactionMapping { Id = Guid.NewGuid(), SearchTerm = "Test Mapping 1", TargetGeneralLedgerAccountId = 1000 },
-            new BankTransactionMapping { Id = Guid.NewGuid(), SearchTerm = "Test Mapping 2", TargetGeneralLedgerAccountId = 1002 }
-        };
-
-        _bankTransactionRepository.GetBankTransactionMappingsAsync().Returns(expectedMappings);
-
-        // Act
-        var result = await BankTransactionEndpointExtensions.GetBankTransactionMappingsAsync(_bankTransactionRepository);
-
-        // Assert
-        var okResult = Assert.IsType<Ok<List<BankTransactionMapping>>>(result);
-        var actualMappings = Assert.IsType<List<BankTransactionMapping>>(okResult.Value, exactMatch: false);
-        Assert.Equal(expectedMappings.Count, actualMappings.Count);
-
-        // Verify that the repository method was called
-        await _bankTransactionRepository.Received(1).GetBankTransactionMappingsAsync();
-    }
-
     /// <summary>
     /// Tests the AddBankTransactionMappingAsync method of the BankTransactionEndpointExtensions class to ensure it returns a 
     /// Created result with the success message when a new bank transaction mapping is added. The test sets up the service to accept the new mapping, invokes the method,

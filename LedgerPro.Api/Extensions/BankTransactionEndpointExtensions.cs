@@ -25,24 +25,11 @@ public static class BankTransactionEndpointExtensions
     {
         var group = app.MapGroup("/api/v1/banktransactions").WithTags("Bank Transactions");
 
-        group.MapGet("/", GetBankTransactionsAsync);
         group.MapGet("/mappings", GetBankTransactionMappingsAsync);
         group.MapPost("/mappings", AddBankTransactionMappingAsync);
         group.MapGet("/{bankSourceId:guid}/transactions", GetBankTransactionsForFinancialYearAsync);
 
         return app;
-    }
-
-    /// <summary>
-    /// Retrieves all bank transactions for a specific bank source from the database using the IBankTransactionRepository and returns them in the response.
-    /// </summary>
-    /// <param name="bankSourceId">The ID of the bank source for which to retrieve transactions.</param>
-    /// <param name="repo">The repository used to access bank transactions.</param>
-    /// <returns>A result containing the bank transactions.</returns>
-    internal static async Task<IResult> GetBankTransactionsAsync(Guid bankSourceId, IBankTransactionRepository repo)
-    {
-        var transactions = await repo.GetBankTransactionsAsync(bankSourceId);
-        return Results.Ok(transactions);
     }
 
     /// <summary>
