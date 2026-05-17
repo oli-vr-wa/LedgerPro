@@ -11,5 +11,5 @@ public interface IBankTransactionRepository
     Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping);
     Task AddStatementImportAsync(StatementImport statementImport);
     Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping);
-    Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId);
+    Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding);
 }

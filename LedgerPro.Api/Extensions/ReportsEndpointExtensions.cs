@@ -29,5 +29,5 @@ public static class ReportsEndpointExtensions
         var fySummary = await service.GetFinancialYearAccountsSummaryAsync(financialYearEnding);
 
         return Results.Ok(fySummary);
-    }    
+    }        
 }

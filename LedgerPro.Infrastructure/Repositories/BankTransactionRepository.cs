@@ -4,6 +4,7 @@ using LedgerPro.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using LedgerPro.Application.DTOs.Reports;
 using System.Data.Common;
+using LedgerPro.Application.Extensions;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -86,8 +87,18 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     /// including details such as transaction date, description, amount, type, status, and associated general ledger accounts.
     /// </summary>
     /// <param name="bankSourceId">The ID of the bank source for which to retrieve transaction rows.</param>
+    /// <param name="financialYearEnding">The ending year of the financial year to filter transactions.</param>
     /// <returns>A list of BankTransactionRowDto objects.</returns>
-    public async Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId) {
+    public async Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding) 
+    {
+        // Validate that the year provided is within a reasonable range (e.g., 1900 to 2100) to prevent invalid queries
+        if (financialYearEnding != null && (financialYearEnding < 1900 || financialYearEnding > 2100))
+        {
+            throw new ArgumentOutOfRangeException(nameof(financialYearEnding), "Financial year ending must be between 1900 and 2100.");
+        }
+
+        financialYearEnding ??= DateTime.Now.GetFinancialYearEnding().Year;
+
         var bankTransactions = await _dbContext.BankTransactions
             .Where(t => t.BankSourceId == bankSourceId)
             .Select(t => new
