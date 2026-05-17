@@ -1,3 +1,4 @@
+using LedgerPro.Application.DTOs.Reports;
 using LedgerPro.Core.Entities;
 
 namespace LedgerPro.Application.Interfaces;
@@ -5,5 +6,5 @@ namespace LedgerPro.Application.Interfaces;
 public interface IGeneralLedgerService
 {
     Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount account); 
-    Task<List<IAccountSummaryRowDto>> GetFinancialYearAccountsSummaryAsync(int? financialYearEnding = null);  
+    Task<List<AccountSummaryRowDto>> GetFinancialYearAccountsSummaryAsync(int? financialYearEnding = null);  
 }

@@ -4,7 +4,7 @@ using LedgerPro.Core.Enums;
 using LedgerPro.Application.Services;
 using NSubstitute;
 using LedgerPro.Core.Exceptions;
-using LedgerPro.Infrastructure.Projections;
+using LedgerPro.Application.DTOs.Reports;
 
 namespace LedgerPro.Tests.Application.Services;
 
@@ -106,24 +106,22 @@ public class GeneralLedgerServiceTests
         // Arrange
         int validFinancialYearEnding = 2024;
 
-        var expectedSummary = new  List<IGlAccountFinancialTotal>
+        var expectedSummary = new  List<GlAccountFinancialTotal>
         {
-            new GlAccountFinancialTotal
-            {
-                AccountId = 1000,
-                AccountName = "Cash",
-                AccountType = GeneralLedgerAccountType.Asset,
-                TotalDebits = 10000m,
-                TotalCredits = 2000m,
-            },
-            new GlAccountFinancialTotal
-            {
-                AccountId = 2000,
-                AccountName = "Accounts Payable",
-                AccountType = GeneralLedgerAccountType.Liability,
-                TotalDebits = 5000m,
-                TotalCredits = 8000m,
-            }
+            new GlAccountFinancialTotal(
+                1000,
+                "Cash",
+                GeneralLedgerAccountType.Asset,
+                10000m,
+                2000m
+            ),
+            new GlAccountFinancialTotal(
+                2000,
+                "Accounts Payable",
+                GeneralLedgerAccountType.Liability,
+                5000m,
+                8000m
+            )
         };
 
         _generalLedgerRepository.GetGlAccountFinancialTotalAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns(expectedSummary);

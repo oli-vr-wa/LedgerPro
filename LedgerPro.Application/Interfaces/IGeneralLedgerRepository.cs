@@ -1,4 +1,5 @@
 using LedgerPro.Core.Entities;
+using LedgerPro.Application.DTOs.Reports;
 
 namespace LedgerPro.Application.Interfaces;
 
@@ -9,5 +10,5 @@ public interface IGeneralLedgerRepository
     Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync();
     Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount glAccount);
     Task<bool> IsGeneralLedgerAccountIdInUseAsync(int accountId);
-    Task<List<IGlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate);
+    Task<List<GlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate);
 }

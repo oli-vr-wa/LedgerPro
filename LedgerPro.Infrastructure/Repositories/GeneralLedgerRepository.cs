@@ -1,7 +1,7 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Application.Interfaces;
-using LedgerPro.Infrastructure.Projections;
+using LedgerPro.Application.DTOs.Reports;
 using Microsoft.EntityFrameworkCore;
 
 namespace LedgerPro.Infrastructure.Repositories;
@@ -65,22 +65,21 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     /// <param name="startDate">The start date of the period for which to calculate totals.</param>
     /// <param name="endDate">The end date of the period for which to calculate totals.</param>
     /// <returns>A list of financial totals for each general ledger account.</returns>
-    public async Task<List<IGlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate)    
+    public async Task<List<GlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate)    
     {
         return await _dbContext.GeneralLedgerAccounts
             .Select(account => new GlAccountFinancialTotal
-            {
-                AccountId = account.Id,
-                AccountName = account.Name,
-                AccountType = account.AccountType,
-                TotalDebits = account.GeneralLedgerItems
+            (
+                account.Id,
+                account.Name,
+                account.AccountType,
+                account.GeneralLedgerItems
                     .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.Side == TransactionSide.Debit)
                     .Sum(item => item.Amount),
-                TotalCredits = account.GeneralLedgerItems
+                account.GeneralLedgerItems
                     .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.Side == TransactionSide.Credit)
-                    .Sum(item => item.Amount),
-            })
-            .Cast<IGlAccountFinancialTotal>()
+                    .Sum(item => item.Amount)
+            ))
             .ToListAsync();
     }  
 }
