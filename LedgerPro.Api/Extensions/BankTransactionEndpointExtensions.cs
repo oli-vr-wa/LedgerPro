@@ -3,6 +3,7 @@ using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Common;
 using LedgerPro.Application.Validation.BankTransaction;
+using LedgerPro.Application.DTOs.BankStatement;
 namespace LedgerPro.Api.Extensions;
 
 /// <summary>
@@ -28,6 +29,7 @@ public static class BankTransactionEndpointExtensions
         group.MapGet("/mappings", GetBankTransactionMappingsAsync);
         group.MapPost("/mappings", AddBankTransactionMappingAsync);
         group.MapGet("/{bankSourceId:guid}/transactions", GetBankTransactionsForFinancialYearAsync);
+        group.MapPost("/reconcile", ReconcileBankTransactionAsync);
 
         return app;
     }
@@ -79,5 +81,29 @@ public static class BankTransactionEndpointExtensions
 
         var transactions = await repo.GetBankTransactionRowsAsync(bankSourceId, financialYearEnding);
         return Results.Ok(transactions);
+    }
+
+    /// <summary>
+    /// Reconciles a bank transaction by creating general ledger items based on the provided split general ledger items in the request. 
+    /// The method first validates the request to ensure that it is not null, contains at least one split general ledger item, 
+    /// and that the total amount of the split items matches the bank transaction amount.
+    /// </summary>
+    /// <param name="request">The request containing the bank transaction ID and split general ledger items.</param>
+    /// <param name="service">The service used to manage bank transactions.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> ReconcileBankTransactionAsync(ReconcileBankTransactionRequest request, IBankTransactionService service, IUnitOfWork unitOfWork)
+    {
+        if (request == null)
+            return Results.BadRequest(new ErrorResponse("The request cannot be null."));
+        if (request.BankTransactionId == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));
+        if (request.SplitGeneralLedgerItems == null || request.SplitGeneralLedgerItems.Count == 0)
+            return Results.BadRequest(new ErrorResponse("At least one split general ledger item is required for reconciliation."));         
+
+        await service.ReconcileBankTransactionAsync(request);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank transaction reconciled successfully."));
     }
 }
