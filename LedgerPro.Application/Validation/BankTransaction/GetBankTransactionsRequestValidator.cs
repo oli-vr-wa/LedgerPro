@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace LedgerPro.Application.Validation;
+namespace LedgerPro.Application.Validation.BankTransaction;
 
 /// <summary>
 /// Request model for retrieving bank transactions, which includes the BankSourceId to specify the source of the transactions and 

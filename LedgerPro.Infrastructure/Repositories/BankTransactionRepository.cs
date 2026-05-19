@@ -5,13 +5,29 @@ using Microsoft.EntityFrameworkCore;
 using LedgerPro.Application.DTOs.Reports;
 using System.Data.Common;
 using LedgerPro.Application.Extensions;
+using LedgerPro.Application.DTOs.BankStatement;
+using LedgerPro.Core.Enums;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
 public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransactionRepository
 {
     private readonly LedgerDbContext _dbContext = dbContext;
-    
+
+    /// <summary>
+    /// Retrieves a BankTransaction entity by its unique identifier (ID). This method is used to fetch a specific bank transaction from the database, 
+    /// typically for reconciliation or detailed viewing purposes. If the transaction with the specified ID does not exist, a KeyNotFoundException is 
+    /// thrown to indicate that the requested transaction could not be found in the database.
+    /// </summary>
+    /// <param name="bankTransactionId">The unique identifier of the bank transaction.</param>
+    /// <returns>The BankTransaction entity with the specified ID.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the bank transaction with the specified ID is not found.</exception>
+    public async Task<BankTransaction> GetBankTransactionByIdAsync(Guid bankTransactionId)
+    {
+        return await _dbContext.BankTransactions.FindAsync(bankTransactionId) 
+            ?? throw new KeyNotFoundException($"Bank transaction with ID {bankTransactionId} not found.");
+    }
+
     /// <summary>
     /// Retrieves all BankTransactionMapping entities from the database. This method is typically used to get the mapping rules that are applied when importing 
     /// bank transactions, allowing the application to determine how to categorize and create GeneralLedgerItems based on the imported transactions.
@@ -122,5 +138,37 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
             t.Status,
             string.Join(", ", t.GeneralLedgerAccounts) // Concatenate account names into a single string
         )).ToList();
+    }
+
+    /// <summary>
+    /// Reconciles a bank transaction by adding the associated general ledger items and updating the transaction status to Reconciled.
+    /// This method takes a BankTransaction entity and a list of GeneralLedgerItem entities to add to the transaction. 
+    /// It validates the input parameters, updates the bank transaction status, and adds the general ledger items to the database context.
+    /// </summary>
+    /// <param name="bankTransaction">The bank transaction to reconcile.</param>
+    /// <param name="generalLedgerItemsToAdd">The list of general ledger items to add to the bank transaction.</param>
+    /// <returns>The number of general ledger items added.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the bank transaction is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if the list of general ledger items is null or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the total amount of the general ledger items does not match the bank transaction amount.</exception>
+    public async Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd)
+    {
+        if (bankTransaction == null)
+            throw new ArgumentNullException(nameof(bankTransaction), "The bank transaction cannot be null.");
+
+        if (generalLedgerItemsToAdd == null || generalLedgerItemsToAdd.Count == 0)
+            throw new ArgumentException("At least one general ledger item is required for reconciliation.", nameof(generalLedgerItemsToAdd));
+
+        if (generalLedgerItemsToAdd.Sum(i => i.Amount) != bankTransaction.Amount)
+            throw new InvalidOperationException("The total amount of the general ledger items must equal the amount of the bank transaction.");
+        
+        // Set as reconciled.
+        bankTransaction.Status = BankTransactionStatus.Reconciled;        
+        // Add the general ledger items to the bank transaction's collection of general ledger items.
+        ((List<GeneralLedgerItem>)bankTransaction.GeneralLedgerItems).AddRange(generalLedgerItemsToAdd);
+        // Update the bank transaction.
+        _dbContext.BankTransactions.Update(bankTransaction);
+
+        return generalLedgerItemsToAdd.Count;
     }
 }
