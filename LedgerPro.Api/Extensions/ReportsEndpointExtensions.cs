@@ -1,5 +1,5 @@
 using LedgerPro.Application.Interfaces.Services;
-using LedgerPro.Application.Validation;
+using LedgerPro.Application.Validation.BankTransaction;
 
 namespace LedgerPro.Api.Extensions;
 

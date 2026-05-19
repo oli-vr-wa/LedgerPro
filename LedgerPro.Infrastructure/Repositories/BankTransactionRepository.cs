@@ -150,11 +150,14 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     /// <returns>The number of general ledger items added.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the bank transaction is null.</exception>
     /// <exception cref="ArgumentException">Thrown if the list of general ledger items is null or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown if the total amount of the general ledger items does not match the bank transaction amount.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the bank transaction has already been reconciled or if the total amount of the general ledger items does not match the bank transaction amount.</exception>
     public async Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd)
     {
         if (bankTransaction == null)
             throw new ArgumentNullException(nameof(bankTransaction), "The bank transaction cannot be null.");
+
+        if (bankTransaction.Status == BankTransactionStatus.Reconciled)
+            throw new InvalidOperationException("The bank transaction has already been reconciled.");
 
         if (generalLedgerItemsToAdd == null || generalLedgerItemsToAdd.Count == 0)
             throw new ArgumentException("At least one general ledger item is required for reconciliation.", nameof(generalLedgerItemsToAdd));

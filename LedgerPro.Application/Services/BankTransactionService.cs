@@ -41,8 +41,8 @@ public class BankTransactionService(
     /// <param name="request">The request containing the bank transaction ID and split general ledger items for reconciliation.</param>
     /// <returns>The number of general ledger items added.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the request is null.</exception>
-    /// <exception cref="ArgumentException">Thrown if the request contains no split general ledger items or if the total amount 
-    /// does not match the bank transaction amount.</exception>
+    /// <exception cref="ArgumentException">Thrown if the request contains no split general ledger items.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the total amount of the split general ledger items does not match the bank transaction amount.</exception>
     public async Task<int> ReconcileBankTransactionAsync(ReconcileBankTransactionRequest request)
     {
         if (request == null)
@@ -54,11 +54,15 @@ public class BankTransactionService(
             throw new ArgumentException("At least one split general ledger item is required for reconciliation.");
 
         // Retrieve the bank transaction to be reconciled using the provided BankTransactionId.
-        var bankTransaction = await _bankTransactionRepository.GetBankTransactionByIdAsync(request.BankTransactionId);                
+        var bankTransaction = await _bankTransactionRepository.GetBankTransactionByIdAsync(request.BankTransactionId) ?? 
+            throw new InvalidOperationException("The bank transaction to reconcile was not found.");
+
+        if (bankTransaction.Status == BankTransactionStatus.Reconciled)
+            throw new InvalidOperationException("The bank transaction has already been reconciled.");
 
         // Verify that the total amount of the split general ledger items matches the amount of the bank transaction.
         if (request.SplitGeneralLedgerItems.Sum(i => i.Amount) != bankTransaction.Amount)
-            throw new ArgumentException("The total amount of the split general ledger items must equal the amount of the bank transaction.");
+            throw new InvalidOperationException("The total amount of the split general ledger items must equal the amount of the bank transaction.");
 
         // Create a list of GeneralLedgerItem entities based on the split general ledger items provided in the request.
         var generalLedgerItemsToAdd = request.SplitGeneralLedgerItems.Select(i => new GeneralLedgerItem
@@ -67,11 +71,11 @@ public class BankTransactionService(
             BankTransactionId = bankTransaction.Id,
             GeneralLedgerAccountId = i.GeneralLedgerAccountId,
             Description = i.Description,
-             Amount = i.Amount,
-             Reference = i.Reference,
-             TransactionDate = bankTransaction.TransactionDate,
-             IsReconciled = true,
-             Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
+            Amount = i.Amount,
+            Reference = i.Reference,
+            TransactionDate = bankTransaction.TransactionDate,
+            IsReconciled = true,
+            Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
         }).ToList();
     
         int glItemsAdded = await _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction, generalLedgerItemsToAdd);
