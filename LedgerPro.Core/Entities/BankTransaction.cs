@@ -20,4 +20,7 @@ public class BankTransaction : BaseGuidEntity
 
     public Guid StatementImportId { get; set; }     // Reference to the statement import this transaction belongs to
     public StatementImport StatementImport { get; set; } = null!;
+
+    // Navigation property to general ledger items associated with this transaction
+    public virtual ICollection<GeneralLedgerItem> GeneralLedgerItems { get; set; } = new List<GeneralLedgerItem>(); 
 }

@@ -1,9 +1,9 @@
 using LedgerPro.Application.DTOs.Reports;
-using LedgerPro.Core.Common;
+using LedgerPro.Application.Interfaces.Repositories;
+using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Core.Exceptions;
-using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Application.Services;
 
@@ -47,7 +47,7 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     /// <param name="financialYearEnding">The ending year of the financial year for which to retrieve the account summary. 
     /// If not provided, defaults to the current financial year.</param>
     /// <returns>A task representing the asynchronous operation, containing a list of account summary rows.</returns>
-    public async Task<List<IAccountSummaryRowDto>> GetFinancialYearAccountsSummaryAsync(int? financialYearEnding = null)
+    public async Task<List<AccountSummaryRowDto>> GetFinancialYearAccountsSummaryAsync(int? financialYearEnding = null)
     {
         if (financialYearEnding == null)
         {
@@ -91,7 +91,6 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
                 Balance = balance
             };
         })
-        .Cast<IAccountSummaryRowDto>()
         .ToList();
 
         return accountSummaries;

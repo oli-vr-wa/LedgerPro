@@ -1,5 +1,6 @@
 using LedgerPro.Core.Entities;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Interfaces.Repositories;
 
 namespace LedgerPro.Api.Extensions;
 

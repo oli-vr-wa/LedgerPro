@@ -1,4 +1,4 @@
-namespace LedgerPro.Core.Interfaces;
+namespace LedgerPro.Application.Interfaces;
 
 /// <summary>
 /// Defines a contract for a service that calculates a hash value for a given file stream. 

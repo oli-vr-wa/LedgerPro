@@ -1,6 +1,9 @@
 using LedgerPro.Core.Entities;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Common;
+using LedgerPro.Application.Validation.BankTransaction;
+using LedgerPro.Application.DTOs.BankStatement;
 namespace LedgerPro.Api.Extensions;
 
 /// <summary>
@@ -23,23 +26,12 @@ public static class BankTransactionEndpointExtensions
     {
         var group = app.MapGroup("/api/v1/banktransactions").WithTags("Bank Transactions");
 
-        group.MapGet("/", GetBankTransactionsAsync);
         group.MapGet("/mappings", GetBankTransactionMappingsAsync);
         group.MapPost("/mappings", AddBankTransactionMappingAsync);
+        group.MapGet("/{bankSourceId:guid}/transactions", GetBankTransactionsForFinancialYearAsync);
+        group.MapPost("/reconcile", ReconcileBankTransactionAsync);
 
         return app;
-    }
-
-    /// <summary>
-    /// Retrieves all bank transactions for a specific bank source from the database using the IBankTransactionRepository and returns them in the response.
-    /// </summary>
-    /// <param name="bankSourceId">The ID of the bank source for which to retrieve transactions.</param>
-    /// <param name="repo">The repository used to access bank transactions.</param>
-    /// <returns>A result containing the bank transactions.</returns>
-    internal static async Task<IResult> GetBankTransactionsAsync(Guid bankSourceId, IBankTransactionRepository repo)
-    {
-        var transactions = await repo.GetBankTransactionsAsync(bankSourceId);
-        return Results.Ok(transactions);
     }
 
     /// <summary>
@@ -66,5 +58,52 @@ public static class BankTransactionEndpointExtensions
         await unitOfWork.CommitAsync();
 
         return Results.Created($"/api/v1/banktransactions/mappings/{mapping.Id}", new ActionResponse("Bank transaction mapping added successfully."));
+    }
+
+    /// <summary>
+    /// Retrieves bank transactions for a specific bank source and financial year by calling the IBankTransactionRepository to get the transaction rows.
+    /// This endpoint is used to get the transaction data in a format suitable for display in the UI, including details such as 
+    /// transaction date, description, amount, type, status, and associated general ledger accounts. 
+    /// The transactions are filtered based on the specified financial year ending to provide relevant data for reporting and analysis purposes.   
+    /// </summary>
+    /// <param name="bankSourceId">The ID of the bank source for which to retrieve transactions.</param>
+    /// <param name="financialYearEnding">The ending year of the financial year to be reported.</param>
+    /// <param name="repo">The repository used to access bank transactions.</param>
+    /// <returns>A result containing the bank transactions for the specified financial year.</returns>
+    internal static async Task<IResult> GetBankTransactionsForFinancialYearAsync(Guid bankSourceId, int? financialYearEnding, IBankTransactionRepository repo)
+    {   
+        // Validate the input parameters using the GetBankTransactionsRequestValidator
+        var validator = new GetBankTransactionsRequestValidator();
+        var validationResult = await validator.ValidateAsync(new GetBankTransactionsRequest(bankSourceId, financialYearEnding));
+
+        if (!validationResult.IsValid)        
+            return Results.BadRequest(new ErrorResponse("Invalid request parameters.", validationResult.Errors));        
+
+        var transactions = await repo.GetBankTransactionRowsAsync(bankSourceId, financialYearEnding);
+        return Results.Ok(transactions);
+    }
+
+    /// <summary>
+    /// Reconciles a bank transaction by creating general ledger items based on the provided split general ledger items in the request. 
+    /// The method first validates the request to ensure that it is not null, contains at least one split general ledger item, 
+    /// and that the total amount of the split items matches the bank transaction amount.
+    /// </summary>
+    /// <param name="request">The request containing the bank transaction ID and split general ledger items.</param>
+    /// <param name="service">The service used to manage bank transactions.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> ReconcileBankTransactionAsync(ReconcileBankTransactionRequest request, IBankTransactionService service, IUnitOfWork unitOfWork)
+    {
+        if (request == null)
+            return Results.BadRequest(new ErrorResponse("The request cannot be null."));
+        if (request.BankTransactionId == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));
+        if (request.SplitGeneralLedgerItems == null || request.SplitGeneralLedgerItems.Count == 0)
+            return Results.BadRequest(new ErrorResponse("At least one split general ledger item is required for reconciliation."));         
+
+        await service.ReconcileBankTransactionAsync(request);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank transaction reconciled successfully."));
     }
 }

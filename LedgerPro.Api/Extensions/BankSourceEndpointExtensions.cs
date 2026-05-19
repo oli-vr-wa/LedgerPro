@@ -1,7 +1,7 @@
-using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Common;
 using LedgerPro.Application.DTOs.BankStatement;
-using LedgerPro.Core.Interfaces;
 using LedgerPro.Core.Entities;
 
 namespace LedgerPro.Api.Extensions;

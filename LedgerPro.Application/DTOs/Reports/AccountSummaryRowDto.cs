@@ -1,9 +1,9 @@
 using LedgerPro.Core.Enums;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces;
 
 namespace LedgerPro.Application.DTOs.Reports;
 
-public class AccountSummaryRowDto : IAccountSummaryRowDto
+public class AccountSummaryRowDto
 {
     public int AccountId { get; set; }
     public string AccountName { get; set; } = string.Empty;

@@ -2,7 +2,7 @@ using LedgerPro.Core.Common;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 
-namespace LedgerPro.Core.Interfaces;
+namespace LedgerPro.Application.Interfaces;
 
 public interface IBankStatementParser
 {

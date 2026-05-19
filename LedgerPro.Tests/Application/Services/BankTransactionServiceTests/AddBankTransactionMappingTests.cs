@@ -1,20 +1,19 @@
 using NSubstitute;
-using LedgerPro.Core.Interfaces;
+using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
-using NSubstitute.ExceptionExtensions;
 using LedgerPro.Core.Exceptions;
 
-namespace LedgerPro.Tests.Application.Services;
+namespace LedgerPro.Tests.Application.Services.BankTransactionServiceTests;
 
-public class BankTransactionServiceTests
+public class AddBankTransactionMappingTests
 {
     private readonly IBankTransactionRepository _bankTransactionRepository = Substitute.For<IBankTransactionRepository>();
 
     private readonly BankTransactionService _bankTransactionService;
 
-    public BankTransactionServiceTests()
+    public AddBankTransactionMappingTests()
     {
         _bankTransactionService = new BankTransactionService(_bankTransactionRepository);
     }

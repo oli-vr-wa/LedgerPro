@@ -1,6 +1,8 @@
 using LedgerPro.Api.Extensions;
 using LedgerPro.Api.Middleware;
 using LedgerPro.Application.Interfaces;
+using LedgerPro.Application.Interfaces.Repositories;
+using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Services;
 using LedgerPro.Core.Interfaces;
 using LedgerPro.Core.Services;
@@ -8,10 +10,17 @@ using LedgerPro.Infrastructure;
 using LedgerPro.Infrastructure.Parsers;
 using LedgerPro.Infrastructure.Repositories;
 using LedgerPro.Infrastructure.Services;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure JSON options to display enums as strings in API responses
+builder.Services.Configure<JsonOptions>(options =>
+    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter())
+);
 
 // Add infrastructure / services to the container.
 builder.Services.AddDbContext<LedgerDbContext>(options => 

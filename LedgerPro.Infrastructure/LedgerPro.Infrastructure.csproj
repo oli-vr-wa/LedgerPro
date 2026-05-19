@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\LedgerPro.Core\LedgerPro.Core.csproj" />
+    <ProjectReference Include="..\LedgerPro.Application\LedgerPro.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>
