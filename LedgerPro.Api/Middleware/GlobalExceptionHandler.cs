@@ -36,6 +36,12 @@ public class GlobalExceptionHandler : IExceptionHandler
         // Map known exceptions to appropriate status codes and messages
         switch (exception)
         {
+            case BusinessException:
+                problemDetails.Status = StatusCodes.Status400BadRequest;
+                problemDetails.Title = "Business Rules Violation - Bad Request";
+                problemDetails.Detail = exception.Message;
+                break;
+
             case ArgumentOutOfRangeException:
                 problemDetails.Status = StatusCodes.Status400BadRequest;
                 problemDetails.Title = "Out of Range - Bad Request";
@@ -46,13 +52,7 @@ public class GlobalExceptionHandler : IExceptionHandler
                 problemDetails.Status = StatusCodes.Status400BadRequest;
                 problemDetails.Title = "Something went wrong - Bad Request";
                 problemDetails.Detail = exception.Message;
-                break;            
-
-            case BusinessException:
-                problemDetails.Status = StatusCodes.Status400BadRequest;
-                problemDetails.Title = "Business Rules Violation - Bad Request";
-                problemDetails.Detail = exception.Message;
-                break;
+                break;                        
                 
             // Add more specific exception types and mappings as needed
 

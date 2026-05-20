@@ -3,6 +3,7 @@ using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Common;
 using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Entities;
+using LedgerPro.Application.DTOs.BankSource;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -63,19 +64,22 @@ public static class BankSourceEndpointExtensions
     /// <summary>
     /// Adds a new bank source to the database.
     /// </summary>
-    /// <param name="bankSource">The bank source to add</param>
+    /// <param name="request">The request object containing the details of the bank source to be added.</param>
+    /// <param name="service">The bank source service</param>
     /// <param name="repo">The bank source repository</param>
     /// <returns>Result indicating the outcome of the operation</returns>
-    internal static async Task<IResult> AddBankSourceAsync(BankSource bankSource, IBankSourceRepository repo)
+    internal static async Task<IResult> AddBankSourceAsync(AddBankSourceRequest request, IBankSourceService service)
     {
-        if (bankSource == null)        
+        if (request == null)        
             return Results.BadRequest(new ErrorResponse("Bank source data is required."));
+        if (string.IsNullOrWhiteSpace(request.AccountName))
+            return Results.BadRequest(new ErrorResponse("Account name is required."));
+        if (string.IsNullOrWhiteSpace(request.AccountNumber))
+            return Results.BadRequest(new ErrorResponse("Account number is required."));
+        if (string.IsNullOrWhiteSpace(request.BankName))
+            return Results.BadRequest(new ErrorResponse("Bank name is required."));
 
-        bool isInUse = await repo.IsBankSourceNameInUseAsync(bankSource.BankName);
-        if (isInUse)        
-            return Results.BadRequest(new ErrorResponse($"Bank source with name '{bankSource.BankName}' is already in use and cannot be added."));
-
-        await repo.AddBankSourceAsync(bankSource);
-        return Results.Created($"/api/v1/banksources/{bankSource.Id}", bankSource);
+        var bankSourceId = await service.AddBankSourceAsync(request);
+        return Results.Created($"/api/v1/banksources/{bankSourceId}", bankSourceId);
     }
 }

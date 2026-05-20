@@ -32,12 +32,35 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
         await _dbContext.GeneralLedgerItems.AddRangeAsync(ledgerItems);
 
     /// <summary>
+    /// Removes a collection of GeneralLedgerItem entities from the database context. This method is used to delete existing
+    /// GeneralLedgerItems, for example, when correcting errors or unreconciled transactions. 
+    /// It ensures that the specified ledger items are marked for deletion in the context, and they will be removed 
+    /// from the database when SaveChangesAsync is called.
+    /// </summary>
+    /// <param name="ledgerItems">The collection of GeneralLedgerItem entities to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public async Task DeleteGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems) =>
+        _dbContext.GeneralLedgerItems.RemoveRange(ledgerItems);
+
+    /// <summary>
     /// Retrieves all GeneralLedgerAccount entities from the database. This method is used to get the list of available 
     /// general ledger accounts.
     /// </summary>
     /// <returns>A list of GeneralLedgerAccount entities.</returns>
     public async Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync() =>
         await _dbContext.GeneralLedgerAccounts.ToListAsync();
+
+    /// <summary>
+    /// Retrieves a list of GeneralLedgerAccount entities whose IDs fall within the specified range. This method is used to
+    /// filter general ledger accounts based on their IDs, which can be useful for reporting or selection purposes when only a subset of accounts is relevant.
+    /// </summary>
+    /// <param name="startAccountId">The starting ID of the range.</param>
+    /// <param name="endAccountId">The ending ID of the range.</param>
+    /// <returns>A list of GeneralLedgerAccount entities within the specified ID range.</returns>
+    public async Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsByRangeAsync(int startAccountId, int endAccountId) =>
+        await _dbContext.GeneralLedgerAccounts
+            .Where(account => account.Id >= startAccountId && account.Id <= endAccountId)
+            .ToListAsync();
 
     /// <summary>
     /// Adds a new GeneralLedgerAccount entity to the database context. 

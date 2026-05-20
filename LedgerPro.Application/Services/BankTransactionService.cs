@@ -10,7 +10,7 @@ namespace LedgerPro.Application.Services;
 public class BankTransactionService(
     IBankTransactionRepository bankTransactionRepository) : IBankTransactionService
 {
-    private readonly IBankTransactionRepository _bankTransactionRepository = bankTransactionRepository;
+    private readonly IBankTransactionRepository _bankTransactionRepository = bankTransactionRepository;    
 
     /// <summary>
     /// Adds a new bank transaction mapping to the database. 

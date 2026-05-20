@@ -115,7 +115,7 @@ public class AddGeneralLedgerAccountTests(WebApplicationFactory<Program> factory
         // When mocking the service need to use Arg.Any<GeneralLedgerAccount>() to match any account parameter 
         // since the actual account object passed to the service will be a different instance than the newAccount object defined in the test, 
         // even though they have the same property values.This happens as the object will be deserialized from the HTTP request body and will 
-        // not be the same reference as the newAccount object created in the test method.
+        // not be the same reference as the newAccount object created in the test method.        
         _generalLedgerService.AddGeneralLedgerAccountAsync(Arg.Any<GeneralLedgerAccount>())
             .ThrowsAsync(new BusinessException(expectedErrorMessage));
         
