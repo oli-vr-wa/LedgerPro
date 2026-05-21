@@ -29,17 +29,18 @@ builder.Services.AddDbContext<LedgerDbContext>(options =>
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
-builder.Services.AddScoped<IBankSourceRepository, BankSourceRepository>();
-builder.Services.AddScoped<IBankTransactionRepository, BankTransactionRepository>();
-builder.Services.AddScoped<IGeneralLedgerRepository, GeneralLedgerRepository>();
+builder.Services.Scan(scan => scan
+    .FromAssemblyOf<Program>()
+    .AddClasses(classes => classes.Where(type => 
+        type.Name.EndsWith("Service") || 
+        type.Name.EndsWith("Repository") || 
+        type.Name.EndsWith("Parser") || 
+        type.Name.EndsWith("Hasher")))
+    .AsImplementedInterfaces()
+    .WithScopedLifetime()
+);
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<IBankStatementParser, BankStatementParser>();
-builder.Services.AddScoped<ITransactionMatchService, TransactionMatchService>();
-builder.Services.AddScoped<IBankTransactionService, BankTransactionService>();
-builder.Services.AddScoped<IBankSourceService, BankSourceService>();
-builder.Services.AddScoped<IBankImportService, BankImportService>();
-builder.Services.AddScoped<IGeneralLedgerService, GeneralLedgerService>();
-builder.Services.AddScoped<IFileHasher, FileHasher>();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

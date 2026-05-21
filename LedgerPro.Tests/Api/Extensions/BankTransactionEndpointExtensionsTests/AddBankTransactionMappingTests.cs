@@ -180,10 +180,11 @@ public class AddBankTransactionMappingTests(WebApplicationFactory<Program> facto
         // Act 
         var response = await client.PostAsJsonAsync("/api/v1/banktransactions/mappings", mapping);
 
-        // Assert        
+        // Assert                
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
         var actionResponse = await response.Content.ReadFromJsonAsync<ActionResponse>();
+        
         Assert.NotNull(actionResponse);
         Assert.Equal("Bank transaction mapping added successfully.", actionResponse.Message);
         Assert.Equal($"/api/v1/banktransactions/mappings/{mapping.Id}", response.Headers.Location?.ToString());

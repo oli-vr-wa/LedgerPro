@@ -4,6 +4,7 @@ using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Common;
 using LedgerPro.Application.Validation.BankTransaction;
 using LedgerPro.Application.DTOs.BankStatement;
+using Microsoft.AspNetCore.Mvc;
 namespace LedgerPro.Api.Extensions;
 
 /// <summary>
@@ -39,7 +40,7 @@ public static class BankTransactionEndpointExtensions
     /// </summary>
     /// <param name="repo">The repository used to access bank transaction mappings.</param>
     /// <returns>A result containing the bank transaction mappings.</returns>
-    internal static async Task<IResult> GetBankTransactionMappingsAsync(IBankTransactionRepository repo)
+    internal static async Task<IResult> GetBankTransactionMappingsAsync([FromServices] IBankTransactionRepository repo)
     {
         var mappings = await repo.GetBankTransactionMappingsAsync();
         return Results.Ok(mappings);
@@ -52,7 +53,7 @@ public static class BankTransactionEndpointExtensions
     /// <param name="service">The service used to manage bank transaction mappings.</param>
     /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    internal static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, IBankTransactionService service, IUnitOfWork unitOfWork)
+    internal static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, [FromServices] IBankTransactionService service, [FromServices] IUnitOfWork unitOfWork)
     {
         await service.AddBankTransactionMappingAsync(mapping);
         await unitOfWork.CommitAsync();
@@ -70,7 +71,7 @@ public static class BankTransactionEndpointExtensions
     /// <param name="financialYearEnding">The ending year of the financial year to be reported.</param>
     /// <param name="repo">The repository used to access bank transactions.</param>
     /// <returns>A result containing the bank transactions for the specified financial year.</returns>
-    internal static async Task<IResult> GetBankTransactionsForFinancialYearAsync(Guid bankSourceId, int? financialYearEnding, IBankTransactionRepository repo)
+    internal static async Task<IResult> GetBankTransactionsForFinancialYearAsync(Guid bankSourceId, int? financialYearEnding, [FromServices] IBankTransactionRepository repo)
     {   
         // Validate the input parameters using the GetBankTransactionsRequestValidator
         var validator = new GetBankTransactionsRequestValidator();
@@ -92,7 +93,7 @@ public static class BankTransactionEndpointExtensions
     /// <param name="service">The service used to manage bank transactions.</param>
     /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    internal static async Task<IResult> ReconcileBankTransactionAsync(ReconcileBankTransactionRequest request, IBankTransactionService service, IUnitOfWork unitOfWork)
+    internal static async Task<IResult> ReconcileBankTransactionAsync(ReconcileBankTransactionRequest request, [FromServices] IBankTransactionService service, [FromServices] IUnitOfWork unitOfWork)
     {
         if (request == null)
             return Results.BadRequest(new ErrorResponse("The request cannot be null."));
