@@ -110,6 +110,25 @@ public static class BankTransactionEndpointExtensions
     }
 
     /// <summary>
+    /// Confirms the reconciliation of a categorized bank transaction by calling the IBankTransactionService to perform the confirmation logic and 
+    /// then commits the transaction using the IUnitOfWork.
+    /// </summary>
+    /// <param name="bankTransactionId">The ID of the bank transaction to confirm reconciliation for.</param>
+    /// <param name="service">The service used to manage bank transactions.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> ConfirmReconcileCategorizedBankTransactionAsync(Guid bankTransactionId, [FromServices] IBankTransactionService service, [FromServices] IUnitOfWork unitOfWork)
+    {
+        if (bankTransactionId == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));
+
+        await service.ConfirmReconcileCategorizedBankTransactionAsync(bankTransactionId);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank transaction reconciliation confirmed successfully."));
+    }
+
+    /// <summary>
     /// Unreconciles a bank transaction by calling the IBankTransactionService to perform the unreconciliation logic and then commits the transaction using the IUnitOfWork.
     /// </summary>
     /// <param name="bankTransactionId">The ID of the bank transaction to unreconcile.</param>

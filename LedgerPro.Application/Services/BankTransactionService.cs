@@ -34,6 +34,51 @@ public class BankTransactionService(
     }
 
     /// <summary>
+    /// Confirms the reconciliation of a categorized bank transaction by creating a general ledger item for the bank transaction and updating its status to reconciled.
+    /// The method first retrieves the bank transaction by its ID and checks if it is in a categorized status. It also verifies that there is at least 
+    /// one general ledger item associated with the bank transaction and that no bank transaction general ledger item already exists.
+    /// If the bank transaction is valid for confirmation, a new general ledger item is created for the bank transaction, and the reconciliation is 
+    /// confirmed by calling the corresponding method in the IBankTransactionRepository.
+    /// </summary>
+    /// <param name="bankTransactionId">The ID of the bank transaction to confirm reconciliation for.</param>
+    /// <returns>A task representing the asynchronous operation, with the result being the number of affected rows.</returns>
+    /// <exception cref="ArgumentException">Thrown if the bank transaction ID is empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the bank transaction is not categorized or other validation fails.</exception>
+    public Task<int> ConfirmReconcileCategorizedBankTransactionAsync(Guid bankTransactionId)
+    {
+        if (bankTransactionId == Guid.Empty)
+            throw new ArgumentException("The bank transaction ID cannot be empty.", nameof(bankTransactionId));
+        
+        var bankTransaction = _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Result ?? 
+            throw new InvalidOperationException("The bank transaction to confirm reconcile was not found.");
+
+        if (bankTransaction.Status != BankTransactionStatus.Categorized)
+            throw new InvalidOperationException("Only categorized bank transactions can be confirmed for reconciliation.");
+        
+        // Check that there is at least one general ledger item associated and no bank transaction general ledger item exists.
+        if (bankTransaction.GeneralLedgerItems == null || bankTransaction.GeneralLedgerItems.Count == 0)
+            throw new InvalidOperationException("At least one general ledger item is required to confirm reconciliation of a categorized bank transaction.");
+
+        if (bankTransaction.GeneralLedgerItems.Any(i => i.GeneralLedgerAccountId == bankTransaction.BankSource.GeneralLedgerAccountId))
+            throw new InvalidOperationException("A bank transaction general ledger item already exists.");
+
+        var bankTransactionGlItem = new GeneralLedgerItem
+        {
+            Id = Guid.NewGuid(),
+            BankTransactionId = bankTransaction.Id,
+            GeneralLedgerAccountId = bankTransaction.BankSource.GeneralLedgerAccountId,
+            Description = $"{bankTransaction.Description} - Reconciled Bank Transaction",
+            Amount = bankTransaction.Amount,
+            Reference = GenerateBankTransactionGlItemReference(bankTransaction),
+            TransactionDate = bankTransaction.TransactionDate,
+            IsReconciled = true,
+            Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
+        };
+
+        return _bankTransactionRepository.ConfirmReconcileCategorizedBankTransactionAsync(bankTransaction, bankTransactionGlItem);
+    }
+
+    /// <summary>
     /// Reconciles a bank transaction by creating general ledger items based on the provided split general ledger items in the request. 
     /// The method first validates the request to ensure that it is not null, contains at least one split general ledger item, and 
     /// that the total amount of the split items matches the bank transaction amount.
@@ -86,7 +131,7 @@ public class BankTransactionService(
             GeneralLedgerAccountId = bankTransaction.BankSource.GeneralLedgerAccountId,
             Description = $"{bankTransaction.Description} - Reconciled Bank Transaction",
             Amount = bankTransaction.Amount,
-            Reference = $"REC-{bankTransaction.TransactionDate:yyMMdd}-{bankTransaction.Id.ToString().Substring(0, 4)}",
+            Reference = GenerateBankTransactionGlItemReference(bankTransaction),
             TransactionDate = bankTransaction.TransactionDate,
             IsReconciled = true,
             Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
@@ -114,4 +159,14 @@ public class BankTransactionService(
 
         await _bankTransactionRepository.UnreconcileBankTransactionAsync(bankTransaction);
     }
+
+    /// <summary>
+    /// Generates a reference string for a bank transaction general ledger item based on the transaction date and a portion of the transaction ID.
+    /// </summary>
+    /// <param name="bankTransaction">The bank transaction for which to generate the reference.</param>
+    /// <returns>A reference string for the bank transaction general ledger item.</returns>
+    private string GenerateBankTransactionGlItemReference(BankTransaction bankTransaction)
+    {
+        return $"REC-{bankTransaction.TransactionDate:yyMMdd}-{bankTransaction.Id.ToString().Substring(0, 4)}";
+    }    
 }
