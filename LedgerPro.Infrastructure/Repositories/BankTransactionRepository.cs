@@ -162,7 +162,9 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         if (generalLedgerItemsToAdd == null || generalLedgerItemsToAdd.Count == 0)
             throw new ArgumentException("At least one general ledger item is required for reconciliation.", nameof(generalLedgerItemsToAdd));
 
-        if (generalLedgerItemsToAdd.Sum(i => i.Amount) != bankTransaction.Amount)
+        // Ensure that the total amount of the general ledger items matches the amount of the bank transaction to maintain data integrity.
+        // Do not include bank transaction items to calculate the total correctly.
+        if (generalLedgerItemsToAdd.Where(i => i.GeneralLedgerAccountId > 1010).Sum(i => i.Amount) != bankTransaction.Amount)
             throw new InvalidOperationException("The total amount of the general ledger items must equal the amount of the bank transaction.");
         
         // Set as reconciled.
@@ -171,7 +173,7 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         ((List<GeneralLedgerItem>)bankTransaction.GeneralLedgerItems).AddRange(generalLedgerItemsToAdd);
         // Update the bank transaction.
         _dbContext.BankTransactions.Update(bankTransaction);
-
-        return generalLedgerItemsToAdd.Count;
+        
+        return generalLedgerItemsToAdd.Count();
     }
 }

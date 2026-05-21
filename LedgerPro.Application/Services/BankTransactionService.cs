@@ -77,6 +77,21 @@ public class BankTransactionService(
             IsReconciled = true,
             Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
         }).ToList();
+
+        // Create bank transaction general ledger item.
+        var bankTransactionGeneralLedgerItem = new GeneralLedgerItem
+        {
+            Id = Guid.NewGuid(),
+            BankTransactionId = bankTransaction.Id,
+            GeneralLedgerAccountId = bankTransaction.BankSource.GeneralLedgerAccountId,
+            Description = $"{bankTransaction.Description} - Reconciled Bank Transaction",
+            Amount = bankTransaction.Amount,
+            Reference = $"REC-{bankTransaction.TransactionDate:yyMMdd}-{bankTransaction.Id.ToString().Substring(0, 4)}",
+            TransactionDate = bankTransaction.TransactionDate,
+            IsReconciled = true,
+            Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
+        };
+        generalLedgerItemsToAdd.Add(bankTransactionGeneralLedgerItem);
     
         int glItemsAdded = await _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction, generalLedgerItemsToAdd);
         

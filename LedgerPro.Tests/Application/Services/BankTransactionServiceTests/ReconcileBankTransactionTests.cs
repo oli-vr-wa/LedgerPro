@@ -151,7 +151,11 @@ public class ReconcileBankTransactionTests
             Id = bankTransactionId,
             Amount = 1000,
             Status = BankTransactionStatus.Pending,
-            TransactionDate = new DateTime(2024, 6, 1)
+            TransactionDate = new DateTime(2024, 6, 1),
+            BankSource = new BankSource
+            {
+                GeneralLedgerAccountId = 1001
+            }
         };
 
         _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Returns(bankTransaction);
@@ -165,13 +169,13 @@ public class ReconcileBankTransactionTests
             }
         );
 
-        _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction, Arg.Any<List<GeneralLedgerItem>>()).Returns(2);
+        _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction, Arg.Any<List<GeneralLedgerItem>>()).Returns(3);
 
         // Act
         int glItemsAdded = await _bankTransactionService.ReconcileBankTransactionAsync(request);
 
         // Assert
-        Assert.Equal(2, glItemsAdded);
+        Assert.Equal(3, glItemsAdded);
 
         // Verify that the repository's GetBankTransactionByIdAsync method was called with the correct bank transaction ID
         await _bankTransactionRepository.Received(1).GetBankTransactionByIdAsync(bankTransactionId);
@@ -179,9 +183,10 @@ public class ReconcileBankTransactionTests
         // Verify that the repository's ReconcileBankTransactionAsync method was called with the correct parameters
         await _bankTransactionRepository.Received(1).ReconcileBankTransactionAsync(
             Arg.Is<BankTransaction>(bt => bt.Id == bankTransactionId),
-            Arg.Is<List<GeneralLedgerItem>>(gli => gli.Count == 2 &&
+            Arg.Is<List<GeneralLedgerItem>>(gli => gli.Count == 3 &&
                 gli[0].GeneralLedgerAccountId == 5000 && gli[0].Amount == 600 &&
-                gli[1].GeneralLedgerAccountId == 5001 && gli[1].Amount == 400)
+                gli[1].GeneralLedgerAccountId == 5001 && gli[1].Amount == 400 &&
+                gli[2].GeneralLedgerAccountId == 1001 && gli[2].Amount == 1000)
         );
     }
 }
