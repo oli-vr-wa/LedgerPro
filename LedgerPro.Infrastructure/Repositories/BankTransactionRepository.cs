@@ -176,4 +176,31 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         
         return generalLedgerItemsToAdd.Count();
     }
+
+    /// <summary>
+    /// Unreconciles a bank transaction by removing all associated general ledger items and updating the transaction status to Pending.
+    /// This method takes a BankTransaction entity to unreconcile. It validates the input parameter, checks that the transaction 
+    /// is currently reconciled, updates the transaction status, and removes all associated general ledger items from the database context.
+    /// </summary>
+    /// <param name="bankTransaction">The bank transaction to unreconcile.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the bank transaction is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the bank transaction is not reconciled.</exception>
+    public async Task UnreconcileBankTransactionAsync(BankTransaction bankTransaction)
+    {
+        if (bankTransaction == null)
+            throw new ArgumentNullException(nameof(bankTransaction), "The bank transaction cannot be null.");
+
+        if (bankTransaction.Status != BankTransactionStatus.Reconciled)
+            throw new InvalidOperationException("Only reconciled bank transactions can be unreconciled.");
+
+        // Set as unreconciled.
+        bankTransaction.Status = BankTransactionStatus.Pending;        
+
+        // Remove all associated general ledger items from the bank transaction.        
+        _dbContext.GeneralLedgerItems.RemoveRange(bankTransaction.GeneralLedgerItems);
+        
+        // Update the bank transaction.
+        _dbContext.BankTransactions.Update(bankTransaction);
+    }
 }
