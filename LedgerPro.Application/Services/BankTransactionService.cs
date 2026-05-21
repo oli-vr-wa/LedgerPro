@@ -97,4 +97,21 @@ public class BankTransactionService(
         
         return glItemsAdded;
     }
+
+    /// <summary>
+    /// Unreconciles a bank transaction by removing the associated general ledger items and updating the bank transaction status.
+    /// </summary>
+    /// <param name="bankTransactionId">The ID of the bank transaction to unreconcile.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the bank transaction is not found or is not reconciled.</exception>
+    public async Task UnreconcileBankTransactionAsync(Guid bankTransactionId)
+    {
+        var bankTransaction = await _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId) ?? 
+            throw new InvalidOperationException("The bank transaction to unreconcile was not found.");
+
+        if (bankTransaction.Status != BankTransactionStatus.Reconciled)
+            throw new InvalidOperationException("The bank transaction is not reconciled and cannot be unreconciled.");
+
+        await _bankTransactionRepository.UnreconcileBankTransactionAsync(bankTransaction);
+    }
 }

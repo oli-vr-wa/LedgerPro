@@ -15,4 +15,5 @@ public interface IBankTransactionRepository
     Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping);
     Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding);
     Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd);
+    Task UnreconcileBankTransactionAsync(BankTransaction bankTransaction);
 }
