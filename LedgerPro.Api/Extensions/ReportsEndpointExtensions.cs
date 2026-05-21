@@ -1,5 +1,6 @@
 using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Validation.BankTransaction;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -20,7 +21,7 @@ public static class ReportsEndpointExtensions
     /// <param name="service">The service used to retrieve the financial year accounts summary.</param>
     /// <param name="financialYearEnding">The ending year of the financial year to be reported.</param>
     /// <returns>A result containing the financial year accounts summary or a Bad Request response if the parameter is invalid.</returns>
-    internal static async Task<IResult> GetAccountsSummaryAsync(IGeneralLedgerService service, int? financialYearEnding)
+    internal static async Task<IResult> GetAccountsSummaryAsync([FromServices] IGeneralLedgerService service, int? financialYearEnding)
     {
         // Validate the input parameter using the GetBankTransactionsRequestValidator
         var validationTarget = new GetBankTransactionsRequest(Guid.Empty, financialYearEnding);

@@ -4,6 +4,7 @@ using LedgerPro.Application.DTOs.Common;
 using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Entities;
 using LedgerPro.Application.DTOs.BankSource;
+using Microsoft.AspNetCore.Mvc;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -32,7 +33,7 @@ public static class BankSourceEndpointExtensions
     /// <param name="bankImportService">Bank import service</param>
     /// <param name="unitOfWork">Unit of work for committing changes</param>
     /// <returns>Result of the import operation</returns>
-    internal static async Task<IResult> ImportBankStatementAsync(Guid id, IFormFile file, IBankImportService bankImportService, IUnitOfWork unitOfWork)
+    internal static async Task<IResult> ImportBankStatementAsync(Guid id, IFormFile file, [FromServices]IBankImportService bankImportService, [FromServices]IUnitOfWork unitOfWork)
     {
         if (file == null || file.Length == 0)
             return Results.BadRequest(new ErrorResponse("No file uploaded."));
@@ -55,7 +56,7 @@ public static class BankSourceEndpointExtensions
     /// </summary>
     /// <param name="repo">The bank source repository</param>
     /// <returns>Result containing the list of bank sources</returns>
-    internal static async Task<IResult> GetBankSourcesAsync(IBankSourceRepository repo)
+    internal static async Task<IResult> GetBankSourcesAsync([FromServices]IBankSourceRepository repo)
     {
         var sources = await repo.GetBankSourcesAsync();
         return Results.Ok(sources);
@@ -68,7 +69,7 @@ public static class BankSourceEndpointExtensions
     /// <param name="service">The bank source service</param>
     /// <param name="repo">The bank source repository</param>
     /// <returns>Result indicating the outcome of the operation</returns>
-    internal static async Task<IResult> AddBankSourceAsync(AddBankSourceRequest request, IBankSourceService service)
+    internal static async Task<IResult> AddBankSourceAsync(AddBankSourceRequest request, [FromServices]IBankSourceService service)
     {
         if (request == null)        
             return Results.BadRequest(new ErrorResponse("Bank source data is required."));
