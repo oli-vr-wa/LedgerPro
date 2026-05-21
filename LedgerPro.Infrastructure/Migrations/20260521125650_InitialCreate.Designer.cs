@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LedgerPro.Infrastructure.Migrations
 {
     [DbContext(typeof(LedgerDbContext))]
-    [Migration("20260507133954_InitialCreate")]
+    [Migration("20260521125650_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -22,7 +22,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
             modelBuilder.Entity("LedgerPro.Core.Entities.BankSource", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
@@ -38,28 +38,38 @@ namespace LedgerPro.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<int>("BankType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("GeneralLedgerAccountId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("GeneralLedgerAccountId");
 
                     b.ToTable("BankSources");
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.BankTransaction", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Amount")
                         .HasColumnType("REAL");
 
-                    b.Property<Guid>("BankSourceId")
+                    b.Property<string>("BankSourceId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("StatementImportId")
+                    b.Property<string>("StatementImportId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
@@ -83,8 +93,12 @@ namespace LedgerPro.Infrastructure.Migrations
 
             modelBuilder.Entity("LedgerPro.Core.Entities.BankTransactionMapping", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DescriptionTemplate")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<int>("MatchStrategy")
@@ -92,6 +106,10 @@ namespace LedgerPro.Infrastructure.Migrations
 
                     b.Property<int>("Priority")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("ReferenceTemplate")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("SearchTerm")
                         .IsRequired()
@@ -109,7 +127,7 @@ namespace LedgerPro.Infrastructure.Migrations
 
             modelBuilder.Entity("LedgerPro.Core.Entities.FinancialPeriod", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
@@ -161,14 +179,14 @@ namespace LedgerPro.Infrastructure.Migrations
 
             modelBuilder.Entity("LedgerPro.Core.Entities.GeneralLedgerItem", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<double>("Amount")
                         .HasColumnType("REAL");
 
-                    b.Property<Guid?>("BankTransactionId")
+                    b.Property<string>("BankTransactionId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Description")
@@ -176,6 +194,9 @@ namespace LedgerPro.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<int>("GeneralLedgerAccountId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsReconciled")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Reference")
@@ -199,11 +220,12 @@ namespace LedgerPro.Infrastructure.Migrations
 
             modelBuilder.Entity("LedgerPro.Core.Entities.StatementImport", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<string>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("BankSourceId")
+                    b.Property<string>("BankSourceId")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("FileHash")
@@ -225,6 +247,17 @@ namespace LedgerPro.Infrastructure.Migrations
                     b.HasIndex("BankSourceId");
 
                     b.ToTable("StatementImports");
+                });
+
+            modelBuilder.Entity("LedgerPro.Core.Entities.BankSource", b =>
+                {
+                    b.HasOne("LedgerPro.Core.Entities.GeneralLedgerAccount", "GeneralLedgerAccount")
+                        .WithMany()
+                        .HasForeignKey("GeneralLedgerAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GeneralLedgerAccount");
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.BankTransaction", b =>
@@ -260,11 +293,11 @@ namespace LedgerPro.Infrastructure.Migrations
             modelBuilder.Entity("LedgerPro.Core.Entities.GeneralLedgerItem", b =>
                 {
                     b.HasOne("LedgerPro.Core.Entities.BankTransaction", "BankTransaction")
-                        .WithMany()
+                        .WithMany("GeneralLedgerItems")
                         .HasForeignKey("BankTransactionId");
 
                     b.HasOne("LedgerPro.Core.Entities.GeneralLedgerAccount", "GeneralLedgerAccount")
-                        .WithMany()
+                        .WithMany("GeneralLedgerItems")
                         .HasForeignKey("GeneralLedgerAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -290,6 +323,16 @@ namespace LedgerPro.Infrastructure.Migrations
                     b.Navigation("BankTransactions");
 
                     b.Navigation("StatementImports");
+                });
+
+            modelBuilder.Entity("LedgerPro.Core.Entities.BankTransaction", b =>
+                {
+                    b.Navigation("GeneralLedgerItems");
+                });
+
+            modelBuilder.Entity("LedgerPro.Core.Entities.GeneralLedgerAccount", b =>
+                {
+                    b.Navigation("GeneralLedgerItems");
                 });
 
             modelBuilder.Entity("LedgerPro.Core.Entities.StatementImport", b =>
