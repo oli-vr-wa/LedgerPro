@@ -212,7 +212,7 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     /// <returns>A task representing the asynchronous operation, with the result being the number of affected rows.</returns>
     /// <exception cref="ArgumentNullException">Thrown if the bank transaction or general ledger item is null.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the bank transaction is not categorized.</exception>
-    public Task<int> ConfirmReconcileCategorizedBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem)
+    public async Task ConfirmReconcileCategorizedBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem)
     {
         if (bankTransaction == null)
             throw new ArgumentNullException(nameof(bankTransaction), "The bank transaction cannot be null.");
@@ -227,7 +227,5 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         bankTransactionGlItem.IsReconciled = true;
         // As a reconciled bank transaction, add the bank transaction general ledger item.
         _dbContext.GeneralLedgerItems.Add(bankTransactionGlItem);
-
-        return Task.FromResult(bankTransaction.GeneralLedgerItems.Count + 1);
     }
 }

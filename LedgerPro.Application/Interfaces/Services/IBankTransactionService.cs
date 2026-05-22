@@ -7,6 +7,6 @@ public interface IBankTransactionService
 {    
     Task AddBankTransactionMappingAsync(BankTransactionMapping mapping);  
     Task<int> ReconcileBankTransactionAsync(ReconcileBankTransactionRequest request);  
-    Task<int> ConfirmReconcileCategorizedBankTransactionAsync(Guid bankTransactionId);
+    Task ConfirmReconcileCategorizedBankTransactionAsync(Guid bankTransactionId);
     Task UnreconcileBankTransactionAsync(Guid bankTransactionId);
 }

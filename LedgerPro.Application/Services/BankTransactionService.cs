@@ -44,7 +44,7 @@ public class BankTransactionService(
     /// <returns>A task representing the asynchronous operation, with the result being the number of affected rows.</returns>
     /// <exception cref="ArgumentException">Thrown if the bank transaction ID is empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the bank transaction is not categorized or other validation fails.</exception>
-    public Task<int> ConfirmReconcileCategorizedBankTransactionAsync(Guid bankTransactionId)
+    public async Task ConfirmReconcileCategorizedBankTransactionAsync(Guid bankTransactionId)
     {
         if (bankTransactionId == Guid.Empty)
             throw new ArgumentException("The bank transaction ID cannot be empty.", nameof(bankTransactionId));
@@ -59,9 +59,6 @@ public class BankTransactionService(
         if (bankTransaction.GeneralLedgerItems == null || bankTransaction.GeneralLedgerItems.Count == 0)
             throw new InvalidOperationException("At least one general ledger item is required to confirm reconciliation of a categorized bank transaction.");
 
-        if (bankTransaction.GeneralLedgerItems.Any(i => i.GeneralLedgerAccountId == bankTransaction.BankSource.GeneralLedgerAccountId))
-            throw new InvalidOperationException("A bank transaction general ledger item already exists.");
-
         var bankTransactionGlItem = new GeneralLedgerItem
         {
             Id = Guid.NewGuid(),
@@ -75,7 +72,7 @@ public class BankTransactionService(
             Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
         };
 
-        return _bankTransactionRepository.ConfirmReconcileCategorizedBankTransactionAsync(bankTransaction, bankTransactionGlItem);
+        await _bankTransactionRepository.ConfirmReconcileCategorizedBankTransactionAsync(bankTransaction, bankTransactionGlItem);
     }
 
     /// <summary>
