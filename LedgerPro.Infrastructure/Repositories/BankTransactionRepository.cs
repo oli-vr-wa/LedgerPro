@@ -203,4 +203,29 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         // Update the bank transaction.
         _dbContext.BankTransactions.Update(bankTransaction);
     }
+
+    /// <summary>
+    /// Confirms the reconciliation of a categorized bank transaction by updating the associated general ledger item to set IsReconciled to true.
+    /// </summary>
+    /// <param name="bankTransaction">The bank transaction to confirm reconciliation for.</param>
+    /// <param name="bankTransactionGlItem">The general ledger item associated with the bank transaction.</param>
+    /// <returns>A task representing the asynchronous operation, with the result being the number of affected rows.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the bank transaction or general ledger item is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the bank transaction is not categorized.</exception>
+    public async Task ConfirmReconcileCategorizedBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem)
+    {
+        if (bankTransaction == null)
+            throw new ArgumentNullException(nameof(bankTransaction), "The bank transaction cannot be null.");
+
+        if (bankTransactionGlItem == null)
+            throw new ArgumentNullException(nameof(bankTransactionGlItem), "The bank transaction general ledger item cannot be null.");
+
+        if (bankTransaction.Status != BankTransactionStatus.Categorized)
+            throw new InvalidOperationException("Only categorized bank transactions can be confirmed for reconciliation.");
+
+        // Update the bank transaction general ledger item to set IsReconciled to true.
+        bankTransactionGlItem.IsReconciled = true;
+        // As a reconciled bank transaction, add the bank transaction general ledger item.
+        _dbContext.GeneralLedgerItems.Add(bankTransactionGlItem);
+    }
 }
