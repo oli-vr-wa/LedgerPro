@@ -2,6 +2,7 @@ using LedgerPro.Application.DTOs.Reports;
 using LedgerPro.Application.Extensions;
 using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Validation.BankTransaction;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Core.Exceptions;
@@ -59,9 +60,9 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
             else
                 financialYearEnding = currentDate.Year; // Default to current year if not provided
         }
-        else if (financialYearEnding < 1900 || financialYearEnding > 2100)
+        else 
         {
-            throw new ArgumentOutOfRangeException(nameof(financialYearEnding), "Financial year ending must be between 1900 and 2100.");
+            await ValidateFinancialYearEndingAsync(financialYearEnding.Value);
         }
 
         DateTime financialYearStart = financialYearEnding.Value.GetFinancialYearStart(); // Start of the financial year (July 1st of the previous year)
@@ -105,6 +106,9 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     /// <returns>A <see cref="DashboardSummaryDto"/> containing the financial metrics for the specified financial year.</returns>
     public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(int financialYearEnding)
     {
+        // Validate the financialYearEnding parameter to ensure it falls within a reasonable range (e.g., between 1900 and 2100)
+        await ValidateFinancialYearEndingAsync(financialYearEnding);
+
         DateTime fromDate = financialYearEnding.GetFinancialYearStart(); // Start of the financial year (July 1st of the previous year)
         DateTime toDate = financialYearEnding.GetFinancialYearEnd(); // End of the financial year (June 30th of the current year)
 
@@ -133,5 +137,24 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
         };
 
         return summary;   
+    }
+
+    /// <summary>
+    /// Validates the financialYearEnding parameter to ensure it falls within a reasonable range (e.g., between 1900 and 2100) using the GetBankTransactionsRequestValidator.
+    /// If the parameter is invalid, throws an ArgumentException with an appropriate error message.
+    /// </summary>
+    /// <param name="financialYearEnding"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    private async Task ValidateFinancialYearEndingAsync(int financialYearEnding)
+    {
+        var validationTarget = new GetBankTransactionsRequest(Guid.Empty, financialYearEnding);
+        var validator = new GetBankTransactionsRequestValidator();
+        var validationResult = await validator.ValidateAsync(validationTarget);
+
+        if (!validationResult.IsValid)
+        {
+            throw new ArgumentException("Invalid financial year ending parameter. " + string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        }
     }
 }
