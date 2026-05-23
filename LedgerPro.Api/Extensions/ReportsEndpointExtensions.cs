@@ -35,5 +35,30 @@ public static class ReportsEndpointExtensions
         var fySummary = await service.GetFinancialYearAccountsSummaryAsync(financialYearEnding);
 
         return Results.Ok(fySummary);
-    }        
+    } 
+
+    /// <summary>
+    /// Retrieves a summary of financial metrics for the dashboard, including total income, total expenses, assets, liabilities, 
+    /// and the count of unreconciled transactions for a specified financial year by calling the IGeneralLedgerService to get the dashboard summary.
+    /// The method validates the input parameter using the GetBankTransactionsRequestValidator and returns a Bad Request response if the parameter is invalid. 
+    /// If the parameter is valid, it calls the service to get the dashboard summary and returns it in an Ok response.
+    /// </summary>
+    /// <param name="service"></param>
+    /// <param name="financialYearEnding"></param>
+    /// <returns></returns>
+    internal static async Task<IResult> GetDashboardSummaryAsync([FromServices] IGeneralLedgerService service, int financialYearEnding)
+    {
+        // Validate the input parameter using the GetBankTransactionsRequestValidator
+        var validationTarget = new GetBankTransactionsRequest(Guid.Empty, financialYearEnding);
+        var validator = new GetBankTransactionsRequestValidator();
+        var validationResult = await validator.ValidateAsync(validationTarget);
+
+        if (!validationResult.IsValid)        
+            return Results.BadRequest(validationResult.Errors);
+        
+        // Call the service to get the dashboard summary based on the validated financial year ending parameter
+        var summary = await service.GetDashboardSummaryAsync(financialYearEnding);
+
+        return Results.Ok(summary);
+    }       
 }

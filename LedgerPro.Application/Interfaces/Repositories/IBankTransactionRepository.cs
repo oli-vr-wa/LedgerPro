@@ -1,4 +1,3 @@
-using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Application.DTOs.Reports;
 using LedgerPro.Core.Entities;
 
@@ -16,5 +15,5 @@ public interface IBankTransactionRepository
     Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding);
     Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd);
     Task ConfirmReconcileCategorizedBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem);
-    Task UnreconcileBankTransactionAsync(BankTransaction bankTransaction);
+    Task UnreconcileBankTransactionAsync(BankTransaction bankTransaction);    
 }
