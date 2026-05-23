@@ -23,10 +23,9 @@ public static class ReportsEndpointExtensions
     /// <returns>A result containing the financial year accounts summary or a Bad Request response if the parameter is invalid.</returns>
     internal static async Task<IResult> GetAccountsSummaryAsync([FromServices] IGeneralLedgerService service, int? financialYearEnding)
     {
-        // Validate the input parameter using the GetBankTransactionsRequestValidator
-        var validationTarget = new GetBankTransactionsRequest(Guid.Empty, financialYearEnding);
-        var validator = new GetBankTransactionsRequestValidator();
-        var validationResult = await validator.ValidateAsync(validationTarget);
+        // Validate the input parameter using the ValidGetFinancialYearValidator        
+        var validator = new GetValidFinancialYearValidator();
+        var validationResult = await validator.ValidateAsync(financialYearEnding);
 
         if (!validationResult.IsValid)        
             return Results.BadRequest(validationResult.Errors);
@@ -48,10 +47,9 @@ public static class ReportsEndpointExtensions
     /// <returns></returns>
     internal static async Task<IResult> GetDashboardSummaryAsync([FromServices] IGeneralLedgerService service, int financialYearEnding)
     {
-        // Validate the input parameter using the GetBankTransactionsRequestValidator
-        var validationTarget = new GetBankTransactionsRequest(Guid.Empty, financialYearEnding);
-        var validator = new GetBankTransactionsRequestValidator();
-        var validationResult = await validator.ValidateAsync(validationTarget);
+        // Validate the input parameter using the ValidGetFinancialYearValidator        
+        var validator = new GetValidFinancialYearValidator();
+        var validationResult = await validator.ValidateAsync(financialYearEnding);
 
         if (!validationResult.IsValid)        
             return Results.BadRequest(validationResult.Errors);

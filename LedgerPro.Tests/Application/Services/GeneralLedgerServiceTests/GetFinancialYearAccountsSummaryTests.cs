@@ -19,7 +19,7 @@ public class GetFinancialYearAccountsSummaryTests : GeneralLedgerServiceTestsBas
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => _generalLedgerService.GetFinancialYearAccountsSummaryAsync(invalidFinancialYearEnding));
-        Assert.Equal("Financial year ending must be between 1900 and 2100. (Parameter 'financialYearEnding')", exception.Message);
+        Assert.Contains("Invalid financial year", exception.Message);
 
         // Verify that the repository method was not called since the financial year ending is invalid
         await _generalLedgerRepository.DidNotReceive().GetGlAccountFinancialTotalAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>());

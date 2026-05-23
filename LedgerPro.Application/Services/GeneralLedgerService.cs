@@ -125,13 +125,13 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
 
         var summary = new DashboardSummaryDto
         {
-            TotalIncome = ledgerItems.Where(item => item.GeneralLedgerAccount.AccountType == GeneralLedgerAccountType.Revenue)
+            TotalIncome = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Revenue)
                                      .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount),
-            TotalExpense = ledgerItems.Where(item => item.GeneralLedgerAccount.AccountType == GeneralLedgerAccountType.Expense)
+            TotalExpense = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Expense)
                                       .Sum(item => item.Side == TransactionSide.Debit ? item.Amount : -item.Amount),
-            Assets = ledgerItems.Where(item => item.GeneralLedgerAccount.AccountType == GeneralLedgerAccountType.Asset)
+            Assets = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Asset)
                                 .Sum(item => item.Side == TransactionSide.Debit ? item.Amount : -item.Amount),
-            Liabilities = ledgerItems.Where(item => item.GeneralLedgerAccount.AccountType == GeneralLedgerAccountType.Liability)
+            Liabilities = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Liability)
                                      .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount),
             UnreconciledTransactionsCount = unreconciledTransactionsCount
         };
@@ -140,7 +140,7 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     }
 
     /// <summary>
-    /// Validates the financialYearEnding parameter to ensure it falls within a reasonable range (e.g., between 1900 and 2100) using the GetBankTransactionsRequestValidator.
+    /// Validates the financialYearEnding parameter to ensure it falls within a reasonable range (e.g., between 1900 and 2100) using the GetValidFinancialYearValidator.
     /// If the parameter is invalid, throws an ArgumentException with an appropriate error message.
     /// </summary>
     /// <param name="financialYearEnding"></param>
@@ -148,13 +148,12 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     /// <exception cref="ArgumentException"></exception>
     private async Task ValidateFinancialYearEndingAsync(int financialYearEnding)
     {
-        var validationTarget = new GetBankTransactionsRequest(Guid.Empty, financialYearEnding);
-        var validator = new GetBankTransactionsRequestValidator();
-        var validationResult = await validator.ValidateAsync(validationTarget);
+        var validator = new GetValidFinancialYearValidator();
+        var validationResult = await validator.ValidateAsync(financialYearEnding);
 
         if (!validationResult.IsValid)
         {
-            throw new ArgumentException("Invalid financial year ending parameter. " + string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
+            throw new ArgumentOutOfRangeException(nameof(financialYearEnding), "Invalid financial year ending parameter. " + string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
         }
     }
 }

@@ -114,8 +114,8 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     /// <param name="fromDate">The start date of the period for which to retrieve ledger items.</param>
     /// <param name="toDate">The end date of the period for which to retrieve ledger items.</param>
     /// <param name="accountTypeMapping">A dictionary mapping account types to include in the summary.</param>
-    /// <returns>A task representing the asynchronous operation, containing a list of GeneralLedgerItem entities.</returns>
-    public async Task<List<GeneralLedgerItem>> GetDashboardSummaryGeneralLedgerItemsAsync(DateTime fromDate, DateTime toDate, Dictionary<GeneralLedgerAccountType, GeneralLedgerAccountType> accountTypeMapping)
+    /// <returns>A task representing the asynchronous operation, containing a list of GeneralLedgerItemSummaryTotal entities.</returns>
+    public async Task<List<GeneralLedgerItemSummaryTotal>> GetDashboardSummaryGeneralLedgerItemsAsync(DateTime fromDate, DateTime toDate, Dictionary<GeneralLedgerAccountType, GeneralLedgerAccountType> accountTypeMapping)
     {     
         // We filter the GeneralLedgerItems based on the transaction date and whether their associated account type is included in the provided mapping. 
         // Additionally, we exclude accounts with IDs 1010 and below, as these are typically reserved for the bank transactions.        
@@ -125,6 +125,10 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
                 item.TransactionDate <= toDate && 
                 accountTypeMapping.ContainsKey(item.GeneralLedgerAccount.AccountType) &&
                 item.GeneralLedgerAccountId > 1010)
+            .Select(item => new GeneralLedgerItemSummaryTotal(
+                item.GeneralLedgerAccount.AccountType,
+                item.Amount,
+                item.Side))
             .ToListAsync();        
     }
 
