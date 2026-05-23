@@ -1,6 +1,8 @@
 using LedgerPro.Application.DTOs.Reports;
+using LedgerPro.Application.Extensions;
 using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.Interfaces.Services;
+using LedgerPro.Application.Validation.BankTransaction;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Core.Exceptions;
@@ -58,13 +60,13 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
             else
                 financialYearEnding = currentDate.Year; // Default to current year if not provided
         }
-        else if (financialYearEnding < 1900 || financialYearEnding > 2100)
+        else 
         {
-            throw new ArgumentOutOfRangeException(nameof(financialYearEnding), "Financial year ending must be between 1900 and 2100.");
+            await ValidateFinancialYearEndingAsync(financialYearEnding.Value);
         }
 
-        DateTime financialYearStart = new(financialYearEnding.Value - 1, 7, 1); // Start of the financial year (July 1st of the previous year)
-        DateTime financialYearEnd = new(financialYearEnding.Value, 6, 30); // End of the financial year (June 30th of the current year)
+        DateTime financialYearStart = financialYearEnding.Value.GetFinancialYearStart(); // Start of the financial year (July 1st of the previous year)
+        DateTime financialYearEnd = financialYearEnding.Value.GetFinancialYearEnd(); // End of the financial year (June 30th of the current year)
 
         var accountsTotals = await _generalLedgerRepository.GetGlAccountFinancialTotalAsync(financialYearStart, financialYearEnd);
 
@@ -94,5 +96,64 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
         .ToList();
 
         return accountSummaries;
-    }    
+    } 
+
+    /// <summary>
+    /// Retrieves a summary of financial metrics for the dashboard, including total income, total expenses, assets, liabilities, 
+    /// and the count of unreconciled transactions for a specified financial year.
+    /// </summary>
+    /// <param name="financialYearEnding">The ending year of the financial year for which to retrieve the summary.</param>
+    /// <returns>A <see cref="DashboardSummaryDto"/> containing the financial metrics for the specified financial year.</returns>
+    public async Task<DashboardSummaryDto> GetDashboardSummaryAsync(int financialYearEnding)
+    {
+        // Validate the financialYearEnding parameter to ensure it falls within a reasonable range (e.g., between 1900 and 2100)
+        await ValidateFinancialYearEndingAsync(financialYearEnding);
+
+        DateTime fromDate = financialYearEnding.GetFinancialYearStart(); // Start of the financial year (July 1st of the previous year)
+        DateTime toDate = financialYearEnding.GetFinancialYearEnd(); // End of the financial year (June 30th of the current year)
+
+        var accountTypeMapping = new Dictionary<GeneralLedgerAccountType, GeneralLedgerAccountType>
+        {
+            { GeneralLedgerAccountType.Asset, GeneralLedgerAccountType.Asset },
+            { GeneralLedgerAccountType.Liability, GeneralLedgerAccountType.Liability },
+            { GeneralLedgerAccountType.Revenue, GeneralLedgerAccountType.Revenue },
+            { GeneralLedgerAccountType.Expense, GeneralLedgerAccountType.Expense }
+        };
+
+        var ledgerItems = await _generalLedgerRepository.GetDashboardSummaryGeneralLedgerItemsAsync(fromDate, toDate, accountTypeMapping);
+        int unreconciledTransactionsCount = await _generalLedgerRepository.GetUnreconciledTransactionsCountAsync(fromDate, toDate);
+
+        var summary = new DashboardSummaryDto
+        {
+            TotalIncome = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Revenue)
+                                     .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount),
+            TotalExpense = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Expense)
+                                      .Sum(item => item.Side == TransactionSide.Debit ? item.Amount : -item.Amount),
+            Assets = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Asset)
+                                .Sum(item => item.Side == TransactionSide.Debit ? item.Amount : -item.Amount),
+            Liabilities = ledgerItems.Where(item => item.AccountType == GeneralLedgerAccountType.Liability)
+                                     .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount),
+            UnreconciledTransactionsCount = unreconciledTransactionsCount
+        };
+
+        return summary;   
+    }
+
+    /// <summary>
+    /// Validates the financialYearEnding parameter to ensure it falls within a reasonable range (e.g., between 1900 and 2100) using the GetValidFinancialYearValidator.
+    /// If the parameter is invalid, throws an ArgumentException with an appropriate error message.
+    /// </summary>
+    /// <param name="financialYearEnding"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    private async Task ValidateFinancialYearEndingAsync(int financialYearEnding)
+    {
+        var validator = new GetValidFinancialYearValidator();
+        var validationResult = await validator.ValidateAsync(financialYearEnding);
+
+        if (!validationResult.IsValid)
+        {
+            throw new ArgumentOutOfRangeException(nameof(financialYearEnding), "Invalid financial year ending parameter. " + string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage)));
+        }
+    }
 }

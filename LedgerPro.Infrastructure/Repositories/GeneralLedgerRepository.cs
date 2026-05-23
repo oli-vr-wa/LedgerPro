@@ -105,4 +105,47 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
             ))
             .ToListAsync();
     }  
+
+    /// <summary>
+    /// Retrieves a list of GeneralLedgerItem entities that fall within a specified date range and match certain account type criteria.
+    /// This method is used to gather the relevant ledger items for generating a dashboard summary, allowing for filtering based on account 
+    /// types to include only those that are relevant for the summary metrics (e.g., income, expenses, assets, liabilities).
+    /// </summary>
+    /// <param name="fromDate">The start date of the period for which to retrieve ledger items.</param>
+    /// <param name="toDate">The end date of the period for which to retrieve ledger items.</param>
+    /// <param name="accountTypeMapping">A dictionary mapping account types to include in the summary.</param>
+    /// <returns>A task representing the asynchronous operation, containing a list of GeneralLedgerItemSummaryTotal entities.</returns>
+    public async Task<List<GeneralLedgerItemSummaryTotal>> GetDashboardSummaryGeneralLedgerItemsAsync(DateTime fromDate, DateTime toDate, Dictionary<GeneralLedgerAccountType, GeneralLedgerAccountType> accountTypeMapping)
+    {     
+        // We filter the GeneralLedgerItems based on the transaction date and whether their associated account type is included in the provided mapping. 
+        // Additionally, we exclude accounts with IDs 1010 and below, as these are typically reserved for the bank transactions.        
+        return  await _dbContext.GeneralLedgerItems
+            .Where(item => 
+                item.TransactionDate >= fromDate && 
+                item.TransactionDate <= toDate && 
+                accountTypeMapping.ContainsKey(item.GeneralLedgerAccount.AccountType) &&
+                item.GeneralLedgerAccountId > 1010)
+            .Select(item => new GeneralLedgerItemSummaryTotal(
+                item.GeneralLedgerAccount.AccountType,
+                item.Amount,
+                item.Side))
+            .ToListAsync();        
+    }
+
+    /// <summary>
+    /// Retrieves the count of unreconciled transactions within a specified date range. 
+    /// This method is used to determine how many transactions have not yet been reconciled, which can be an important metric for financial management and reporting.
+    /// </summary>
+    /// <param name="fromDate">The start date of the period for which to count unreconciled transactions.</param>
+    /// <param name="toDate">The end date of the period for which to count unreconciled transactions.</param>
+    /// <returns>A task representing the asynchronous operation, containing the count of unreconciled transactions.</returns>
+    public async Task<int> GetUnreconciledTransactionsCountAsync(DateTime fromDate, DateTime toDate)
+    {
+        return await _dbContext.GeneralLedgerItems
+            .Where(item => 
+                item.TransactionDate >= fromDate && 
+                item.TransactionDate <= toDate && 
+                !item.IsReconciled)
+            .CountAsync();
+    }
 }
