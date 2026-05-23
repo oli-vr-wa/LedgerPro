@@ -11,6 +11,7 @@ public static class ReportsEndpointExtensions
         var group = app.MapGroup("/api/v1/reports").WithTags("Reports");
 
         group.MapGet("/accounts-summary", GetAccountsSummaryAsync);
+        group.MapGet("/dashboard-summary", GetDashboardSummaryAsync);
 
         return app;
     }
