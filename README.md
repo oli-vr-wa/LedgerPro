@@ -26,7 +26,7 @@ This project follows **Clean Architecture** principles to ensure the business lo
 - [x] Bank Statement Parsing Service
 - [x] SQLite Integration & Migrations
 - [x] Categorization Engine (Auto-mapping descriptions to accounts)
-- [ ] Advanced Read-Model Aggregations (UI Bridge)
+- [x] Advanced Read-Model Aggregations (UI Bridge)
 - [ ] Basic Financial Report API
 - [ ] LedgerPro Web UI
 - [ ] Account Register View
