@@ -12,6 +12,7 @@ public static class ReportsEndpointExtensions
 
         group.MapGet("/accounts-summary", GetAccountsSummaryAsync);
         group.MapGet("/dashboard-summary", GetDashboardSummaryAsync);
+        group.MapGet("/monthly-totals", GetMonthlyTotalsForDateRangeAsync);
 
         return app;
     }
@@ -46,9 +47,9 @@ public static class ReportsEndpointExtensions
     /// The method validates the input parameter using the GetValidFinancialYearValidator and returns a Bad Request response if the parameter is invalid. 
     /// If the parameter is valid, it calls the service to get the dashboard summary and returns it in an Ok response.
     /// </summary>
-    /// <param name="service"></param>
-    /// <param name="financialYearEnding"></param>
-    /// <returns></returns>
+    /// <param name="service">The service used to retrieve the dashboard summary.</param>
+    /// <param name="financialYearEnding">The ending year of the financial year to be reported.</param>
+    /// <returns>A result containing the dashboard summary or a Bad Request response if the parameter is invalid.</returns>
     internal static async Task<IResult> GetDashboardSummaryAsync([FromServices] IGeneralLedgerService service, int financialYearEnding)
     {
         // Validate the input parameter using the ValidGetFinancialYearValidator        
@@ -62,5 +63,23 @@ public static class ReportsEndpointExtensions
         var summary = await service.GetDashboardSummaryAsync(financialYearEnding);
 
         return Results.Ok(summary);
-    }       
+    }   
+
+    /// <summary>
+    /// Retrieves monthly totals for a specified date range by calling the IGeneralLedgerService to get the monthly totals for the date range.
+    /// </summary>
+    /// <param name="service">The service used to retrieve the monthly totals.</param>
+    /// <param name="startDate">The start date of the range.</param>
+    /// <param name="endDate">The end date of the range.</param>
+    /// <returns>A result containing the monthly totals for the specified date range or a Bad Request response if the parameters are invalid.</returns>
+    internal static async Task<IResult> GetMonthlyTotalsForDateRangeAsync([FromServices] IGeneralLedgerService service, DateTime startDate, DateTime endDate)
+    {
+        if (startDate > endDate)
+            return Results.BadRequest("Start date must be less than or equal to end date.");
+        
+        // Call the service to get the monthly totals for the specified date range
+        var totals = await service.GetMonthlyTotalsForDateRangeAsync(startDate, endDate);
+
+        return Results.Ok(totals);
+    }    
 }
