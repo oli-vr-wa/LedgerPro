@@ -34,13 +34,16 @@ public static class ReportsEndpointExtensions
         // Call the service to get the financial year accounts summary based on the validated financial year ending parameter
         var fySummary = await service.GetFinancialYearAccountsSummaryAsync(financialYearEnding);
 
+        if (fySummary == null)
+            return Results.BadRequest("Unable to retrieve accounts summary for the specified financial year ending.");
+
         return Results.Ok(fySummary);
     } 
 
     /// <summary>
     /// Retrieves a summary of financial metrics for the dashboard, including total income, total expenses, assets, liabilities, 
     /// and the count of unreconciled transactions for a specified financial year by calling the IGeneralLedgerService to get the dashboard summary.
-    /// The method validates the input parameter using the GetBankTransactionsRequestValidator and returns a Bad Request response if the parameter is invalid. 
+    /// The method validates the input parameter using the GetValidFinancialYearValidator and returns a Bad Request response if the parameter is invalid. 
     /// If the parameter is valid, it calls the service to get the dashboard summary and returns it in an Ok response.
     /// </summary>
     /// <param name="service"></param>

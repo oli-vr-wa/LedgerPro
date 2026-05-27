@@ -50,20 +50,11 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     /// If not provided, defaults to the current financial year.</param>
     /// <returns>A task representing the asynchronous operation, containing a list of account summary rows.</returns>
     public async Task<List<AccountSummaryRowDto>> GetFinancialYearAccountsSummaryAsync(int? financialYearEnding = null)
-    {
+    {    
         if (financialYearEnding == null)
-        {
-            var currentDate = DateTime.Now;
-            // if the current date is between July and December, we consider the financial year to be the next calendar year (e.g., if it's 2024-08-01, the financial year is 2025)
-            if (currentDate.Month >= 7)
-                financialYearEnding = currentDate.Year + 1;
-            else
-                financialYearEnding = currentDate.Year; // Default to current year if not provided
-        }
+            financialYearEnding = DateTime.Now.GetFinancialYearEnding().Year;        
         else 
-        {
             await ValidateFinancialYearEndingAsync(financialYearEnding.Value);
-        }
 
         DateTime financialYearStart = financialYearEnding.Value.GetFinancialYearStart(); // Start of the financial year (July 1st of the previous year)
         DateTime financialYearEnd = financialYearEnding.Value.GetFinancialYearEnd(); // End of the financial year (June 30th of the current year)
