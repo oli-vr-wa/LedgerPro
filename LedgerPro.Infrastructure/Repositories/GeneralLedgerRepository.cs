@@ -91,6 +91,7 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     public async Task<List<GlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate)    
     {
         return await _dbContext.GeneralLedgerAccounts
+            .Where(account => account.Id > 1010) // Exclude bank transaction accounts
             .Select(account => new GlAccountFinancialTotal
             (
                 account.Id,

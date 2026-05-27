@@ -62,6 +62,7 @@ app.UseHttpsRedirection();
 app.MapBankSourcesEndpoints();
 app.MapBankTransactionEndpoints();
 app.MapGeneralLedgerEndpoints();
+app.MapReportsEndpoints();
 
 app.Run();
 
