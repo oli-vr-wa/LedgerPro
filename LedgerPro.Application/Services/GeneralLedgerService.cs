@@ -15,9 +15,10 @@ namespace LedgerPro.Application.Services;
 /// The service ensures that business rules are enforced, such as validating that a general ledger account ID is not already in use before adding a new account.
 /// </summary>
 /// <param name="generalLedgerRepository">The repository used to access general ledger data.</param>
-public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerRepository) : IGeneralLedgerService
+public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerRepository, IBankTransactionRepository bankTransactionRepository) : IGeneralLedgerService
 {
     private readonly IGeneralLedgerRepository _generalLedgerRepository = generalLedgerRepository;
+    private readonly IBankTransactionRepository _bankTransactionRepository = bankTransactionRepository;
 
     /// <summary>
     /// Adds a new general ledger account to the system. Validates that the account ID is not already in use before adding.
@@ -128,6 +129,38 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
         };
 
         return summary;   
+    }
+
+    /// <summary>
+    /// Retrieves the monthly totals for a specified date range, including total revenues, total expenses, total liabilities,
+    /// and the count of pending reconcile transactions.
+    /// </summary>
+    /// <param name="startDate">The start date of the range.</param>
+    /// <param name="endDate">The end date of the range.</param>
+    /// <returns>A <see cref="PeriodTotalsDto"/> containing the monthly totals for the specified date range.</returns>
+    public async Task<PeriodTotalsDto> GetMonthlyTotalsForDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        if (startDate > endDate)
+            throw new ArgumentException("Start date must be less than or equal to end date.");
+
+        var ledgerItems = await _generalLedgerRepository.GetMonthlyTotalsForDateRangeAsync(startDate, endDate);
+        int pendingReconcileCount = await _bankTransactionRepository.GetPendingReconciliationCountAsync(startDate, endDate);
+        var monthlyTotals = ledgerItems
+            .GroupBy(item => new { item.TransactionDate.Year, item.TransactionDate.Month })
+            .Select(group => new MonthlyTotalsDto
+            {
+                Year = group.Key.Year,
+                Month = group.Key.Month,
+                TotalRevenue = group.Where(item => item.AccountType == GeneralLedgerAccountType.Revenue)
+                                    .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount),
+                TotalExpense = group.Where(item => item.AccountType == GeneralLedgerAccountType.Expense)
+                                    .Sum(item => item.Side == TransactionSide.Debit ? item.Amount : -item.Amount),
+                TotalLiability = group.Where(item => item.AccountType == GeneralLedgerAccountType.Liability)
+                                        .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount)
+            })
+            .ToList();
+
+        return new PeriodTotalsDto(monthlyTotals, pendingReconcileCount);
     }
 
     /// <summary>

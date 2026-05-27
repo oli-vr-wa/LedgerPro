@@ -228,4 +228,20 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         // As a reconciled bank transaction, add the bank transaction general ledger item.
         _dbContext.GeneralLedgerItems.Add(bankTransactionGlItem);
     }
+
+    /// <summary>
+    /// Gets the count of pending bank transactions that are not yet reconciled within a specified date range. 
+    /// This method is used to provide insights into how many transactions are awaiting reconciliation, which can be useful for 
+    /// reporting and dashboard purposes. The method filters bank transactions based on their status and transaction date to return 
+    /// the count of those that are still pending reconciliation.
+    /// </summary>
+    /// <param name="fromDate">The start date of the range.</param>
+    /// <param name="toDate">The end date of the range.</param>
+    /// <returns>The count of pending bank transactions within the specified date range.</returns>
+    public async Task<int> GetPendingReconciliationCountAsync(DateTime fromDate, DateTime toDate)
+    {
+        return await _dbContext.BankTransactions
+            .Where(t => t.Status != BankTransactionStatus.Reconciled && t.TransactionDate >= fromDate && t.TransactionDate <= toDate)
+            .CountAsync();
+    }
 }
