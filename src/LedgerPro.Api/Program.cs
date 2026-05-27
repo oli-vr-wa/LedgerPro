@@ -1,15 +1,8 @@
 using LedgerPro.Api.Extensions;
 using LedgerPro.Api.Middleware;
-using LedgerPro.Application.Interfaces;
 using LedgerPro.Application.Interfaces.Repositories;
-using LedgerPro.Application.Interfaces.Services;
-using LedgerPro.Application.Services;
-using LedgerPro.Core.Interfaces;
-using LedgerPro.Core.Services;
 using LedgerPro.Infrastructure;
-using LedgerPro.Infrastructure.Parsers;
 using LedgerPro.Infrastructure.Repositories;
-using LedgerPro.Infrastructure.Services;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
@@ -40,7 +33,12 @@ builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 builder.Services.Scan(scan => scan
-    .FromAssemblyOf<Program>()
+    .FromAssemblies(
+        typeof(LedgerPro.Application.AssemblyReference).Assembly,
+        typeof(LedgerPro.Infrastructure.AssemblyReference).Assembly,
+        typeof(LedgerPro.Core.AssemblyReference).Assembly
+    )
+    //.FromAssemblyOf<Program>()
     .AddClasses(classes => classes.Where(type => 
         type.Name.EndsWith("Service") || 
         type.Name.EndsWith("Repository") || 
