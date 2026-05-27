@@ -8,4 +8,5 @@ public interface IGeneralLedgerService
     Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount account); 
     Task<List<AccountSummaryRowDto>> GetFinancialYearAccountsSummaryAsync(int? financialYearEnding = null);  
     Task<DashboardSummaryDto> GetDashboardSummaryAsync(int financialYearEnding);
+    Task<List<MonthlyTotalsDto>> GetMonthlyTotalsForDateRangeAsync(DateTime startDate, DateTime endDate);
 }

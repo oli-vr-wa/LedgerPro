@@ -105,7 +105,30 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
                     .Sum(item => item.Amount)
             ))
             .ToListAsync();
-    }  
+    } 
+
+    /// <summary>
+    /// Retrieves a list of GeneralLedgerItemSummaryTotal entities that represent the total amounts for each general ledger account type within a specified date range, 
+    /// filtered by a provided account type mapping. This method is used to gather the relevant ledger items for generating a dashboard summary, allowing for filtering 
+    /// based on account types to include only those that are relevant for the summary metrics (e.g., income, expenses, assets, liabilities).
+    /// </summary>
+    /// <param name="startDate">The start date of the period for which to retrieve ledger items.</param>
+    /// <param name="endDate">The end date of the period for which to retrieve ledger items.</param>
+    /// <returns>A task representing the asynchronous operation, containing a list of GeneralLedgerItemLight entities.</returns>
+    public async Task<List<GeneralLedgerItemLight>> GetMonthlyTotalsForDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _dbContext.GeneralLedgerItems
+            .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate &&
+                (item.GeneralLedgerAccount.AccountType == GeneralLedgerAccountType.Revenue || 
+                item.GeneralLedgerAccount.AccountType == GeneralLedgerAccountType.Expense || 
+                item.GeneralLedgerAccount.AccountType == GeneralLedgerAccountType.Liability))
+            .Select(item => new GeneralLedgerItemLight(
+                item.Amount,
+                item.TransactionDate,
+                item.Side,
+                item.GeneralLedgerAccount.AccountType))
+            .ToListAsync();
+    } 
 
     /// <summary>
     /// Retrieves a list of GeneralLedgerItem entities that fall within a specified date range and match certain account type criteria.

@@ -16,4 +16,5 @@ public interface IBankTransactionRepository
     Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd);
     Task ConfirmReconcileCategorizedBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem);
     Task UnreconcileBankTransactionAsync(BankTransaction bankTransaction);    
+    Task<int> GetPendingReconciliationCountAsync(DateTime fromDate, DateTime toDate);
 }

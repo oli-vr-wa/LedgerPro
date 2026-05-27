@@ -131,6 +131,39 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     }
 
     /// <summary>
+    /// Retrieves the monthly totals for a specified date range, including total revenues, total expenses, total liabilities,
+    /// and the count of pending reconcile transactions.
+    /// </summary>
+    /// <param name="startDate">The start date of the range.</param>
+    /// <param name="endDate">The end date of the range.</param>
+    /// <returns>A list of <see cref="MonthlyTotalsDto"/> containing the monthly totals for the specified date range.</returns>
+    public async Task<List<MonthlyTotalsDto>> GetMonthlyTotalsForDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        if (startDate > endDate)
+            throw new ArgumentException("Start date must be less than or equal to end date.");
+
+        var ledgerItems = await _generalLedgerRepository.GetMonthlyTotalsForDateRangeAsync(startDate, endDate);
+        int pendingReconcileCount = await _generalLedgerRepository.GetUnreconciledTransactionsCountAsync(startDate, endDate);
+        var monthlyTotals = ledgerItems
+            .GroupBy(item => new { item.TransactionDate.Year, item.TransactionDate.Month })
+            .Select(group => new MonthlyTotalsDto
+            {
+                Year = group.Key.Year,
+                Month = group.Key.Month,
+                TotalRevenue = group.Where(item => item.AccountType == GeneralLedgerAccountType.Revenue)
+                                    .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount),
+                TotalExpense = group.Where(item => item.AccountType == GeneralLedgerAccountType.Expense)
+                                    .Sum(item => item.Side == TransactionSide.Debit ? item.Amount : -item.Amount),
+                TotalLiability = group.Where(item => item.AccountType == GeneralLedgerAccountType.Liability)
+                                        .Sum(item => item.Side == TransactionSide.Credit ? item.Amount : -item.Amount),
+                PendingReconcileCount = pendingReconcileCount
+            })
+            .ToList();
+
+        return monthlyTotals;
+    }
+
+    /// <summary>
     /// Validates the financialYearEnding parameter to ensure it falls within a reasonable range (e.g., between 1900 and 2100) using the GetValidFinancialYearValidator.
     /// If the parameter is invalid, throws an ArgumentException with an appropriate error message.
     /// </summary>
