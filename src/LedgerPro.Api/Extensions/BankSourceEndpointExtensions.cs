@@ -67,9 +67,9 @@ public static class BankSourceEndpointExtensions
     /// </summary>
     /// <param name="request">The request object containing the details of the bank source to be added.</param>
     /// <param name="service">The bank source service</param>
-    /// <param name="repo">The bank source repository</param>
+    /// <param name="unitOfWork">The unit of work for committing changes</param>
     /// <returns>Result indicating the outcome of the operation</returns>
-    internal static async Task<IResult> AddBankSourceAsync(AddBankSourceRequest request, [FromServices]IBankSourceService service)
+    internal static async Task<IResult> AddBankSourceAsync(AddBankSourceRequest request, [FromServices]IBankSourceService service, [FromServices]IUnitOfWork unitOfWork)
     {
         if (request == null)        
             return Results.BadRequest(new ErrorResponse("Bank source data is required."));
@@ -81,6 +81,7 @@ public static class BankSourceEndpointExtensions
             return Results.BadRequest(new ErrorResponse("Bank name is required."));
 
         var bankSourceId = await service.AddBankSourceAsync(request);
+        await unitOfWork.CommitAsync();
         return Results.Created($"/api/v1/banksources/{bankSourceId}", bankSourceId);
     }
 }

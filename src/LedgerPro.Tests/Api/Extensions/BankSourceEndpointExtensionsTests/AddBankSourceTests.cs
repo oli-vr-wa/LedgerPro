@@ -35,9 +35,10 @@ public class AddBankSourceTests : BankSourceEndpointExtensionsTestsBase
         );
 
         _bankSourceService.AddBankSourceAsync(request).Returns(Guid.NewGuid());
+        _unitOfWork.CommitAsync().Returns(1);
 
         // Act
-        var result = await BankSourceEndpointExtensions.AddBankSourceAsync(request, _bankSourceService);
+        var result = await BankSourceEndpointExtensions.AddBankSourceAsync(request, _bankSourceService, _unitOfWork);
 
         // Assert
         Assert.IsType<Created<Guid>>(result);
@@ -47,13 +48,14 @@ public class AddBankSourceTests : BankSourceEndpointExtensionsTestsBase
 
         // Verify that the repository methods were called once
         await _bankSourceService.Received(1).AddBankSourceAsync(request);
+        await _unitOfWork.Received(1).CommitAsync();
     }
 
     [Fact]
     public async Task AddBankSourceAsync_ReturnsBadRequest_WhenRequestIsNull()
     {
         // Act
-        var result = await BankSourceEndpointExtensions.AddBankSourceAsync(null!, _bankSourceService);
+        var result = await BankSourceEndpointExtensions.AddBankSourceAsync(null!, _bankSourceService, _unitOfWork);
 
         // Assert
         Assert.IsType<BadRequest<ErrorResponse>>(result);
@@ -62,5 +64,7 @@ public class AddBankSourceTests : BankSourceEndpointExtensionsTestsBase
         Assert.Equal("Bank source data is required.", badRequestResult!.Value!.Error);
         // Verify that the service method was not called
         await _bankSourceService.DidNotReceive().AddBankSourceAsync(Arg.Any<AddBankSourceRequest>());
+        // Verify that the unit of work method was not called
+        await _unitOfWork.DidNotReceive().CommitAsync();
     }
 }
