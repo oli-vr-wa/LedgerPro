@@ -1,7 +1,9 @@
 import { useForm } from 'react-hook-form';
 import { bankSourceService } from '../services/bankSourceService';
-import type { BankSource } from '../types/bankSource';
+import { BANK_TYPES, type BankSource } from '../types/bankSource';
 import { useQueryClient } from '@tanstack/react-query';
+import { Input } from './ui/Input';
+import { DropdownSelect } from './ui/DropdownSelect';
 
 type FormData = Omit<BankSource, 'id'>;
 
@@ -31,32 +33,16 @@ export function AddBankSourceForm({ onClose }: { onClose: () => void }) {
                 {/* Simple form inputs for now */}
                 <form onSubmit={handleSubmit(onSubmit, onError)}>
 
-                    <div className="space-y-4">                        
-                        <div>
-                            <input {...register('bankName', { required: "Bank Name is required" })} placeholder="Bank Name" className="w-full p-2 border border-gray-400 rounded" />
-                            {errors.bankName && <span className="text-red-500 text-sm">{errors.bankName.message}</span>}
-                        </div>
+                    <div className="space-y-4">         
 
-                        <div>
-                            <input {...register('accountName', { required: "Account Name is required" })} placeholder="Account Name" className="w-full p-2 border border-gray-400 rounded" />
-                            {errors.accountName && <span className="text-red-500 text-sm">{errors.accountName.message}</span>}
-                        </div>
+                        <Input {...register('bankName', { required: "Bank Name is required" })} placeholder="Bank Name" error={errors.bankName} />
+                        
+                        <Input {...register('accountName', { required: "Account Name is required" })} placeholder="Account Name" error={errors.accountName} />
+                        
+                        <Input {...register('accountNumber', { required: "Account Number is required" })} placeholder="Account Number" error={errors.accountNumber} />
 
-                        <div>
-                            <input {...register('accountNumber', { required: "Account Number is required" })} placeholder="Account Number" className="w-full p-2 border border-gray-400 rounded" />
-                            {errors.accountNumber && <span className="text-red-500 text-sm">{errors.accountNumber.message}</span>}
-                        </div>
+                        <DropdownSelect {...register('bankType', { required: "Bank Type is required" })} options={BANK_TYPES} error={errors.bankType} />
 
-                        <div>
-                            <select {...register('bankType', { required: "Bank Type is required" })} className="w-full p-2 border border-gray-400 rounded">
-                                <option value="">Select Bank Type</option>
-                                <option value="Generic">Generic</option>
-                                <option value="NAB">NAB</option>
-                                <option value="ANZ">ANZ</option>
-                                <option value="CBA">CBA</option>
-                            </select>
-                            {errors.bankType && <span className="text-red-500 text-sm">{errors.bankType.message}</span>}
-                        </div>
                     </div>
 
                     <div className="mt-6 flex justify-end space-x-3">

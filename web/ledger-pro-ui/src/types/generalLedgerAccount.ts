@@ -1,4 +1,6 @@
-export type GeneralLedgerAccountType = 'Asset' | 'Liability' | 'Equity' | 'Revenue' | 'Expense';
+export const GENERAL_LEDGER_ACCOUNT_TYPES = ['Asset', 'Liability', 'Equity', 'Revenue', 'Expense'] as const;
+
+export type GeneralLedgerAccountType = typeof GENERAL_LEDGER_ACCOUNT_TYPES;
 
 export interface GeneralLedgerAccount {
     id: number;

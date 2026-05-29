@@ -1,7 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { generalLedgerAccountService } from '../services/generalLedgerAccountService';
-import type { GeneralLedgerAccount } from '../types/generalLedgerAccount';
+import { GENERAL_LEDGER_ACCOUNT_TYPES, type GeneralLedgerAccount } from '../types/generalLedgerAccount';
 import { useQueryClient } from '@tanstack/react-query';
+import { Input } from './ui/Input';
+import { TextArea } from './ui/TextArea';
+import { DropdownSelect } from './ui/DropdownSelect';
 
 type FormData = GeneralLedgerAccount;
 
@@ -32,31 +35,16 @@ export function AddGeneralLedgerAccountForm({ onClose }: { onClose: () => void }
                 <form onSubmit={handleSubmit(onSubmit, onError)}>
 
                     <div className="space-y-4">
-                        <div>
-                            <input {...register('id', { required: "Account Code is required" })} placeholder="Account Code" className="w-full p-2 border border-gray-400 rounded" />
-                            {errors.id && <span className="text-red-500 text-sm">{errors.id.message}</span>}
-                        </div>
-
-                        <div>
-                            <input {...register('name', { required: "Account Name is required" })} placeholder="Account Name" className="w-full p-2 border border-gray-400 rounded" />
-                            {errors.name && <span className="text-red-500 text-sm">{errors.name.message}</span>}
-                        </div>
-
-                        <div>
-                            <textarea {...register('description')} placeholder="Description (optional)" className="w-full p-2 border border-gray-400 rounded" />                            
-                        </div>
-
-                        <div>
-                            <select {...register('accountType', { required: "Account Type is required" })} className="w-full p-2 border border-gray-400 rounded">
-                                <option value="">Select Account Type</option>
-                                <option value="Asset">Asset</option>
-                                <option value="Liability">Liability</option>
-                                <option value="Equity">Equity</option>
-                                <option value="Revenue">Revenue</option>
-                                <option value="Expense">Expense</option>
-                            </select>
-                            {errors.accountType && <span className="text-red-500 text-sm">{errors.accountType.message}</span>}
-                        </div>
+                        <Input {...register('id', { required: "Account Code is required" })} placeholder="Account Code" error={errors.id} />
+                        
+                        <Input {...register('name', { required: "Account Name is required" })} placeholder="Account Name" error={errors.name} />
+                        
+                        <TextArea {...register('description')} placeholder="Description (optional)" error={errors.description} />
+                        
+                        <DropdownSelect {...register('accountType', { required: "Account Type is required" })} 
+                                        options={GENERAL_LEDGER_ACCOUNT_TYPES} 
+                                        error={errors.accountType} />
+                                                 
                     </div>
 
                     <div className="mt-6 flex justify-end space-x-3">

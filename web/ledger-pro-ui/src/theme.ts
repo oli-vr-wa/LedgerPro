@@ -1,0 +1,1 @@
+export const inputStyles = "w-full p-2 border border-gray-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-600";

@@ -1,4 +1,6 @@
-export type BankType = 'Generic' | 'NAB' | 'ANZ' | 'CBA';
+export const BANK_TYPES = ['Generic', 'NAB', 'ANZ', 'CBA'] as const;
+
+export type BankType = typeof BANK_TYPES;
 
 export interface BankSource {
     id: string;
