@@ -10,15 +10,12 @@ export function AddBankSourceForm({ onClose }: { onClose: () => void }) {
     const queryClient = useQueryClient();
     
     const onSubmit = async (data: FormData) => {
-        console.log("called"); // Check this in your browser console (F12)
         try {
             await bankSourceService.create(data);
             queryClient.invalidateQueries({ queryKey: ['bankSources'] });
-            alert('Bank source added successfully!');
             onClose();
         } catch (error) {
             console.error('Error adding bank source:', error);
-            alert('Failed to add bank source. Please try again.');
         }
     };
 

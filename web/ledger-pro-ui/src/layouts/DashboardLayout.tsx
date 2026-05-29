@@ -15,6 +15,7 @@ export function DashboardLayout() {
                 <ul className="space-y-4">
                     <li><NavLink to="/" end className={getLinkClass}>Dashboard</NavLink></li>
                     <li><NavLink to="/banksources" className={getLinkClass}>Bank Sources</NavLink></li>
+                    <li><NavLink to="/generalLedgerAccounts" className={getLinkClass}>General Ledger Accounts</NavLink></li>
                     <li><NavLink to="/settings" className={getLinkClass}>Settings</NavLink></li>
                 </ul>                
             </nav>
