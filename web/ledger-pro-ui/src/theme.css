@@ -9,4 +9,7 @@
 
   /* Focus ring inputs */
   --color-blue-500: #3b82f6;
+
+  /* Table Header Background Color */
+  --color-blue-header: #8fb9fc;
 }
