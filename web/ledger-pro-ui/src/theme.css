@@ -1,0 +1,9 @@
+@theme {
+  /* Submit Button (Blue) */
+  --color-submit: #126cff; 
+  --color-submit-foreground: #ffffff;
+  
+  /* Cancel Button (Gray) */
+  --color-cancel: #e5e7eb; 
+  --color-cancel-foreground: #374151;
+}

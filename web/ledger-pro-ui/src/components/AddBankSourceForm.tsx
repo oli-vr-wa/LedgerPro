@@ -90,8 +90,8 @@ export function AddBankSourceForm({ closeDialog }: AddBankSourceFormProps) {
                     
             </LedgerFormBody>
             <LedgerFormFooter>
-                <Button type="button" onClick={closeDialog}>Cancel</Button>
-                <Button type="submit" disabled={isPending}>{isPending ? 'Adding...' : 'Add'}</Button>
+                <Button type="button" variant="cancel" onClick={closeDialog}>Cancel</Button>
+                <Button type="submit" variant="submit" disabled={isPending}>{isPending ? 'Adding...' : 'Add'}</Button>
             </LedgerFormFooter>
         </LedgerForm>
     );
