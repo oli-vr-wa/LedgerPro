@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { generalLedgerAccountService } from '../services/generalLedgerAccountService';
 import { AddGeneralLedgerAccountForm } from '../components/AddGeneralLedgerAccountForm';
 import { LedgerDialog } from '@/components/ui/LedgerDialog';
+import { columns } from './general-ledger-accounts/columns';
+import { DataTable } from '@/components/DataTable';
 
 export function GeneralLedgerAccounts() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -17,30 +19,11 @@ export function GeneralLedgerAccounts() {
     return (
         <div>
             <h1 className="text-2xl font-bold mb-6">General Ledger Accounts</h1>
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-                <table className="min-w-full"> 
-                    <thead className="bg-gray-200">
-                        <tr>
-                            <th className="text-left px-6 py-3">Account Code</th>
-                            <th className="text-left px-6 py-3">Account Name</th>
-                            <th className="text-left px-6 py-3">Account Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {accounts?.map(account => (
-                            <tr key={account.id} className="border-t">
-                                <td className="px-6 py-4">{account.id}</td>
-                                <td className="px-6 py-4">{account.name}</td>
-                                <td className="px-6 py-4">{account.accountType}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            <DataTable columns={columns} data={accounts ?? []} />
                 
-                <LedgerDialog title="Add General Ledger Account" isOpen={isDialogOpen} setIsOpen={setIsDialogOpen}>
-                    <AddGeneralLedgerAccountForm closeDialog={() => setIsDialogOpen(false)} />
-                </LedgerDialog>
-            </div>
+            <LedgerDialog title="Add General Ledger Account" isOpen={isDialogOpen} setIsOpen={setIsDialogOpen}>
+                <AddGeneralLedgerAccountForm closeDialog={() => setIsDialogOpen(false)} />
+            </LedgerDialog>            
         </div>
     );
 

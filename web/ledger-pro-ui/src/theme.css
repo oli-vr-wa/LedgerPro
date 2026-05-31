@@ -1,0 +1,15 @@
+@theme {
+  /* Submit Button (Blue) */
+  --color-submit: #126cff; 
+  --color-submit-foreground: #ffffff;
+
+  /* Cancel Button (Gray) */
+  --color-cancel: #e5e7eb; 
+  --color-cancel-foreground: #374151;
+
+  /* Focus ring inputs */
+  --color-blue-500: #3b82f6;
+
+  /* Table Header Background Color */
+  --color-blue-header: #8fb9fc;
+}
