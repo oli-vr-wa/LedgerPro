@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -9,12 +10,13 @@ import {
 
 interface LedgerDialogProps {
     title: string;
+    description?: string;
     children: React.ReactNode;
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
 }
 
-export function LedgerDialog({ title, children, isOpen, setIsOpen }: LedgerDialogProps) {
+export function LedgerDialog({ title, description, children, isOpen, setIsOpen }: LedgerDialogProps) {
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
@@ -28,6 +30,7 @@ export function LedgerDialog({ title, children, isOpen, setIsOpen }: LedgerDialo
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
                 </DialogHeader>
                 {children}
             </DialogContent>

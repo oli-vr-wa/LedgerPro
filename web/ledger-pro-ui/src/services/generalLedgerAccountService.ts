@@ -1,5 +1,5 @@
 import api from './api';
-import type { GeneralLedgerAccount } from '../types/generalLedgerAccount';
+import type { GeneralLedgerAccount } from '../types/general-ledger-account.types';
 
 export const generalLedgerAccountService = {
     getAll: () => api.get<GeneralLedgerAccount[]>('/ledger/accounts'),

@@ -1,59 +1,98 @@
 import { useForm } from 'react-hook-form';
 import { bankSourceService } from '../services/bankSourceService';
-import { BANK_TYPES, type BankSource } from '../types/bankSource';
-import { useQueryClient } from '@tanstack/react-query';
-import { Input } from './ui/Input';
-import { DropdownSelect } from './ui/DropdownSelect';
-import { useState } from 'react';
-
-type FormData = Omit<BankSource, 'id'>;
+import { BANK_TYPES, type BankSource, type CreateBankSourcePayload } from '../types/bank-source.types';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { LedgerSelect } from './ui/form-fields/LedgerSelect';
+import { bankSourceSchema, type BankSourceFormData } from '../schemas/bank-source.schemas';
+import type z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { LedgerForm, LedgerFormBody, LedgerFormFooter } from './ui/form-fields/LedgerForm';
+import { LedgerInput } from './ui/form-fields/LedgerInput';
+import { Button } from './ui/button';
 
 interface AddBankSourceFormProps {
     closeDialog: () => void;
 }
 
-export function AddBankSourceForm({ closeDialog }: AddBankSourceFormProps) { 
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+/**
+ * Form component for adding a new Bank Source.
+ * Utilizes react-hook-form for form state management and Zod for validation.
+ * On successful submission, it creates a new bank source via the service and invalidates the relevant query to refresh the data.
+ * @param closeDialog - Function to close the dialog containing this form after successful submission or cancellation.
+ * @returns JSX.Element - The rendered form component. 
+ */
+export function AddBankSourceForm({ closeDialog }: AddBankSourceFormProps) {         
     const queryClient = useQueryClient();
     
-    const onSubmit = async (data: FormData) => {
-        setIsSubmitting(true);
-        try {
-            await bankSourceService.create(data);
-            queryClient.invalidateQueries({ queryKey: ['bankSources'] });
-        } catch (error) {
-            console.error('Error adding bank source:', error);
-        } finally {
-            setIsSubmitting(false);
-        }
+    const defaultValues: z.infer<typeof bankSourceSchema> = {
+        bankName: '',
+        accountName: '',
+        accountNumber: '',
+        bankType: '' 
     };
 
-    const onError = (errors: any) => {
-        console.log("Form Errors:", errors); // Check this in your browser console (F12)
+    const form = useForm<BankSourceFormData>({
+        resolver: zodResolver(bankSourceSchema),
+        defaultValues
+    });
+
+    const { mutate: createBankSource, isPending } = useMutation({
+        mutationFn: (data: CreateBankSourcePayload) => bankSourceService.create(data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['bankSources'] });
+            closeDialog();
+        },
+        onError: (error) => {
+            console.error('Error adding bank source:', error);
+        }
+    });
+
+    const onSubmit = async (data: BankSourceFormData) => {
+        const payload: CreateBankSourcePayload = {
+            ...data,
+            bankType: data.bankType as BankSource['bankType']
+        };
+
+        createBankSource(payload);
     };
 
     return (
-            <form onSubmit={handleSubmit(onSubmit, onError)}>
+        <LedgerForm onSubmit={form.handleSubmit(onSubmit)}>
+            <LedgerFormBody>
+                <LedgerInput 
+                    label="Bank Name"
+                    placeholder="Enter the bank name"
+                    {...form.register('bankName')}
+                    error={form.formState.errors.bankName?.message}
+                />
 
-                <div className="space-y-4">         
+                <LedgerInput
+                    label="Account Name"
+                    placeholder="Enter the account name"
+                    {...form.register('accountName')}
+                    error={form.formState.errors.accountName?.message}
+                />
 
-                    <Input {...register('bankName', { required: "Bank Name is required" })} placeholder="Bank Name" error={errors.bankName} />
+                <LedgerInput
+                    label="Account Number"
+                    placeholder="Enter the account number"
+                    {...form.register('accountNumber')}
+                    error={form.formState.errors.accountNumber?.message}
+                />
+
+                <LedgerSelect
+                    label="Bank Type"
+                    name="bankType"
+                    control={form.control as any} 
+                    options={BANK_TYPES}
+                    placeholder="Select Bank Type"
+                />
                     
-                    <Input {...register('accountName', { required: "Account Name is required" })} placeholder="Account Name" error={errors.accountName} />
-
-                    <Input {...register('accountNumber', { required: "Account Number is required" })} placeholder="Account Number" error={errors.accountNumber} />
-
-                    <DropdownSelect {...register('bankType', { required: "Bank Type is required" })} options={BANK_TYPES} error={errors.bankType} />
-
-                </div>
-
-                <div className="mt-6 flex justify-end space-x-3">
-                    <button type="button" className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition hover:cursor-pointer" onClick={closeDialog}>Cancel</button>
-                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition hover:cursor-pointer" disabled={isSubmitting}>
-                        {isSubmitting ? 'Adding...' : 'Add'}
-                    </button>
-                </div>
-            </form>
+            </LedgerFormBody>
+            <LedgerFormFooter>
+                <Button type="button" onClick={closeDialog}>Cancel</Button>
+                <Button type="submit" disabled={isPending}>{isPending ? 'Adding...' : 'Add'}</Button>
+            </LedgerFormFooter>
+        </LedgerForm>
     );
 }

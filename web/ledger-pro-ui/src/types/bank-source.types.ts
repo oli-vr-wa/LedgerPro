@@ -1,6 +1,6 @@
 export const BANK_TYPES = ['Generic', 'NAB', 'ANZ', 'CBA'] as const;
 
-export type BankType = typeof BANK_TYPES;
+export type BankType = typeof BANK_TYPES[number];
 
 export interface BankSource {
     id: string;
@@ -10,3 +10,5 @@ export interface BankSource {
     bankType: BankType;
     generalLedgerAccountId: number;
 }
+
+export type CreateBankSourcePayload = Omit<BankSource, 'id' | 'generalLedgerAccountId'>;
