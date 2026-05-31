@@ -2,9 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { generalLedgerAccountService } from '../services/generalLedgerAccountService';
 import { AddGeneralLedgerAccountForm } from '../components/AddGeneralLedgerAccountForm';
+import { LedgerDialog } from '@/components/ui/LedgerDialog';
 
 export function GeneralLedgerAccounts() {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const { data: accounts, isLoading } = useQuery({
         queryKey: ['generalLedgerAccounts'],
@@ -35,17 +36,10 @@ export function GeneralLedgerAccounts() {
                         ))}
                     </tbody>
                 </table>
-
-                <button 
-                    onClick={() => setIsModalOpen(true)}
-                    className="fixed bottom-8 right-8 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition hover:cursor-pointer"
-                >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>                        
-                </button>
-
-                {isModalOpen && <AddGeneralLedgerAccountForm onClose={() => setIsModalOpen(false)} />}
+                
+                <LedgerDialog title="Add General Ledger Account" isOpen={isDialogOpen} setIsOpen={setIsDialogOpen}>
+                    <AddGeneralLedgerAccountForm closeDialog={() => setIsDialogOpen(false)} />
+                </LedgerDialog>
             </div>
         </div>
     );
