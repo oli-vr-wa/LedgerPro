@@ -1,14 +1,15 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type GeneralLedgerAccount } from "@/types/general-ledger-account.types";
+import { sortableHeader } from "@/components/ui/TableSortButton";
 
 export const columns: ColumnDef<GeneralLedgerAccount>[] = [
     {
         accessorKey: "id",
-        header: "Account Code",
+        header: ({ column }) => sortableHeader(column, "ID")
     },
     {
         accessorKey: "name",
-        header: "Account Name",
+        header: ({ column }) => sortableHeader(column, "Name")
     },
     {
         accessorKey: "description",
@@ -16,6 +17,6 @@ export const columns: ColumnDef<GeneralLedgerAccount>[] = [
     },
     {
         accessorKey: "accountType",
-        header: "Account Type",
+        header: ({ column }) => sortableHeader(column, "Account Type")
     }
 ];

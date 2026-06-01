@@ -1,5 +1,6 @@
-import { type ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
+import { type ColumnDef, type SortingState , flexRender, getCoreRowModel, useReactTable, getSortedRowModel } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import React from "react";
 
 interface DataTableProps<TData, Tvalue> {
     columns: ColumnDef<TData, Tvalue>[];
@@ -7,9 +8,16 @@ interface DataTableProps<TData, Tvalue> {
 }
 
 export function DataTable<TData, Tvalue>({ columns, data }: DataTableProps<TData, Tvalue>) {
+    const [sorting, setSorting] = React.useState<SortingState>([]);
+
     const table = useReactTable({
         data,
         columns,
+        state: {
+            sorting,
+        },
+        onSortingChange: setSorting,
+        getSortedRowModel: getSortedRowModel(),
         getCoreRowModel: getCoreRowModel(),
     });
 
