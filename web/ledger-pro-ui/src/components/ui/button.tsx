@@ -21,6 +21,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         submit: "bg-submit text-submit-foreground hover:bg-submit/80",
         cancel: "bg-cancel text-cancel-foreground hover:bg-cancel/80",
+        headerButton: "hover:bg-blue-header/10" 
       },
       size: {
         default:

@@ -1,14 +1,15 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type BankSource } from "@/types/bank-source.types";
+import { sortableHeader } from "@/components/ui/TableSortButton";
 
 export const columns: ColumnDef<BankSource>[] = [
     {
         accessorKey: "bankName",
-        header: "Bank Name",
+        header: ({ column }) => sortableHeader(column, "Bank Name")
     },
     {
         accessorKey: "accountName",
-        header: "Account Name",
+        header: ({ column }) => sortableHeader(column, "Account Name"),
     },
     {
         accessorKey: "accountNumber",
