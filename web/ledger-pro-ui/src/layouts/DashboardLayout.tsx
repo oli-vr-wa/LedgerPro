@@ -16,6 +16,7 @@ export function DashboardLayout() {
                     <li><NavLink to="/" end className={getLinkClass}>Dashboard</NavLink></li>
                     <li><NavLink to="/banksources" className={getLinkClass}>Bank Sources</NavLink></li>
                     <li><NavLink to="/generalLedgerAccounts" className={getLinkClass}>General Ledger Accounts</NavLink></li>
+                    <li><NavLink to="/bankTransactionMappings" className={getLinkClass}>Transaction Mappings</NavLink></li>
                     <li><NavLink to="/settings" className={getLinkClass}>Settings</NavLink></li>
                 </ul>                
             </nav>
