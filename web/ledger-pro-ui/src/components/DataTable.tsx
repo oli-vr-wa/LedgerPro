@@ -51,7 +51,7 @@ export function DataTable<TData, Tvalue>({ columns, data }: DataTableProps<TData
                     ) : (
                         <TableRow>
                             <TableCell colSpan={columns.length} className="h-24 text-center">
-                                No results.
+                                No records.
                             </TableCell>
                         </TableRow>
                      )}                    

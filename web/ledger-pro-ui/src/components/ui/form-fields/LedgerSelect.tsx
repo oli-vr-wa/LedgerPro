@@ -5,16 +5,26 @@ import { useController, type Control } from 'react-hook-form';
 import { Field, FieldLabel, FieldError } from '../field';
 import { Select, SelectContent, SelectGroup, SelectTrigger, SelectValue, SelectItem } from '../select';
 
-interface LedgerSelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+export interface SelectOption {
+    value: string;
+    label: string;
+}
+
+interface LedgerSelectProps<T> extends React.SelectHTMLAttributes<HTMLSelectElement> {
     name: string;
     control: Control<any>;
     label?: string;
-    options: readonly string[];
+    options: readonly T[];
     placeholder?: string;
 }
 
-export function LedgerSelect({ name, control, label, options, placeholder } : LedgerSelectProps) {
+export function LedgerSelect<T extends string | SelectOption>({ name, control, label, options, placeholder } : LedgerSelectProps<T>) {
     const { field, fieldState: { error } } = useController({ name, control });
+
+    // Helper to check if options are simple strings or objects with value/label
+    const isSelectOption = (option: any): option is SelectOption => {
+        return typeof option !== 'string';
+    }
 
     return (
         <Field>
@@ -25,11 +35,17 @@ export function LedgerSelect({ name, control, label, options, placeholder } : Le
                 </SelectTrigger>
                 <SelectContent>
                     <SelectGroup>
-                        {options.map((option) => (
-                            <SelectItem key={option} value={option}>
-                                {option}
-                            </SelectItem>
-                        ))}
+                        {options.map((option) => {
+                            // Extract value and label based on whether it's a string or an object
+                            const value = isSelectOption(option) ? option.value : option as string;
+                            const label = isSelectOption(option) ? option.label : option as string;
+                            
+                            return (
+                                <SelectItem key={value} value={value}>
+                                    {label}
+                                </SelectItem>
+                            );
+                        })}
                     </SelectGroup>
                 </SelectContent>
             </Select>
