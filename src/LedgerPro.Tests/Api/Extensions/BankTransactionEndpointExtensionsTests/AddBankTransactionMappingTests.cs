@@ -114,7 +114,7 @@ public class AddBankTransactionMappingTests(WebApplicationFactory<Program> facto
             .ThrowsAsync(new ArgumentNullException(nameof(mapping), expectedErrorMessage));
 
         // Act 
-        var response = await client.PostAsJsonAsync("/api/v1/banktransactions/mappings", mapping);
+        var response = await client.PostAsJsonAsync("/api/v1/banktransactions/mapping", mapping);
 
         // Assert        
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -147,7 +147,7 @@ public class AddBankTransactionMappingTests(WebApplicationFactory<Program> facto
             .ThrowsAsync(new BusinessException(expectedErrorMessage));
 
         // Act 
-        var response = await client.PostAsJsonAsync("/api/v1/banktransactions/mappings", mapping);
+        var response = await client.PostAsJsonAsync("/api/v1/banktransactions/mapping", mapping);
 
         // Assert        
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -178,7 +178,7 @@ public class AddBankTransactionMappingTests(WebApplicationFactory<Program> facto
         _unitOfWork.CommitAsync().Returns(1);
 
         // Act 
-        var response = await client.PostAsJsonAsync("/api/v1/banktransactions/mappings", mapping);
+        var response = await client.PostAsJsonAsync("/api/v1/banktransactions/mapping", mapping);
 
         // Assert                
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
