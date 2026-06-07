@@ -13,31 +13,40 @@ import { Button } from "./ui/button";
 import type { GeneralLedgerAccount } from "@/types/general-ledger-account.types";
 import { useEffect, useState } from "react";
 
-
-interface AddBankTransactionMappingFormProps {
+interface BankTransactionMappingFormProps {
+    mapping?: BankTransactionMapping; // Optional mapping prop to determine if we're in add or edit mode
     closeDialog: () => void;
 }
 
-export function AddBankTransactionMappingForm({ closeDialog }: AddBankTransactionMappingFormProps) {
+export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransactionMappingFormProps) {
+    const isEditMode = !!mapping; // Determine mode based on presence of mapping prop
     const [accounts, setAccounts] = useState<GeneralLedgerAccount[]>([]);
     const [isLoadingAccounts, setIsLoadingAccounts] = useState(true);
+    const buttonText = isEditMode ? 'Save Changes' : 'Add Mapping';
+    const buttonTextLoading = isEditMode ? 'Saving...' : 'Adding...';
 
     const queryClient = useQueryClient();
 
     useEffect(() => {
-        // Use the general ledger account service to fetch accounts for the select dropdown
+        // Fetch GL accounts for the select dropdown, used in both add and edit modes
         generalLedgerAccountService.getAll()
             .then(response => {
                 setAccounts(response.data);
                 setIsLoadingAccounts(false);
             })
-            .catch(error => {
-                console.error('Error fetching general ledger accounts:', error);
+            .catch(() => {
                 setIsLoadingAccounts(false);
             });
-    }, []); // Fetch GL accounts on mount
+    }, []);
 
-    const defaultValues: z.infer<typeof bankTransactionMappingSchema> = {
+    const defaultValues: z.infer<typeof bankTransactionMappingSchema> = isEditMode ? {
+        searchTerm: mapping!.searchTerm,
+        matchStrategy: mapping!.matchStrategy,
+        targetGeneralLedgerAccountId: mapping!.targetGeneralLedgerAccountId.toString(),
+        descriptionTemplate: mapping!.descriptionTemplate,
+        referenceTemplate: mapping!.referenceTemplate,
+        priority: mapping!.priority
+    } : {
         searchTerm: '',
         matchStrategy: '',
         targetGeneralLedgerAccountId: '',
@@ -51,30 +60,33 @@ export function AddBankTransactionMappingForm({ closeDialog }: AddBankTransactio
         defaultValues
     });
 
-    const {mutate: createMapping, isPending} = useMutation({
-        mutationFn: (data: Omit<BankTransactionMapping, 'id'>) => bankTransactionMappingService.create(data),
+    const {mutate: saveMapping, isPending} = useMutation({
+        mutationFn: (data: Omit<BankTransactionMapping, 'id'>) => {
+            if (isEditMode) 
+                return bankTransactionMappingService.update(mapping!.id, data);
+            else 
+                return bankTransactionMappingService.create(data);                        
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['bankTransactionMappings'] });
             closeDialog();
         },
         onError: (error) => {
-            console.error('Error creating bank transaction mapping:', error);
+            console.error('Error saving bank transaction mapping:', error);
         }
     });
 
     const onSubmit = (data: BankTransactionMappingFormData) => {
         const payload: Omit<BankTransactionMapping, 'id'> = {
-            ...data,           
-            matchStrategy: data.matchStrategy as BankTransactionMapping['matchStrategy'], // Ensure correct type 
+            ...data,
+            matchStrategy: data.matchStrategy as BankTransactionMapping['matchStrategy'], // Ensure correct type
             targetGeneralLedgerAccountId: parseInt(data.targetGeneralLedgerAccountId), // Convert to number before sending to API
             priority: Number(data.priority) // Ensure priority is a number
         };
-        createMapping(payload);
-    };
-
-    if (isLoadingAccounts) {
-        return <div>Loading...</div>;
+        saveMapping(payload);
     }
+
+    if (isLoadingAccounts) return <div>Loading...</div>;
 
     return (
         <LedgerForm onSubmit={form.handleSubmit(onSubmit)}>
@@ -127,8 +139,9 @@ export function AddBankTransactionMappingForm({ closeDialog }: AddBankTransactio
 
             </LedgerFormBody>
             <LedgerFormFooter>
+                {isEditMode && <Button type="button" variant="destructive">Delete</Button>}
                 <Button type="button" variant="cancel" onClick={closeDialog}>Cancel</Button>                    
-                <Button type="submit" variant="submit" disabled={isPending}>{isPending ? 'Adding...' : 'Add'}</Button>
+                <Button type="submit" variant="submit" disabled={isPending}>{isPending ? buttonTextLoading : buttonText}</Button>
             </LedgerFormFooter>
         </LedgerForm>
     );
