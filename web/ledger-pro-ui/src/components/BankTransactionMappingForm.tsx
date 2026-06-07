@@ -18,6 +18,13 @@ interface BankTransactionMappingFormProps {
     closeDialog: () => void;
 }
 
+/**
+ * A form component for adding or editing bank transaction mappings. 
+ * It uses react-hook-form for form state management and validation, and react-query for handling API mutations. 
+ * The form fields are dynamically populated based on whether we're in add or edit mode, and it includes error handling and loading states for better user experience.
+ * @param BankTransactionMappingFormProps - Props for the form, including an optional mapping for edit mode and a function to close the dialog.
+ * @returns A React component that renders a form for creating or updating bank transaction mappings, with appropriate fields, validation, and API integration.
+ */
 export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransactionMappingFormProps) {
     const isEditMode = !!mapping; // Determine mode based on presence of mapping prop
     const [accounts, setAccounts] = useState<GeneralLedgerAccount[]>([]);
@@ -25,8 +32,10 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
     const buttonText = isEditMode ? 'Save Changes' : 'Add Mapping';
     const buttonTextLoading = isEditMode ? 'Saving...' : 'Adding...';
 
+    // React Query client for invalidating queries after mutations
     const queryClient = useQueryClient();
 
+    // Fetch GL accounts on component mount to populate the select dropdown
     useEffect(() => {
         // Fetch GL accounts for the select dropdown, used in both add and edit modes
         generalLedgerAccountService.getAll()
@@ -39,13 +48,14 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
             });
     }, []);
 
+    // Set default form values based on whether we're in edit mode or add mode
     const defaultValues: z.infer<typeof bankTransactionMappingSchema> = isEditMode ? {
         searchTerm: mapping!.searchTerm,
         matchStrategy: mapping!.matchStrategy,
         targetGeneralLedgerAccountId: mapping!.targetGeneralLedgerAccountId.toString(),
         descriptionTemplate: mapping!.descriptionTemplate,
         referenceTemplate: mapping!.referenceTemplate,
-        priority: mapping!.priority
+        priority: mapping!.priority ?? 1 // Default to 1 if priority is undefined/null
     } : {
         searchTerm: '',
         matchStrategy: '',
@@ -55,11 +65,14 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
         priority: 1
     };
 
+    // Initialize the form with react-hook-form, using zod for validation and setting default values based on mode
     const form = useForm<BankTransactionMappingFormData>({
         resolver: zodResolver(bankTransactionMappingSchema),
         defaultValues
     });
 
+    // Mutation for saving the mapping, which handles both create and update based on the mode. 
+    // It also invalidates the relevant query to refresh the list after a successful mutation.
     const {mutate: saveMapping, isPending} = useMutation({
         mutationFn: (data: Omit<BankTransactionMapping, 'id'>) => {
             if (isEditMode) 
@@ -76,6 +89,7 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
         }
     });
 
+    // Handle form submission by preparing the payload and calling the save mutation
     const onSubmit = (data: BankTransactionMappingFormData) => {
         const payload: Omit<BankTransactionMapping, 'id'> = {
             ...data,
@@ -84,6 +98,20 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
             priority: Number(data.priority) // Ensure priority is a number
         };
         saveMapping(payload);
+    }
+
+    // Handle deletion of a bank transaction mapping, which is only available in edit mode. 
+    // It calls the delete API and invalidates the query on success.
+    const onDelete = () => {
+        if (!isEditMode) return; // Should never happen since delete button is only shown in edit mode
+        bankTransactionMappingService.delete(mapping!.id)
+            .then(() => {
+                queryClient.invalidateQueries({ queryKey: ['bankTransactionMappings'] });
+                closeDialog();
+            })
+            .catch(error => {
+                console.error('Error deleting bank transaction mapping:', error);
+            });
     }
 
     if (isLoadingAccounts) return <div>Loading...</div>;
@@ -139,7 +167,7 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
 
             </LedgerFormBody>
             <LedgerFormFooter>
-                {isEditMode && <Button type="button" variant="destructive">Delete</Button>}
+                {isEditMode && <Button type="button" variant="destructive" onClick={onDelete}>Delete</Button>}
                 <Button type="button" variant="cancel" onClick={closeDialog}>Cancel</Button>                    
                 <Button type="submit" variant="submit" disabled={isPending}>{isPending ? buttonTextLoading : buttonText}</Button>
             </LedgerFormFooter>

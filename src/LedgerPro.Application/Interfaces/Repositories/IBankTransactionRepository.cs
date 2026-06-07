@@ -10,6 +10,8 @@ public interface IBankTransactionRepository
     Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions);  
     Task<List<BankTransactionMapping>> GetBankTransactionMappingsAsync();
     Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping);
+    Task<BankTransactionMapping> UpdateBankTransactionMappingAsync(Guid id, BankTransactionMapping mapping);
+    Task DeleteBankTransactionMappingAsync(Guid mappingId);
     Task AddStatementImportAsync(StatementImport statementImport);
     Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping);
     Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding);

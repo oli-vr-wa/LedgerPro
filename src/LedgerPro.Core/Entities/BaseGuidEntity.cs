@@ -5,5 +5,5 @@ namespace LedgerPro.Core.Entities;
 /// </summary>
 public abstract class BaseGuidEntity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    public Guid Id { get; set; } = Guid.Empty; // Let the database generate the GUID value, so we initialize it to Guid.Empty to avoid confusion with uninitialized entities
 }

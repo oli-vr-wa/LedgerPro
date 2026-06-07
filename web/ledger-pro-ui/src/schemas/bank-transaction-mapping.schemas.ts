@@ -7,7 +7,7 @@ export const bankTransactionMappingSchema = z.object({
     targetGeneralLedgerAccountId: z.string().min(1, "Please select a General Ledger Account"),
     descriptionTemplate: z.string().min(5, "Description Template is required"),
     referenceTemplate: z.string().min(5, "Reference Template is required"),
-    priority: z.number().min(1, "Priority is required")
+    priority: z.coerce.number("Priority must be a number").min(1, "Priority is required") as z.ZodNumber
 }).refine((data) => data.matchStrategy !== '', {
     message: "Match Strategy is required",  
     path: ['matchStrategy']
