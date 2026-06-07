@@ -7,6 +7,7 @@ using System.Data.Common;
 using LedgerPro.Application.Extensions;
 using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Enums;
+using LedgerPro.Infrastructure.Extensions;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -58,6 +59,47 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         return mapping;
     }
     
+    /// <summary>
+    /// Updates an existing BankTransactionMapping entity in the database context. 
+    /// This method is used to modify an existing mapping rule that defines how certain bank transactions should be categorized and matched to GeneralLedgerItems 
+    /// during the import process.
+    /// The method takes a BankTransactionMapping entity as input, which should contain the updated values as well as the ID of the mapping to be updated. 
+    /// It validates that the input is not null and then updates the existing mapping in the database context.
+    /// </summary>
+    /// <param name="mapping">The BankTransactionMapping entity to update.</param>
+    /// <returns>The updated BankTransactionMapping entity.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the input mapping is null.</exception>
+    public async Task<BankTransactionMapping> UpdateBankTransactionMappingAsync(Guid id, BankTransactionMapping mapping)
+    {
+        if (mapping == null)
+            throw new ArgumentNullException(nameof(mapping), "The bank transaction mapping cannot be null.");
+
+        var existingMapping = await _dbContext.BankTransactionMappings.FindAsync(id) ??
+            throw new KeyNotFoundException($"Bank transaction mapping with ID {id} not found.");
+
+        _dbContext.Entry(existingMapping).UpdateFrom(mapping);
+
+        return existingMapping;
+    }
+
+    /// <summary>
+    /// Deletes a BankTransactionMapping entity from the database context based on its unique identifier (ID). 
+    /// This method is used to remove an existing mapping rule that defines how certain bank transactions should be categorized and matched to GeneralLedgerItems 
+    /// during the import process.
+    /// The method takes the ID of the mapping to be deleted as input, retrieves the corresponding mapping from the database, and if found, removes it from the context. 
+    /// If the mapping with the specified ID does not exist, a KeyNotFoundException is thrown to indicate that the requested mapping could not be found in the database.
+    /// </summary> 
+    /// <param name="mappingId">The unique identifier of the BankTransactionMapping to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the bank transaction mapping with the specified ID is not found.</exception>
+    public async Task DeleteBankTransactionMappingAsync(Guid mappingId)
+    {
+        var mapping = await _dbContext.BankTransactionMappings.FindAsync(mappingId) ??
+            throw new KeyNotFoundException($"Bank transaction mapping with ID {mappingId} not found.");
+
+        _dbContext.BankTransactionMappings.Remove(mapping);
+    }
+
     /// <summary>
     /// Adds a StatementImport entity to the database context. This method is used during the bank statement import process to create a record of the import operation, 
     /// including details such as the bank source, import date, file hash, and transaction count. 

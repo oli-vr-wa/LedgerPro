@@ -53,7 +53,12 @@ public class GlobalExceptionHandler : IExceptionHandler
                 problemDetails.Title = "Something went wrong - Bad Request";
                 problemDetails.Detail = exception.Message;
                 break;                        
-                
+
+            case KeyNotFoundException:
+                problemDetails.Status = StatusCodes.Status404NotFound;
+                problemDetails.Title = "Resource Not Found - Not Found";
+                problemDetails.Detail = exception.Message;
+                break;    
             // Add more specific exception types and mappings as needed
 
             default:

@@ -28,7 +28,9 @@ public static class BankTransactionEndpointExtensions
         var group = app.MapGroup("/api/v1/banktransactions").WithTags("Bank Transactions");
 
         group.MapGet("/mappings", GetBankTransactionMappingsAsync);
-        group.MapPost("/mappings", AddBankTransactionMappingAsync);
+        group.MapPost("/mapping", AddBankTransactionMappingAsync);
+        group.MapPut("/mapping/{id:guid}", UpdateBankTransactionMappingAsync);
+        group.MapDelete("/mapping/{id:guid}", DeleteBankTransactionMappingAsync);
         group.MapGet("/{bankSourceId:guid}/transactions", GetBankTransactionsForFinancialYearAsync);
         group.MapPost("/reconcile", ReconcileBankTransactionAsync);
         group.MapPost("/unreconcile", UnreconcileBankTransactionAsync);
@@ -60,6 +62,45 @@ public static class BankTransactionEndpointExtensions
         await unitOfWork.CommitAsync();
 
         return Results.Created($"/api/v1/banktransactions/mappings/{mapping.Id}", new ActionResponse("Bank transaction mapping added successfully."));
+    }
+
+    /// <summary>
+    /// Updates an existing bank transaction mapping in the database using the IBankTransactionRepository and commits the transaction using the IUnitOfWork.
+    /// </summary>
+    /// <param name="id">The ID of the bank transaction mapping to update.</param>
+    /// <param name="mapping">The updated bank transaction mapping.</param>
+    /// <param name="repo">The repository used to access bank transaction mappings.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> UpdateBankTransactionMappingAsync(Guid id, BankTransactionMapping mapping, [FromServices] IBankTransactionRepository repo, [FromServices] IUnitOfWork unitOfWork)
+    {
+        if (id == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The mapping ID is required."));
+        if (mapping == null)
+            return Results.BadRequest(new ErrorResponse("The mapping data is required."));
+
+        var updatedMapping = await repo.UpdateBankTransactionMappingAsync(id, mapping);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(updatedMapping);
+    }
+
+    /// <summary>
+    /// Deletes an existing bank transaction mapping from the database using the IBankTransactionRepository and commits the transaction using the IUnitOfWork.
+    /// </summary>
+    /// <param name="id">The ID of the bank transaction mapping to delete.</param>
+    /// <param name="repo">The repository used to access bank transaction mappings.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> DeleteBankTransactionMappingAsync(Guid id, [FromServices] IBankTransactionRepository repo, [FromServices] IUnitOfWork unitOfWork)
+    {
+        if (id == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The mapping ID is required."));
+
+        await repo.DeleteBankTransactionMappingAsync(id);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank transaction mapping deleted successfully."));
     }
 
     /// <summary>
