@@ -5,9 +5,10 @@ import React from "react";
 interface DataTableProps<TData, Tvalue> {
     columns: ColumnDef<TData, Tvalue>[];
     data: TData[];
+    onRowClick?: (row: TData) => void; // Optional click handler for rows
 }
 
-export function DataTable<TData, Tvalue>({ columns, data }: DataTableProps<TData, Tvalue>) {
+export function DataTable<TData, Tvalue>({ columns, data, onRowClick }: DataTableProps<TData, Tvalue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
     const table = useReactTable({
@@ -40,7 +41,11 @@ export function DataTable<TData, Tvalue>({ columns, data }: DataTableProps<TData
                 <TableBody>
                     {table.getRowModel().rows?.length ? (
                         table.getRowModel().rows.map((row) => (
-                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                            <TableRow
+                                key={row.id}
+                                data-state={row.getIsSelected() && "selected"}
+                                onClick={() => onRowClick?.(row.original)}
+                            >
                                 {row.getVisibleCells().map((cell) => (
                                     <TableCell key={cell.id}>
                                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
