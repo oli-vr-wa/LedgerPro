@@ -1,3 +1,4 @@
+using LedgerPro.Application.DTOs.BankSource;
 using LedgerPro.Core.Entities;
 
 namespace LedgerPro.Application.Interfaces.Repositories;
@@ -11,5 +12,8 @@ public interface IBankSourceRepository
     Task<BankSource?> GetBankSourceByIdAsync(Guid bankSourceId);
     Task<List<BankSource>> GetBankSourcesAsync();
     Task AddBankSourceAsync(BankSource bankSource);   
-     Task<bool> IsBankSourceNameInUseAsync(string name);
+    Task UpdateBankSourceAsync(Guid id, UpdateBankSourceRequest bankSource);
+    Task DeleteBankSourceAsync(Guid bankSourceId);
+    Task<bool> IsBankSourceNameInUseAsync(string name);
+    Task<bool> IsBankSourceInUseAsync(Guid bankSourceId);
 }

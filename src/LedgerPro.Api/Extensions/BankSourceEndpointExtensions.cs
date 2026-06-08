@@ -2,7 +2,6 @@ using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Common;
 using LedgerPro.Application.DTOs.BankStatement;
-using LedgerPro.Core.Entities;
 using LedgerPro.Application.DTOs.BankSource;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,11 +12,13 @@ public static class BankSourceEndpointExtensions
     public static IEndpointRouteBuilder MapBankSourcesEndpoints(this IEndpointRouteBuilder app)
     {
         // Use a group for bank sources
-        var group = app.MapGroup("/api/v1/banksources").WithTags("Bank Sources");
+        var group = app.MapGroup("/api/v1").WithTags("Bank Sources");
 
-        group.MapPost("/{id:guid}/import-statements", ImportBankStatementAsync).DisableAntiforgery();
-        group.MapGet("/", GetBankSourcesAsync);
-        group.MapPost("/", AddBankSourceAsync);
+        group.MapPost("/banksources/{id:guid}/import-statements", ImportBankStatementAsync).DisableAntiforgery();
+        group.MapGet("/banksources/", GetBankSourcesAsync);
+        group.MapPost("/banksource/", AddBankSourceAsync);
+        group.MapPut("/banksource/{id:guid}", UpdateBankSourceAsync);
+        group.MapDelete("/banksource/{id:guid}", DeleteBankSourceAsync);
 
         return app;
     }
@@ -83,5 +84,42 @@ public static class BankSourceEndpointExtensions
         var bankSourceId = await service.AddBankSourceAsync(request);
         await unitOfWork.CommitAsync();
         return Results.Created($"/api/v1/banksources/{bankSourceId}", bankSourceId);
+    }
+
+    /// <summary>
+    /// Updates an existing bank source with the specified ID using the provided update request data.
+    /// </summary>
+    /// <param name="id">The unique identifier of the bank source to update.</param>
+    /// <param name="request">The update request containing the new bank source data.</param>
+    /// <param name="repo">The bank source repository.</param>
+    /// <param name="unitOfWork">The unit of work for committing changes.</param>
+    /// <returns>A result indicating the outcome of the update operation.</returns>
+    internal static async Task<IResult> UpdateBankSourceAsync(Guid id, UpdateBankSourceRequest request, [FromServices]IBankSourceRepository repo, [FromServices]IUnitOfWork unitOfWork)
+    {
+        if (request == null)        
+            return Results.BadRequest(new ErrorResponse("Bank source data is required."));
+
+        await repo.UpdateBankSourceAsync(id, request);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank source updated successfully."));
+    }
+
+    /// <summary>
+    /// Deletes an existing bank source with the specified ID.
+    /// </summary>
+    /// <param name="id">The unique identifier of the bank source to delete.</param>
+    /// <param name="service">The bank source service.</param>
+    /// <param name="unitOfWork">The unit of work for committing changes.</param>
+    /// <returns>A result indicating the outcome of the delete operation.</returns>
+    internal static async Task<IResult> DeleteBankSourceAsync(Guid id, [FromServices]IBankSourceService service, [FromServices]IUnitOfWork unitOfWork)
+    {
+        if (id == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("Invalid bank source ID."));
+
+        await service.DeleteBankSourceAsync(id);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank source deleted successfully."));
     }
 }
