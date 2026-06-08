@@ -96,6 +96,42 @@ public class BankSourceRepository(LedgerDbContext dbContext) : IBankSourceReposi
     /// </summary>
     /// <param name="bankSourceId">The unique identifier of the BankSource to check.</param>
     /// <returns>True if the bank source is in use; otherwise, false.</returns>
-    public async Task<bool> IsBankSourceInUseAsync(Guid bankSourceId) =>
-        await _dbContext.BankTransactions.AnyAsync(t => t.BankSourceId == bankSourceId);
+    public async Task<bool> IsBankSourceInUseAsync(Guid bankSourceId) {
+        if (bankSourceId == Guid.Empty)
+            throw new ArgumentException("Invalid bank source ID.");
+        
+        var bankSourceGlAccountId = await GetBankSourceGeneralLedgerAccountIdAsync(bankSourceId);
+
+        bool isInUseOnBankTransactions = await _dbContext.BankTransactions.AnyAsync(t => t.BankSourceId == bankSourceId);
+        // Additionally check if the bank source's GL account is referenced by any general ledger items, 
+        // which would also indicate that the bank source is in use and cannot be deleted.
+        bool isInUseOnGeneralLedgerItems = await _dbContext.GeneralLedgerItems.AnyAsync(t => t.GeneralLedgerAccountId == bankSourceGlAccountId);
+
+        return isInUseOnBankTransactions || isInUseOnGeneralLedgerItems;
+    }   
+
+    /// <summary>
+    /// Retrieves the general ledger account ID associated with a given bank source ID. 
+    /// This method is used to find the GL account that corresponds to a specific bank source,
+    /// which can be useful for various financial operations and validations.
+    /// </summary>
+    /// <param name="bankSourceId">The unique identifier of the bank source.</param>
+    /// <returns>The ID of the associated general ledger account.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided ID is empty.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown when the bank source is not found.</exception>
+    public async Task<int> GetBankSourceGeneralLedgerAccountIdAsync(Guid bankSourceId)
+    {
+        if (bankSourceId == Guid.Empty)
+            throw new ArgumentException("Invalid bank source ID.");
+
+        int glAccountId = await _dbContext.BankSources
+            .Where(bs => bs.Id == bankSourceId)
+            .Select(bs => bs.GeneralLedgerAccountId)
+            .FirstOrDefaultAsync();
+
+        if (glAccountId == 0)
+            throw new KeyNotFoundException($"Bank source with ID {bankSourceId} not found.");
+
+        return glAccountId;
+    }     
 }

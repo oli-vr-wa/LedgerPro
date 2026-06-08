@@ -87,9 +87,14 @@ public class BankSourceService(
         if (bankSourceId == Guid.Empty)
             throw new ArgumentException("Invalid bank source ID.", nameof(bankSourceId));
 
+        int bankSourceGlAccountId = await _bankSourceRepository.GetBankSourceGeneralLedgerAccountIdAsync(bankSourceId);
+
         if (await _bankSourceRepository.IsBankSourceInUseAsync(bankSourceId))
             throw new BusinessException("The bank source is currently in use and cannot be deleted.");
 
+        // First delete the associated general ledger account to ensure that there are no orphaned GL accounts left in the system after the bank source is deleted.
+        await _generalLedgerRepository.DeleteGeneralLedgerAccountAsync(bankSourceGlAccountId);            
+        // Then delete the bank source itself.
         await _bankSourceRepository.DeleteBankSourceAsync(bankSourceId);
     }
 }
