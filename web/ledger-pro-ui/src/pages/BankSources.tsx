@@ -22,8 +22,8 @@ export function BankSources() {
     }
 
     const handleOpenDialog = (isOpen: boolean) => {
-        setSelectedBankSource(undefined); // Clear selected bank source when opening the dialog
         setIsDialogOpen(isOpen); // Ensure dialog state is updated
+        setSelectedBankSource(undefined); // Clear selected bank source when opening the dialog        
     }
 
     if (isLoading) return <div>Loading...</div>;

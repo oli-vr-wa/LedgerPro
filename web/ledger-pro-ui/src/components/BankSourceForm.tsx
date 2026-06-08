@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { LedgerForm, LedgerFormBody, LedgerFormFooter } from './ui/form-fields/LedgerForm';
 import { LedgerInput } from './ui/form-fields/LedgerInput';
 import { Button } from './ui/button';
+import { showApiToast } from '@/lib/toast-utils';
 
 interface BankSourceFormProps {
     bankSource?: BankSource; // Optional prop to determine if we're in add or edit mode
@@ -55,9 +56,11 @@ export function BankSourceForm({ bankSource, closeDialog }: BankSourceFormProps)
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['bankSources'] });
+            showApiToast(isEditMode ? 'Bank source updated successfully' : 'Bank source created successfully');
             closeDialog();
         },
         onError: (error) => {
+            showApiToast(isEditMode ? 'Error updating bank source' : 'Error creating bank source', '', error);
             console.error('Error adding bank source:', error);
         }
     });
@@ -76,10 +79,11 @@ export function BankSourceForm({ bankSource, closeDialog }: BankSourceFormProps)
         bankSourceService.delete(bankSource.id)
             .then(() => {
                 queryClient.invalidateQueries({ queryKey: ['bankSources'] });
+                showApiToast('Bank source deleted successfully');
                 closeDialog();
             })
             .catch(error => {
-                console.error('Error deleting bank source:', error);
+                showApiToast('Error deleting bank source', '', error);
             });
     };
 
