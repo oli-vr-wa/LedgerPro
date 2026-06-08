@@ -7,6 +7,7 @@ using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
+using LedgerPro.Core.Exceptions;
 using NSubstitute;
 
 namespace LedgerPro.Tests.Application.Services.BankSourceServiceTests;
@@ -85,7 +86,7 @@ public class AddBankSourceTests : BankSourceServiceTestsBase
         _generalLedgerRepository.GetGeneralLedgerAccountsByRangeAsync(1000, 1010).Returns(glAccountsBankSource);
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => _bankSourceService.AddBankSourceAsync(request));
+        await Assert.ThrowsAsync<BusinessException>(() => _bankSourceService.AddBankSourceAsync(request));
         // Verify that the repository methods were called once
         await _generalLedgerRepository.Received(1).GetGeneralLedgerAccountsByRangeAsync(1000, 1010);
         await _bankSourceRepository.DidNotReceive().AddBankSourceAsync(Arg.Any<BankSource>());        
