@@ -5,4 +5,5 @@ namespace LedgerPro.Application.Interfaces.Services;
 public interface IBankSourceService
 {
     Task<Guid> AddBankSourceAsync(AddBankSourceRequest request);
+    Task DeleteBankSourceAsync(Guid bankSourceId);
 }

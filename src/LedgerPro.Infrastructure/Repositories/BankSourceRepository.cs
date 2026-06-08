@@ -1,6 +1,8 @@
 using LedgerPro.Core.Entities;
 using LedgerPro.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
+using LedgerPro.Infrastructure.Extensions;
+using LedgerPro.Application.DTOs.BankSource;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -26,6 +28,52 @@ public class BankSourceRepository(LedgerDbContext dbContext) : IBankSourceReposi
         await _dbContext.BankSources.AddAsync(bankSource);    
     
     /// <summary>
+    /// Updates an existing BankSource entity in the database context. 
+    /// This method is used to modify the details of an existing bank source, such as its name or connection settings.
+    /// </summary>
+    /// <param name="id">The unique identifier of the BankSource to update.</param>
+    /// <param name="bankSource">The BankSource entity with updated values.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided ID is empty or the BankSource entity is null.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown when no BankSource entity with the specified ID is found.</exception>
+    public async Task UpdateBankSourceAsync(Guid id, UpdateBankSourceRequest dto)
+    {
+        if (id == Guid.Empty || dto == null)
+            throw new ArgumentException("Invalid bank source ID or bank source entity.");
+        if (dto == null)
+            throw new ArgumentException("Bank source entity cannot be null.");
+
+        var existingBankSource = await _dbContext.BankSources.FindAsync(id) ??
+            throw new KeyNotFoundException($"Bank source with ID {id} not found.");
+        
+        existingBankSource.AccountName = dto.AccountName;
+        existingBankSource.AccountNumber = dto.AccountNumber;
+        existingBankSource.BankName = dto.BankName;
+        existingBankSource.BankType = dto.BankType;
+    }
+
+    /// <summary>
+    /// Deletes a BankSource entity from the database context based on its unique identifier. 
+    /// This method is used to remove a bank source from the system, which may be necessary if the bank source is no longer needed or if it was added in error. 
+    /// Note that this method does not check for related entities (e.g., transactions), this is handled at the service layer to ensure that bank sources that are in use cannot be 
+    /// deleted without proper handling of related data.
+    /// </summary>
+    /// <param name="bankSourceId">The unique identifier of the BankSource to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided ID is empty.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown when no BankSource entity with the specified ID is found.</exception>
+    public async Task DeleteBankSourceAsync(Guid bankSourceId)
+    {
+        if (bankSourceId == Guid.Empty)
+            throw new ArgumentException("Invalid bank source ID.");
+
+        var bankSource = await _dbContext.BankSources.FindAsync(bankSourceId) ??
+            throw new KeyNotFoundException($"Bank source with ID {bankSourceId} not found.");
+
+        _dbContext.BankSources.Remove(bankSource);
+    }
+
+    /// <summary>
     /// Retrieves all BankSource entities from the database. This method is typically used to get a list of all bank sources 
     /// that have been configured in the system, allowing the application to display them or use them for selection when importing bank statements.
     /// </summary>
@@ -41,4 +89,13 @@ public class BankSourceRepository(LedgerDbContext dbContext) : IBankSourceReposi
     /// <returns>True if the bank source name is already in use; otherwise, false.</returns>
     public async Task<bool> IsBankSourceNameInUseAsync(string name) =>
         await _dbContext.BankSources.AnyAsync(bs => bs.BankName == name);
+
+    /// <summary>
+    /// Checks if a bank source is currently in use by any bank transactions. 
+    /// This method is used to determine if a bank source can be safely deleted without leaving orphaned transactions that reference it.
+    /// </summary>
+    /// <param name="bankSourceId">The unique identifier of the BankSource to check.</param>
+    /// <returns>True if the bank source is in use; otherwise, false.</returns>
+    public async Task<bool> IsBankSourceInUseAsync(Guid bankSourceId) =>
+        await _dbContext.BankTransactions.AnyAsync(t => t.BankSourceId == bankSourceId);
 }

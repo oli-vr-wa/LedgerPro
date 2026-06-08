@@ -7,6 +7,7 @@ using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
+using LedgerPro.Core.Exceptions;
 
 namespace LedgerPro.Application.Services;
 
@@ -27,7 +28,7 @@ public class BankSourceService(
     /// <returns>A task representing the asynchronous operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when the request is null.</exception>
     /// <exception cref="ArgumentException">Thrown when any required property of the request is null or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the maximum number of bank sources has been reached.</exception>
+    /// <exception cref="BusinessException">Thrown when the maximum number of bank sources has been reached.</exception>
     public async Task<Guid> AddBankSourceAsync(AddBankSourceRequest request)
     {
         if (request == null)
@@ -47,7 +48,7 @@ public class BankSourceService(
 
         // Check if the next available GL account ID exceeds the maximum allowed for bank sources.
         if (nextGlAccountId > 1010)
-            throw new InvalidOperationException("The maximum number of bank sources has been reached. Cannot add more bank sources.");     
+            throw new BusinessException("The maximum number of bank sources has been reached. Cannot add more bank sources.");     
 
         var newGlAccount = new GeneralLedgerAccount
         {
@@ -71,5 +72,24 @@ public class BankSourceService(
         await _bankSourceRepository.AddBankSourceAsync(bankSource);
 
         return bankSource.Id;
+    }
+
+    /// <summary>
+    /// Deletes a bank source from the system. This method first checks if the bank source is currently in use by any transactions. 
+    /// If it is in use, an exception is thrown to prevent deletion. If it is not in use, the bank source is deleted.
+    /// </summary>
+    /// <param name="bankSourceId">The unique identifier of the bank source to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided ID is empty.</exception>
+    /// <exception cref="BusinessException">Thrown when the bank source is currently in use.</exception>
+    public async Task DeleteBankSourceAsync(Guid bankSourceId)
+    {
+        if (bankSourceId == Guid.Empty)
+            throw new ArgumentException("Invalid bank source ID.", nameof(bankSourceId));
+
+        if (await _bankSourceRepository.IsBankSourceInUseAsync(bankSourceId))
+            throw new BusinessException("The bank source is currently in use and cannot be deleted.");
+
+        await _bankSourceRepository.DeleteBankSourceAsync(bankSourceId);
     }
 }
