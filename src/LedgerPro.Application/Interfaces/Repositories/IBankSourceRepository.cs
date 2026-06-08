@@ -16,4 +16,5 @@ public interface IBankSourceRepository
     Task DeleteBankSourceAsync(Guid bankSourceId);
     Task<bool> IsBankSourceNameInUseAsync(string name);
     Task<bool> IsBankSourceInUseAsync(Guid bankSourceId);
+    Task<int> GetBankSourceGeneralLedgerAccountIdAsync(Guid bankSourceId);
 }
