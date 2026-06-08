@@ -3,6 +3,7 @@ using LedgerPro.Core.Enums;
 using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Reports;
 using Microsoft.EntityFrameworkCore;
+using LedgerPro.Infrastructure.Extensions;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -72,14 +73,53 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
         await _dbContext.GeneralLedgerAccounts.AddAsync(glAccount);
 
     /// <summary>
-    /// Checks if a given general ledger account ID is currently in use by any GeneralLedgerItem entities. 
-    /// This method is used to prevent the deletion of general ledger accounts that are still referenced by existing ledger items, ensuring data integrity.
+    /// Updates an existing GeneralLedgerAccount entity in the database context. 
+    /// This method is used to modify the details of an existing general ledger account, such as its name or account type. It first checks if the provided 
+    /// GeneralLedgerAccount object is null and throws an ArgumentNullException if it is.
+    /// </summary>
+    /// <param name="id">The ID of the GeneralLedgerAccount to update.</param>
+    /// <param name="glAccount">The GeneralLedgerAccount entity with updated values.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when the provided GeneralLedgerAccount is null.</exception>
+    /// <exception cref="KeyNotFoundException">Thrown when the GeneralLedgerAccount with the specified ID is not found.</exception>
+    public async Task UpdateGeneralLedgerAccountAsync(int id, GeneralLedgerAccount glAccount)
+    {
+        if (glAccount == null)
+            throw new ArgumentNullException(nameof(glAccount), "GeneralLedgerAccount cannot be null.");
+
+        var existingAccount = await _dbContext.GeneralLedgerAccounts.FindAsync(id) ??
+            throw new KeyNotFoundException($"GeneralLedgerAccount with ID {id} not found.");        
+
+        _dbContext.Entry(existingAccount).UpdateFrom(glAccount);
+    }
+
+    /// <summary>
+    /// Deletes an existing GeneralLedgerAccount entity from the database context. 
+    /// This method is used to remove a general ledger account that is no longer needed.
+    /// </summary>
+    /// <param name="id">The ID of the GeneralLedgerAccount to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the GeneralLedgerAccount with the specified ID is not found.</exception>
+    public async Task DeleteGeneralLedgerAccountAsync(int id)
+    {
+        var accountToDelete = await _dbContext.GeneralLedgerAccounts.FindAsync(id) ??
+            throw new KeyNotFoundException($"GeneralLedgerAccount with ID {id} not found.");
+
+        _dbContext.GeneralLedgerAccounts.Remove(accountToDelete);
+    }
+
+    /// <summary>
+    /// Checks if a given general ledger account ID is currently in use by any GeneralLedgerItem entities or BankTransactionMappings. 
+    /// This method is used to prevent the deletion of general ledger accounts that are still referenced by existing ledger items or bank transaction mappings, ensuring data integrity.
     /// </summary>
     /// <param name="accountId">The ID of the general ledger account to check.</param>
     /// <returns>A task representing the asynchronous operation, containing a boolean value indicating whether the account is in use.</returns>
     public async Task<bool> IsGeneralLedgerAccountIdInUseAsync(int accountId)
     {
-        return await _dbContext.GeneralLedgerItems.AnyAsync(item => item.GeneralLedgerAccountId == accountId);
+        bool isInUseInLedgerItems = await _dbContext.GeneralLedgerItems.AnyAsync(item => item.GeneralLedgerAccountId == accountId);
+        bool isInUseInBankTransactionMappings = await _dbContext.BankTransactionMappings.AnyAsync(mapping => mapping.TargetGeneralLedgerAccountId == accountId);
+
+        return isInUseInLedgerItems || isInUseInBankTransactionMappings;
     }
 
     /// <summary>

@@ -41,6 +41,28 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
     }
 
     /// <summary>
+    /// Deletes an existing general ledger account from the system. 
+    /// Validates that the account is not currently in use in any general ledger items or bank transaction mappings before deletion.
+    /// If the account is in use, throws a BusinessException with an appropriate error message to prevent deletion of an account that is currently being referenced.
+    /// </summary>
+    /// <param name="id">The ID of the general ledger account to delete.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="ArgumentException">Thrown when the provided ID is zero.</exception>
+    /// <exception cref="BusinessException">Thrown when the general ledger account is currently in use.</exception>
+    public async Task DeleteGeneralLedgerAccountAsync(int id)
+    {
+        if (id == 0)
+            throw new ArgumentException("ID cannot be zero.", nameof(id));
+
+        // First ensure if the account is used in any GL items or Bank Transaction Mappings, if so throw a BusinessException to prevent deletion of an account that is in use.
+        bool isInUse = await _generalLedgerRepository.IsGeneralLedgerAccountIdInUseAsync(id);
+        if (isInUse)
+            throw new BusinessException($"General ledger account with ID {id} is currently in use and cannot be deleted.");
+
+        await _generalLedgerRepository.DeleteGeneralLedgerAccountAsync(id);
+    }
+
+    /// <summary>
     /// Retrieves a summary of accounts for a specified financial year, including total debits, total credits, and calculated balance for each account.
     /// If the financialYearEnding parameter is not provided, it defaults to the current financial year based on the current date. 
     /// The method applies accounting rules to calculate the balance for each account based on its type (Asset, Liability, Equity, Revenue, Expense).
