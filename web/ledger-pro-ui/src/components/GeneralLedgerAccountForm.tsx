@@ -10,6 +10,7 @@ import { Button } from './ui/button';
 import { GENERAL_LEDGER_ACCOUNT_TYPES, type GeneralLedgerAccount } from '../types/general-ledger-account.types';
 import { glAccountSchema, type glAccountFormData } from '../schemas/general-ledger-account.schemas';
 import { z } from 'zod';
+import { showApiToast } from '@/lib/toast-utils';
 
 interface GlAccountFormProps {
     account?: GeneralLedgerAccount; // Optional account prop to determine if we're in add or edit mode
@@ -60,9 +61,11 @@ export function GeneralLedgerAccountForm({ account, closeDialog }: GlAccountForm
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['generalLedgerAccounts'] });
+            showApiToast(isEditMode ? 'GL account updated successfully' : 'GL account created successfully');
             closeDialog();
         },
         onError: (error) => {
+            showApiToast(isEditMode ? 'Error updating GL account' : 'Error creating GL account', '', error);
             console.error('Error adding general ledger account:', error);
         }
     });
@@ -83,10 +86,11 @@ export function GeneralLedgerAccountForm({ account, closeDialog }: GlAccountForm
         generalLedgerAccountService.delete(account.id)
             .then(() => {
                 queryClient.invalidateQueries({ queryKey: ['generalLedgerAccounts'] });
+                showApiToast('GL account deleted successfully');
                 closeDialog();
             })
             .catch(error => {
-                console.error('Error deleting general ledger account:', error);
+                showApiToast('Error deleting GL account', '', error);
             });
     };
 

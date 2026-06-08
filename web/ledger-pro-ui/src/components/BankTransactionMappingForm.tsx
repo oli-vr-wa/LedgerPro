@@ -12,6 +12,8 @@ import { LedgerSelect } from "./ui/form-fields/LedgerSelect";
 import { Button } from "./ui/button";
 import type { GeneralLedgerAccount } from "@/types/general-ledger-account.types";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { showApiToast } from "@/lib/toast-utils";
 
 interface BankTransactionMappingFormProps {
     mapping?: BankTransactionMapping; // Optional mapping prop to determine if we're in add or edit mode
@@ -48,6 +50,8 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
             });
     }, []);
 
+
+
     // Set default form values based on whether we're in edit mode or add mode
     const defaultValues: z.infer<typeof bankTransactionMappingSchema> = isEditMode ? {
         searchTerm: mapping!.searchTerm,
@@ -73,8 +77,8 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
 
     // Mutation for saving the mapping, which handles both create and update based on the mode. 
     // It also invalidates the relevant query to refresh the list after a successful mutation.
-    const {mutate: saveMapping, isPending} = useMutation({
-        mutationFn: (data: Omit<BankTransactionMapping, 'id'>) => {
+    const {mutate: saveMapping, isPending} = useMutation({        
+        mutationFn: (data: Omit<BankTransactionMapping, 'id'>) => {                
             if (isEditMode) 
                 return bankTransactionMappingService.update(mapping!.id, data);
             else 
@@ -82,9 +86,11 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['bankTransactionMappings'] });
+            showApiToast(isEditMode ? 'Mapping updated' : 'Mapping added successfully');            
             closeDialog();
         },
         onError: (error) => {
+            showApiToast('Error saving mapping', '', error);
             console.error('Error saving bank transaction mapping:', error);
         }
     });
@@ -107,9 +113,11 @@ export function BankTransactionMappingForm({ mapping, closeDialog }: BankTransac
         bankTransactionMappingService.delete(mapping!.id)
             .then(() => {
                 queryClient.invalidateQueries({ queryKey: ['bankTransactionMappings'] });
+                showApiToast('Mapping deleted successfully');
                 closeDialog();
             })
             .catch(error => {
+                showApiToast('Error deleting mapping', '', error);
                 console.error('Error deleting bank transaction mapping:', error);
             });
     }
