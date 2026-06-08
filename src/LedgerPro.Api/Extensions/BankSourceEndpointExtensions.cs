@@ -15,10 +15,12 @@ public static class BankSourceEndpointExtensions
         var group = app.MapGroup("/api/v1").WithTags("Bank Sources");
 
         group.MapPost("/banksources/{id:guid}/import-statements", ImportBankStatementAsync).DisableAntiforgery();
+        group.MapGet("/banksources/{id:guid}/statement-imports", GetBankSourceStatementImportsAsync);
         group.MapGet("/banksources/", GetBankSourcesAsync);
         group.MapPost("/banksource/", AddBankSourceAsync);
         group.MapPut("/banksource/{id:guid}", UpdateBankSourceAsync);
         group.MapDelete("/banksource/{id:guid}", DeleteBankSourceAsync);
+        group.MapGet("/banksources/transactions-overview", GetBankSourcesTransactionsRowsAsync);
 
         return app;
     }
@@ -50,6 +52,22 @@ public static class BankSourceEndpointExtensions
         return result.IsSuccess
             ? Results.Ok(new ImportBankStatementResponse("Bank statement imported successfully.", result.Value))
             : Results.BadRequest(new ErrorResponse(result.Error));
+    }
+
+    /// <summary>
+    /// Retrieves a list of statement imports for a specific bank source. 
+    /// This endpoint accepts the unique identifier of the bank source and uses the IBankTransactionRepository to fetch the relevant statement import data. 
+    /// The method returns a list of StatementImportRow objects, which contain metadata about each imported statement, such as the file name, import date, transaction count, 
+    /// and date range of transactions.
+    /// </summary>
+    /// <param name="id">The unique identifier of the bank source.</param>
+    /// <param name="repo">The bank transaction repository.</param>
+    /// <returns>A result containing the list of statement import rows.</returns>
+    internal static async Task<IResult> GetBankSourceStatementImportsAsync(Guid id, [FromServices]IBankTransactionRepository repo)
+    {
+        var imports = await repo.GetStatementImportRowsAsync(id);
+
+        return Results.Ok(imports);
     }
 
     /// <summary>
@@ -121,5 +139,18 @@ public static class BankSourceEndpointExtensions
         await unitOfWork.CommitAsync();
 
         return Results.Ok(new ActionResponse("Bank source deleted successfully."));
+    }
+
+    /// <summary>
+    /// Retrieves a list of BankSourceTransactionsRow objects for a specific bank source, which contain metadata about the bank source and its associated transactions. 
+    /// This method is used to get an overview of a bank source along with the date of the last import and the date of the last transaction for that bank source. 
+    /// This information can be useful for monitoring and managing bank sources in the system.
+    /// </summary>
+    /// <param name="repo">The bank source repository.</param>
+    /// <returns>A result containing the list of BankSourceTransactionsRow objects.</returns>
+    internal static async Task<IResult> GetBankSourcesTransactionsRowsAsync([FromServices]IBankSourceRepository repo)
+    {
+        var rows = await repo.GetBankSourceTransactionsRowsAsync();
+        return Results.Ok(rows);
     }
 }

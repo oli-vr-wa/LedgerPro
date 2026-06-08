@@ -3,6 +3,9 @@ import { DashboardLayout } from './layouts/DashboardLayout';
 import { BankSources } from './pages/BankSources';
 import { GeneralLedgerAccounts } from './pages/GeneralLedgerAccounts';
 import { BankTransactionMappings } from './pages/BankTransactionMappings';
+import { BankTransactionsLayout } from './layouts/BankTransactionsLayout';
+import { BankAccountSelection } from './pages/BankAccountSelection';
+import { BankSourceTransactionsLayout } from './layouts/BankSourceTransactionsLayout';
 
 // Mock components for pages
 const DashboardPage = () => <div>Dashboard Content</div>;
@@ -17,6 +20,13 @@ function App() {
           <Route path="banksources" element={<BankSources />} />
           <Route path="generalLedgerAccounts" element={<GeneralLedgerAccounts />} />
           <Route path="bankTransactionMappings" element={<BankTransactionMappings />} />
+          <Route path="transactions" element={<BankTransactionsLayout />}>
+            <Route index element={<BankAccountSelection />} />
+            <Route path=":bankSourceId/*" element={<BankSourceTransactionsLayout />}>
+              <Route index element={<div>Transactions table.</div>} />
+              <Route path="upload" element={<div>Upload Statements Content</div>} />
+            </Route>
+          </Route>
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>

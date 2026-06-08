@@ -111,12 +111,76 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         await _dbContext.StatementImports.AddAsync(statementImport);
 
     /// <summary>
+    /// Retrieves a list of StatementImportRow objects for a specific BankSourceId. 
+    /// This method is used to get a summary of all bank statement imports associated with a particular bank source (account),
+    /// including details such as the file name, import date, bank account name, transaction count, and the date range of the transactions.
+    /// </summary>
+    /// <param name="bankSourceId">The unique identifier of the bank source.</param>
+    /// <returns>A list of StatementImportRow objects.</returns>
+    public async Task<IEnumerable<StatementImportRow>> GetStatementImportRowsAsync(Guid bankSourceId)
+    {
+        var rows = await _dbContext.StatementImports
+            .Where(si => si.BankSourceId == bankSourceId)
+            .Select(si => new {
+                si.FileName,
+                si.ImportDate,
+                si.BankSource.BankName,
+                si.TransactionCount,
+                FirstTransactionDate = si.Transactions.Min(t => t.TransactionDate),
+                LastTransactionDate = si.Transactions.Max(t => t.TransactionDate)
+            })
+            .ToListAsync();
+
+        return rows.Select(si => new StatementImportRow(
+            si.FileName,
+            si.ImportDate,
+            si.BankName,
+            si.TransactionCount,
+            si.FirstTransactionDate,
+            si.LastTransactionDate
+        )).ToList();
+    }
+
+    /// <summary>
     /// Retrieves all BankTransaction entities associated with a specific BankSourceId. 
     /// </summary>
     /// <param name="bankSourceId">The ID of the bank source for which to retrieve transactions.</param>
     /// <returns>A list of BankTransaction entities.</returns>
     public async Task<List<BankTransaction>> GetBankTransactionsAsync(Guid bankSourceId) =>
         await _dbContext.BankTransactions.Where(t => t.BankSourceId == bankSourceId).ToListAsync();
+
+    /// <summary>
+    /// Retrieves a list of BankTransactionsFinancialYearRow objects for a specific BankSourceId. 
+    /// This method is used to get an overview of the bank transactions for a bank source, grouped by financial year. 
+    /// Each BankTransactionsFinancialYearRow contains the year ending, the date of the last transaction, and the count of pending transactions for that financial year. 
+    /// This information can be useful for reporting and analysis to understand the distribution of transactions across financial years and to identify any pending 
+    /// transactions that may require attention. The method filters transactions by the specified bank source, groups them by financial year, and then projects the results 
+    /// into a list of BankTransactionsFinancialYearRow objects.
+    /// </summary>
+    /// <param name="bankSourceId">The unique identifier of the bank source.</param>
+    /// <returns>A list of BankTransactionsFinancialYearRow objects.</returns>
+    public async Task<IEnumerable<BankTransactionsFinancialYearRow>> GetBankTransactionsFinancialYearRowsAsync(Guid bankSourceId)
+    {
+        var transactions = await _dbContext.BankTransactions
+            .Where(t => t.BankSourceId == bankSourceId)
+            .Select(t => new
+            {
+                t.TransactionDate,
+                t.Status
+            })
+            .ToListAsync();
+        
+        var financialYearGroups = transactions
+            .GroupBy(t => t.TransactionDate.GetFinancialYearEnding())
+            .Select(g => new BankTransactionsFinancialYearRow(
+                YearEnding: g.Key.Year,
+                LastTransactionDate: g.Max(t => t.TransactionDate),
+                PendingCount: g.Count(t => t.Status != BankTransactionStatus.Reconciled)
+            ))
+            .ToList();
+        
+        return financialYearGroups;
+    }
 
     /// <summary>
     /// Adds a collection of BankTransaction entities to the database context. This method is used during the bank statement import process to add the parsed transactions to the context before saving them to the database.

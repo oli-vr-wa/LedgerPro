@@ -1,4 +1,5 @@
 using LedgerPro.Application.DTOs.BankSource;
+using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Entities;
 
 namespace LedgerPro.Application.Interfaces.Repositories;
@@ -17,4 +18,5 @@ public interface IBankSourceRepository
     Task<bool> IsBankSourceNameInUseAsync(string name);
     Task<bool> IsBankSourceInUseAsync(Guid bankSourceId);
     Task<int> GetBankSourceGeneralLedgerAccountIdAsync(Guid bankSourceId);
+    Task<IEnumerable<BankSourceTransactionsRow>> GetBankSourceTransactionsRowsAsync();
 }

@@ -32,6 +32,7 @@ public static class BankTransactionEndpointExtensions
         group.MapPut("/mapping/{id:guid}", UpdateBankTransactionMappingAsync);
         group.MapDelete("/mapping/{id:guid}", DeleteBankTransactionMappingAsync);
         group.MapGet("/{bankSourceId:guid}/transactions", GetBankTransactionsForFinancialYearAsync);
+        group.MapGet("/{bankSourceId:guid}/transactions/financial-years-overview", GetBankTransactionsFinancialYearsRowsAsync);
         group.MapPost("/reconcile", ReconcileBankTransactionAsync);
         group.MapPost("/unreconcile", UnreconcileBankTransactionAsync);
 
@@ -124,6 +125,20 @@ public static class BankTransactionEndpointExtensions
 
         var transactions = await repo.GetBankTransactionRowsAsync(bankSourceId, financialYearEnding);
         return Results.Ok(transactions);
+    }
+
+    /// <summary>
+    /// Retrieves summary rows for bank transactions in a financial year for a specific bank source by calling the IBankTransactionRepository to get the financial year rows.
+     /// This endpoint provides an overview of the bank transactions for each financial year, including the year ending, the date of the last transaction, and the count of pending transactions. 
+     /// This information can be useful for reporting and analysis purposes, allowing users to quickly assess the status of their bank transactions across different financial years.
+    /// </summary>
+    /// <param name="bankSourceId">The unique identifier of the bank source.</param>
+    /// <param name="repo">The repository used to access bank transactions.</param>
+    /// <returns>A result containing the summary rows for the specified bank source.</returns>
+    internal static async Task<IResult> GetBankTransactionsFinancialYearsRowsAsync(Guid bankSourceId, [FromServices] IBankTransactionRepository repo)
+    {
+        var rows = await repo.GetBankTransactionsFinancialYearRowsAsync(bankSourceId);
+        return Results.Ok(rows);
     }
 
     /// <summary>
