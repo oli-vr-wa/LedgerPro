@@ -11,4 +11,4 @@ export interface BankSource {
     generalLedgerAccountId: number;
 }
 
-export type CreateBankSourcePayload = Omit<BankSource, 'id' | 'generalLedgerAccountId'>;
+export type BankSourcePayload = Omit<BankSource, 'id' | 'generalLedgerAccountId'>;

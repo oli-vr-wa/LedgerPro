@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { bankSourceService } from '../services/bankSourceService';
-import { BANK_TYPES, type BankSource, type CreateBankSourcePayload } from '../types/bank-source.types';
+import { BANK_TYPES, type BankSource, type BankSourcePayload } from '../types/bank-source.types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { LedgerSelect } from './ui/form-fields/LedgerSelect';
 import { bankSourceSchema, type BankSourceFormData } from '../schemas/bank-source.schemas';
@@ -10,7 +10,8 @@ import { LedgerForm, LedgerFormBody, LedgerFormFooter } from './ui/form-fields/L
 import { LedgerInput } from './ui/form-fields/LedgerInput';
 import { Button } from './ui/button';
 
-interface AddBankSourceFormProps {
+interface BankSourceFormProps {
+    bankSource?: BankSource; // Optional prop to determine if we're in add or edit mode
     closeDialog: () => void;
 }
 
@@ -21,10 +22,19 @@ interface AddBankSourceFormProps {
  * @param closeDialog - Function to close the dialog containing this form after successful submission or cancellation.
  * @returns JSX.Element - The rendered form component. 
  */
-export function AddBankSourceForm({ closeDialog }: AddBankSourceFormProps) {         
+export function BankSourceForm({ bankSource, closeDialog }: BankSourceFormProps) {         
+    const isEditMode = !!bankSource; // Determine mode based on presence of bankSource prop
+    const buttonText = isEditMode ? 'Save Changes' : 'Add Bank Source';
+    const buttonTextLoading = isEditMode ? 'Saving...' : 'Adding...';
+
     const queryClient = useQueryClient();
     
-    const defaultValues: z.infer<typeof bankSourceSchema> = {
+    const defaultValues: z.infer<typeof bankSourceSchema> = isEditMode ? {
+        bankName: bankSource?.bankName ?? '',
+        accountName: bankSource?.accountName ?? '',
+        accountNumber: bankSource?.accountNumber ?? '',
+        bankType: bankSource?.bankType ?? ''
+    } : {
         bankName: '',
         accountName: '',
         accountNumber: '',
@@ -36,8 +46,13 @@ export function AddBankSourceForm({ closeDialog }: AddBankSourceFormProps) {
         defaultValues
     });
 
-    const { mutate: createBankSource, isPending } = useMutation({
-        mutationFn: (data: CreateBankSourcePayload) => bankSourceService.create(data),
+    const { mutate: saveBankSource, isPending } = useMutation({
+        mutationFn: (data: BankSourcePayload) =>{
+            if (isEditMode && bankSource) 
+                return bankSourceService.update(bankSource.id, data);
+            else
+                return bankSourceService.create(data);
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['bankSources'] });
             closeDialog();
@@ -48,12 +63,24 @@ export function AddBankSourceForm({ closeDialog }: AddBankSourceFormProps) {
     });
 
     const onSubmit = async (data: BankSourceFormData) => {
-        const payload: CreateBankSourcePayload = {
+        const payload: BankSourcePayload = {
             ...data,
             bankType: data.bankType as BankSource['bankType']
         };
 
-        createBankSource(payload);
+        saveBankSource(payload);
+    };
+
+    const onDelete = () => {
+        if (!isEditMode || !bankSource) return;
+        bankSourceService.delete(bankSource.id)
+            .then(() => {
+                queryClient.invalidateQueries({ queryKey: ['bankSources'] });
+                closeDialog();
+            })
+            .catch(error => {
+                console.error('Error deleting bank source:', error);
+            });
     };
 
     return (
@@ -90,8 +117,9 @@ export function AddBankSourceForm({ closeDialog }: AddBankSourceFormProps) {
                     
             </LedgerFormBody>
             <LedgerFormFooter>
+                {isEditMode && <Button type="button" variant="destructive" onClick={onDelete}>Delete</Button>}
                 <Button type="button" variant="cancel" onClick={closeDialog}>Cancel</Button>
-                <Button type="submit" variant="submit" disabled={isPending}>{isPending ? 'Adding...' : 'Add'}</Button>
+                <Button type="submit" variant="submit" disabled={isPending}>{isPending ? buttonTextLoading : buttonText}</Button>
             </LedgerFormFooter>
         </LedgerForm>
     );
