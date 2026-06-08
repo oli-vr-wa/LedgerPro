@@ -11,22 +11,32 @@ import { GENERAL_LEDGER_ACCOUNT_TYPES, type GeneralLedgerAccount } from '../type
 import { glAccountSchema, type glAccountFormData } from '../schemas/general-ledger-account.schemas';
 import { z } from 'zod';
 
-interface AddGlAccountFormProps {
+interface GlAccountFormProps {
+    account?: GeneralLedgerAccount; // Optional account prop to determine if we're in add or edit mode
     closeDialog: () => void;    
 }
 
 /**
- * Form component for adding a new General Ledger Account. 
+ * Form component for adding or editing a General Ledger Account. 
  * Utilizes react-hook-form for form state management and Zod for validation. 
- * On successful submission, it creates a new GL account via the service and invalidates the relevant query to refresh the data.
+ * On successful submission, it creates or updates a GL account via the service and invalidates the relevant query to refresh the data.
  * @param closeDialog - Function to close the dialog containing this form after successful submission or cancellation.
  * @returns JSX.Element - The rendered form component. 
  */
-export function AddGeneralLedgerAccountForm({ closeDialog }: AddGlAccountFormProps) { 
+export function GeneralLedgerAccountForm({ account, closeDialog }: GlAccountFormProps) { 
+    const isEditMode = !!account; // Determine mode based on presence of account prop
+    const buttonText = isEditMode ? 'Save Changes' : 'Add Account';
+    const buttonTextLoading = isEditMode ? 'Saving...' : 'Adding...';
+
     const queryClient = useQueryClient();
 
     // Define default form values based on the Zod schema
-    const defaultValues: z.infer<typeof glAccountSchema> = {
+    const defaultValues: z.infer<typeof glAccountSchema> = isEditMode ? {
+        id: account?.id.toString() ?? '',
+        name: account?.name ?? '',
+        description: account?.description ?? '',
+        accountType: account?.accountType ?? ''
+    } : {
         id: '',
         name: '',
         description: '',
@@ -40,8 +50,14 @@ export function AddGeneralLedgerAccountForm({ closeDialog }: AddGlAccountFormPro
     });
 
     // TanStack Mutation for creating a new GL account
-    const { mutate: createGLAccount, isPending } = useMutation({
-        mutationFn: (data: GeneralLedgerAccount) => generalLedgerAccountService.create(data),
+    const { mutate: createOrUpdateGLAccount, isPending } = useMutation({
+        mutationFn: (data: GeneralLedgerAccount) => {
+            if (isEditMode) {
+                return generalLedgerAccountService.update(data.id, data);
+            } else {
+                return generalLedgerAccountService.create(data);
+            }
+        },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['generalLedgerAccounts'] });
             closeDialog();
@@ -51,13 +67,27 @@ export function AddGeneralLedgerAccountForm({ closeDialog }: AddGlAccountFormPro
         }
     });
 
+    // Form submission handler that prepares the payload and calls the mutation function
     const onSubmit = async (data: glAccountFormData) => {
         const payload: GeneralLedgerAccount = {
             ...data,
             id: parseInt(data.id), // Convert id to number before sending to API
             accountType: data.accountType as GeneralLedgerAccount['accountType']
         };
-        createGLAccount(payload);
+        createOrUpdateGLAccount(payload);
+    };
+
+    // Handler for deleting a GL account, only available in edit mode. It calls the delete service and invalidates the query on success.
+    const onDelete = () => {
+        if (!isEditMode || !account) return; // Should never happen, but just in case
+        generalLedgerAccountService.delete(account.id)
+            .then(() => {
+                queryClient.invalidateQueries({ queryKey: ['generalLedgerAccounts'] });
+                closeDialog();
+            })
+            .catch(error => {
+                console.error('Error deleting general ledger account:', error);
+            });
     };
 
     return (
@@ -93,8 +123,9 @@ export function AddGeneralLedgerAccountForm({ closeDialog }: AddGlAccountFormPro
                   
             </LedgerFormBody>
             <LedgerFormFooter>
+                {isEditMode && <Button type="button" variant="destructive" onClick={onDelete}>Delete</Button>}
                 <Button type="button" variant="cancel" onClick={closeDialog}>Cancel</Button>                    
-                <Button type="submit" variant="submit" disabled={isPending}>{isPending ? 'Adding...' : 'Add'}</Button>
+                <Button type="submit" variant="submit" disabled={isPending}>{isPending ? buttonTextLoading : buttonText}</Button>
             </LedgerFormFooter>       
         </LedgerForm>      
     );

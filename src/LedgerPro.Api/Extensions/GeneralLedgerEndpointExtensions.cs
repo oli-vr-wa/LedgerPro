@@ -27,6 +27,8 @@ public static class GeneralLedgerEndpointExtensions
         group.MapGet("/items", GetGeneralLedgerItemsAsync);
         group.MapGet("/accounts", GetGeneralLedgerAccountsAsync);
         group.MapPost("/account", AddGeneralLedgerAccountAsync);
+        group.MapPut("/account/{id:int}", UpdateGeneralLedgerAccountAsync);
+        group.MapDelete("/account/{id:int}", DeleteGeneralLedgerAccountAsync);
 
         return app;
     }
@@ -55,6 +57,37 @@ public static class GeneralLedgerEndpointExtensions
         await unitOfWork.CommitAsync();
 
         return Results.Created($"/api/v1/ledger/account/{account.Id}", account);
+    }
+
+    /// <summary>
+    /// Updates an existing GeneralLedgerAccount entity in the database using the IGeneralLedgerRepository.
+    /// </summary>
+    /// <param name="id">The ID of the general ledger account to update.</param>
+    /// <param name="account">The updated GeneralLedgerAccount entity.</param>
+    /// <param name="repo">The repository used to access general ledger accounts.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> UpdateGeneralLedgerAccountAsync(int id, GeneralLedgerAccount account, [FromServices] IGeneralLedgerRepository repo, [FromServices] IUnitOfWork unitOfWork)
+    {
+        await repo.UpdateGeneralLedgerAccountAsync(id, account);
+        await unitOfWork.CommitAsync();
+
+        return Results.NoContent();
+    }
+
+    /// <summary>
+    /// Deletes an existing GeneralLedgerAccount entity from the database using the IGeneralLedgerService.
+    /// </summary>
+    /// <param name="id">The ID of the general ledger account to delete.</param>
+    /// <param name="service">The service used to handle business logic for general ledger accounts.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> DeleteGeneralLedgerAccountAsync(int id, [FromServices] IGeneralLedgerService service, [FromServices] IUnitOfWork unitOfWork)
+    {
+        await service.DeleteGeneralLedgerAccountAsync(id);
+        await unitOfWork.CommitAsync();
+
+        return Results.NoContent();
     }
 
     /// <summary>
