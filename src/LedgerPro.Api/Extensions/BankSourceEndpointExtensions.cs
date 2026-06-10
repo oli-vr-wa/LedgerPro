@@ -17,6 +17,7 @@ public static class BankSourceEndpointExtensions
         group.MapPost("/banksources/{id:guid}/import-statements", ImportBankStatementAsync).DisableAntiforgery();
         group.MapGet("/banksources/{id:guid}/statement-imports", GetBankSourceStatementImportsAsync);
         group.MapGet("/banksources/", GetBankSourcesAsync);
+        group.MapGet("/banksource/{id:guid}", GetBankSourceByIdAsync);
         group.MapPost("/banksource/", AddBankSourceAsync);
         group.MapPut("/banksource/{id:guid}", UpdateBankSourceAsync);
         group.MapDelete("/banksource/{id:guid}", DeleteBankSourceAsync);
@@ -79,6 +80,24 @@ public static class BankSourceEndpointExtensions
     {
         var sources = await repo.GetBankSourcesAsync();
         return Results.Ok(sources);
+    }
+
+    /// <summary>
+    /// Retrieves a specific bank source by its unique identifier using the IBankSourceRepository.
+    /// </summary>
+    /// <param name="id">The unique identifier of the bank source.</param>
+    /// <param name="repo">The bank source repository.</param>
+    /// <returns>A result containing the bank source if found, or an error response if not found.</returns>
+    internal static async Task<IResult> GetBankSourceByIdAsync(Guid id, [FromServices]IBankSourceRepository repo)
+    {
+        if (id == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("Invalid bank source ID."));
+
+        var source = await repo.GetBankSourceByIdAsync(id);
+        if (source == null)
+            return Results.NotFound(new ErrorResponse("Bank source not found."));
+
+        return Results.Ok(source);
     }
 
     /// <summary>

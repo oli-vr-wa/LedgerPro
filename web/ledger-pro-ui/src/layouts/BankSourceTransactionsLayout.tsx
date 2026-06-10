@@ -2,6 +2,8 @@ import { Outlet, useNavigate, useLocation, useParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
+import { bankSourceService } from "@/services/bankSourceService";
 
 export function BankSourceTransactionsLayout() {
     const { bankSourceId } = useParams();
@@ -11,6 +13,24 @@ export function BankSourceTransactionsLayout() {
     const displayName = location.state?.displayName || 'Bank Transactions';
 
     const activeTab = location.pathname.includes('upload') ? 'upload' : 'years';
+
+    // Fetch the bank source details if the display name is not available in the location state (e.g., on page refresh)
+    // You can use the bankSourceId to fetch the details from your API and set the display name accordingly.
+    useEffect(() => {
+        if (!displayName) {
+            // Fetch bank source details using bankSourceId and set displayName state using the bankSourceService.
+            bankSourceService.getBankSourceById(bankSourceId!)
+                .then(response => {
+                    const bankSource = response.data;
+                    const fetchedDisplayName = `${bankSource.bankName} - ${bankSource.accountName}`;
+                    // Update the location state with the fetched display name
+                    navigate(location.pathname, { state: { displayName: fetchedDisplayName }, replace: true });
+                })
+                .catch(error => {
+                    console.error("Failed to fetch bank source details:", error);
+                });
+        }
+    }, [bankSourceId, displayName, location.pathname, navigate]);
 
     return (
         <div>
