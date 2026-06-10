@@ -2,13 +2,11 @@ import { DataTable } from "@/components/DataTable";
 import { bankSourceService } from "@/services/bankSourceService";
 import { useQuery } from "@tanstack/react-query";
 import { columns } from "./bank-account-selection/columns";
-import { useState } from "react";
 import type { BankSourceTransactionsRow } from "@/types/bank-source-transactions-row.types";
 import { useNavigate } from "react-router-dom";
 
 export function BankAccountSelection() {
     const navigate = useNavigate();
-    const [selectBankSource, setSelectBankSource] = useState<BankSourceTransactionsRow | null>(null);
 
     const {data: bankSourcesTransactionsRows, isLoading} = useQuery({
         queryKey: ['bankSourcesTransactionsRows'],
@@ -16,8 +14,8 @@ export function BankAccountSelection() {
     });    
 
     const handleRowClick = (bankSource: BankSourceTransactionsRow) => {
-        setSelectBankSource(bankSource);
-        navigate(`/transactions/${bankSource.bankSourceId}`, { state: { displayName: `${bankSource.bankSourceName} - ${bankSource.bankAccountName}` } });
+        navigate(`/transactions/${bankSource.bankSourceId}`, 
+            { state: { displayName: `${bankSource.bankSourceName} - ${bankSource.bankAccountName}` } });
     }
 
     if (isLoading) return <div>Loading...</div>;

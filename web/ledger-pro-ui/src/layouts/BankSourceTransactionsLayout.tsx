@@ -44,7 +44,7 @@ export function BankSourceTransactionsLayout() {
             <Tabs
                 defaultValue={activeTab} 
                 onValueChange={(value) => navigate(value === 'years' ? `/transactions/${bankSourceId}` : `/transactions/${bankSourceId}/upload`)}>
-                <TabsList className="bg-blue-header">
+                <TabsList className="bg-blue-header/50">
                     <TabsTrigger value="years">Financial Years</TabsTrigger>
                     <TabsTrigger value="upload">Upload Statements</TabsTrigger>
                 </TabsList>

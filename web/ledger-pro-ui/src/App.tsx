@@ -6,6 +6,7 @@ import { BankTransactionMappings } from './pages/BankTransactionMappings';
 import { BankTransactionsLayout } from './layouts/BankTransactionsLayout';
 import { BankAccountSelection } from './pages/BankAccountSelection';
 import { BankSourceTransactionsLayout } from './layouts/BankSourceTransactionsLayout';
+import { BankTransactionsYearsOverview } from './pages/BankTransactionsYearsOverview';
 
 // Mock components for pages
 const DashboardPage = () => <div>Dashboard Content</div>;
@@ -23,7 +24,7 @@ function App() {
           <Route path="transactions" element={<BankTransactionsLayout />}>
             <Route index element={<BankAccountSelection />} />
             <Route path=":bankSourceId/*" element={<BankSourceTransactionsLayout />}>
-              <Route index element={<div>Transactions table.</div>} />
+              <Route index element={<BankTransactionsYearsOverview />} />
               <Route path="upload" element={<div>Upload Statements Content</div>} />
             </Route>
           </Route>
