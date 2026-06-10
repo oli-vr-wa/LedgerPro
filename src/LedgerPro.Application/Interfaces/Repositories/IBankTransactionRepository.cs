@@ -1,3 +1,4 @@
+using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Application.DTOs.Reports;
 using LedgerPro.Core.Entities;
 
@@ -7,12 +8,14 @@ public interface IBankTransactionRepository
 {
     Task<BankTransaction> GetBankTransactionByIdAsync(Guid bankTransactionId);
     Task<List<BankTransaction>> GetBankTransactionsAsync(Guid bankSourceId);
+    Task<IEnumerable<BankTransactionsFinancialYearRow>> GetBankTransactionsFinancialYearRowsAsync(Guid bankSourceId);
     Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions);  
     Task<List<BankTransactionMapping>> GetBankTransactionMappingsAsync();
     Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping);
     Task<BankTransactionMapping> UpdateBankTransactionMappingAsync(Guid id, BankTransactionMapping mapping);
     Task DeleteBankTransactionMappingAsync(Guid mappingId);
     Task AddStatementImportAsync(StatementImport statementImport);
+    Task<IEnumerable<StatementImportRow>> GetStatementImportRowsAsync(Guid bankSourceId);
     Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping);
     Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding);
     Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd);

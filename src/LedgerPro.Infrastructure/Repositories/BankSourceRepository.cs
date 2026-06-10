@@ -3,6 +3,7 @@ using LedgerPro.Application.Interfaces.Repositories;
 using Microsoft.EntityFrameworkCore;
 using LedgerPro.Infrastructure.Extensions;
 using LedgerPro.Application.DTOs.BankSource;
+using LedgerPro.Application.DTOs.BankStatement;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -133,5 +134,42 @@ public class BankSourceRepository(LedgerDbContext dbContext) : IBankSourceReposi
             throw new KeyNotFoundException($"Bank source with ID {bankSourceId} not found.");
 
         return glAccountId;
-    }     
+    }    
+
+    /// <summary>
+    /// Retrieves a list of BankSourceTransactionsRow objects, which contain metadata about each bank source and its associated transactions. 
+    /// This method is used to get an overview of all bank sources along with the date of the last import and the date of the last transaction for each bank source. 
+    /// This information can be useful for monitoring and managing bank sources in the system.
+    /// </summary>
+    /// <returns>A collection of BankSourceTransactionsRow objects.</returns>
+    public async Task<IEnumerable<BankSourceTransactionsRow>> GetBankSourceTransactionsRowsAsync()
+    {
+        var rows = await _dbContext.BankSources
+            .Select(bs => new
+            {
+                BankSourceId = bs.Id,
+                BankAccountName = bs.AccountName,
+                BankSourceName = bs.BankName,
+                Imports = bs.StatementImports
+                    .OrderByDescending(i => i.ImportDate)
+                    .Select(si => new
+                    {
+                        si.ImportDate,
+                        LastTransactionDate = si.Transactions
+                            .OrderByDescending(t => t.TransactionDate)
+                            .Select(t => t.TransactionDate)
+                            .FirstOrDefault()
+                    }) 
+                    .ToList()                 
+            })            
+            .ToListAsync();
+        
+        return rows.Select(bs => new BankSourceTransactionsRow(
+            bs.BankSourceId,
+            bs.BankSourceName,
+            bs.BankAccountName,            
+            bs.Imports.Any() ? bs.Imports.First().ImportDate : null,
+            bs.Imports.Any() ? bs.Imports.First().LastTransactionDate : null
+        )).ToList();
+    }
 }
