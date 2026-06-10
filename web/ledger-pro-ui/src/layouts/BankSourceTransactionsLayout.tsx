@@ -8,7 +8,9 @@ export function BankSourceTransactionsLayout() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const activeTab = location.pathname.includes('upload') ? 'upload' : 'overview';
+    const displayName = location.state?.displayName || 'Bank Transactions';
+
+    const activeTab = location.pathname.includes('upload') ? 'upload' : 'years';
 
     return (
         <div>
@@ -17,10 +19,12 @@ export function BankSourceTransactionsLayout() {
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Accounts
             </Button>
 
-            <h2 className="text-2xl font-bold mb-4">Bank Transactions for {bankSourceId}</h2>
+            <h2 className="text-2xl font-bold mb-4">Bank Transactions for {displayName}</h2>
 
-            <Tabs defaultValue={activeTab} onValueChange={(value) => navigate(value === 'years' ? `/transactions/${bankSourceId}` : `/transactions/${bankSourceId}/upload`)}>
-                <TabsList>
+            <Tabs
+                defaultValue={activeTab} 
+                onValueChange={(value) => navigate(value === 'years' ? `/transactions/${bankSourceId}` : `/transactions/${bankSourceId}/upload`)}>
+                <TabsList className="bg-blue-header">
                     <TabsTrigger value="years">Financial Years</TabsTrigger>
                     <TabsTrigger value="upload">Upload Statements</TabsTrigger>
                 </TabsList>

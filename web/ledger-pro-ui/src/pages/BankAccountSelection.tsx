@@ -17,7 +17,7 @@ export function BankAccountSelection() {
 
     const handleRowClick = (bankSource: BankSourceTransactionsRow) => {
         setSelectBankSource(bankSource);
-        navigate(`/transactions/${bankSource.bankSourceId}`);
+        navigate(`/transactions/${bankSource.bankSourceId}`, { state: { displayName: `${bankSource.bankSourceName} - ${bankSource.bankAccountName}` } });
     }
 
     if (isLoading) return <div>Loading...</div>;
