@@ -1,5 +1,5 @@
 export interface BankTransactionsYearRow {
-    year: number;
+    yearEnding: number;
     lastTransactionDate: string | null;
     pendingCount: number;
 }

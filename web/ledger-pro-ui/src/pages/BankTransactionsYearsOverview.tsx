@@ -2,12 +2,15 @@ import { DataTable } from "@/components/DataTable";
 import { bankTransactionsService } from "@/services/bankTransactionsService";
 import type { BankTransactionsYearRow } from "@/types/bank-transactions-year-row.types";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { columns } from "./bank-transactions-years-overview/columns";
 
-export function BankTransactionsYearsOverview() {
+export const BankTransactionsYearOverviewProps = {
+    bankSourceId: '',
+    onRowClick: (_bankTransactionsYearRow: BankTransactionsYearRow) => {}
+};
+
+export function BankTransactionsYearsOverview({ bankSourceId, onRowClick }: typeof BankTransactionsYearOverviewProps) {
     const [bankTransactionsYearsOverview, setBankTransactionsYearsOverview] = useState<BankTransactionsYearRow[]>([]);
-    const { bankSourceId } = useParams();
 
     useEffect(() => {
         if (!bankSourceId) return;
@@ -18,7 +21,7 @@ export function BankTransactionsYearsOverview() {
 
     return (
         <div className="pt-4">
-            <DataTable columns={columns} data={bankTransactionsYearsOverview} />
+            <DataTable columns={columns} data={bankTransactionsYearsOverview} onRowClick={onRowClick} />
         </div>
     );
 }  

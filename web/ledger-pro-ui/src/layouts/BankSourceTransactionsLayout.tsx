@@ -2,21 +2,25 @@ import { Outlet, useNavigate, useLocation, useParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { bankSourceService } from "@/services/bankSourceService";
 
 export function BankSourceTransactionsLayout() {
+    const [activeTab, setActiveTab] = useState('years');
     const { bankSourceId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
 
     const displayName = location.state?.displayName || 'Bank Transactions';
 
-    const activeTab = location.pathname.includes('upload') ? 'upload' : 'years';
+    //const activeTab = location.pathname.includes('upload') ? 'upload' : 'years';
 
     // Fetch the bank source details if the display name is not available in the location state (e.g., on page refresh)
     // You can use the bankSourceId to fetch the details from your API and set the display name accordingly.
     useEffect(() => {
+        // Set the active tab based on the current URL path
+        setActiveTab(location.pathname.includes('upload') ? 'upload' : 'years');
+
         if (!displayName) {
             // Fetch bank source details using bankSourceId and set displayName state using the bankSourceService.
             bankSourceService.getBankSourceById(bankSourceId!)
@@ -32,6 +36,11 @@ export function BankSourceTransactionsLayout() {
         }
     }, [bankSourceId, displayName, location.pathname, navigate]);
 
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        navigate(value === 'years' ? `/transactions/${bankSourceId}` : `/transactions/${bankSourceId}/upload`);
+    };
+
     return (
         <div>
             {/* Back button to return to Account Selection */}
@@ -43,7 +52,8 @@ export function BankSourceTransactionsLayout() {
 
             <Tabs
                 defaultValue={activeTab} 
-                onValueChange={(value) => navigate(value === 'years' ? `/transactions/${bankSourceId}` : `/transactions/${bankSourceId}/upload`)}>
+                value={activeTab} 
+                onValueChange={handleTabChange}>
                 <TabsList className="bg-blue-header/50">
                     <TabsTrigger value="years">Financial Years</TabsTrigger>
                     <TabsTrigger value="upload">Upload Statements</TabsTrigger>
