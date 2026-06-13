@@ -4,5 +4,6 @@ import type { BankTransactionsYearRow } from '@/types/bank-transactions-year-row
 
 export const bankTransactionsService = {
     getTransactionsByBankSourceId: (bankSourceId: string) => api.get<BankTransaction[]>(`/banktransactions/${bankSourceId}/transactions`),
-    getTransactionsFinancialYearsOverview: (bankSourceId: string) => api.get<BankTransactionsYearRow[]>(`/banktransactions/${bankSourceId}/transactions/financial-years-overview`)
+    getTransactionsFinancialYearsOverview: (bankSourceId: string) => api.get<BankTransactionsYearRow[]>(`/banktransactions/${bankSourceId}/transactions/financial-years-overview`),
+    getTransactionsByBankSourceIdAndYear: (bankSourceId: string, year: number) => api.get<BankTransaction[]>(`/banktransactions/${bankSourceId}/transactions/${year}`)
 };

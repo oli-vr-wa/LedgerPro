@@ -6,9 +6,10 @@ interface DataTableProps<TData, Tvalue> {
     columns: ColumnDef<TData, Tvalue>[];
     data: TData[];
     onRowClick?: (row: TData) => void; // Optional click handler for rows
+    loading?: boolean; // Optional loading state
 }
 
-export function DataTable<TData, Tvalue>({ columns, data, onRowClick }: DataTableProps<TData, Tvalue>) {
+export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading }: DataTableProps<TData, Tvalue>) {
     const [sorting, setSorting] = React.useState<SortingState>([]);
 
     const table = useReactTable({
@@ -56,7 +57,7 @@ export function DataTable<TData, Tvalue>({ columns, data, onRowClick }: DataTabl
                     ) : (
                         <TableRow>
                             <TableCell colSpan={columns.length} className="h-24 text-center">
-                                No records.
+                                {loading ? "Loading..." : "No records."}
                             </TableCell>
                         </TableRow>
                      )}                    

@@ -31,7 +31,7 @@ public static class BankTransactionEndpointExtensions
         group.MapPost("/mapping", AddBankTransactionMappingAsync);
         group.MapPut("/mapping/{id:guid}", UpdateBankTransactionMappingAsync);
         group.MapDelete("/mapping/{id:guid}", DeleteBankTransactionMappingAsync);
-        group.MapGet("/{bankSourceId:guid}/transactions", GetBankTransactionsForFinancialYearAsync);
+        group.MapGet("/{bankSourceId:guid}/transactions/{financialYearEnding:int}", GetBankTransactionsForFinancialYearAsync);
         group.MapGet("/{bankSourceId:guid}/transactions/financial-years-overview", GetBankTransactionsFinancialYearsRowsAsync);
         group.MapPost("/reconcile", ReconcileBankTransactionAsync);
         group.MapPost("/unreconcile", UnreconcileBankTransactionAsync);
