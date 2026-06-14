@@ -4,7 +4,7 @@ import { generalLedgerAccountService } from '../../services/generalLedgerAccount
 import { GeneralLedgerAccountForm } from '../../components/GeneralLedgerAccountForm';
 import { LedgerDialog } from '@/components/ui/LedgerDialog';
 import { columns } from './columns';
-import { DataTable } from '@/components/DataTable';
+import { DataTable } from '@/components/data-table/DataTable';
 import type { GeneralLedgerAccount } from '@/types/general-ledger-account.types';
 
 /**

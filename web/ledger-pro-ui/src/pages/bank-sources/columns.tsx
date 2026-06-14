@@ -1,6 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type BankSource } from "@/types/bank-source.types";
-import { sortableHeader } from "@/components/ui/TableSortButton";
+import { sortableHeader } from "@/components/data-table/utils/sortableHeader.utils";
 
 export const columns: ColumnDef<BankSource>[] = [
     {

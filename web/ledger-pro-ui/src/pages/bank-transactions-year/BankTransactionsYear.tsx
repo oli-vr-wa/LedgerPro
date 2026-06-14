@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable } from "@/components/data-table/DataTable";
 import { bankTransactionsService } from "@/services/bankTransactionsService";
 import type { BankTransaction } from "@/types/bank-transaction.types";
 import { useEffect, useState } from "react";

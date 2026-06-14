@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable } from "@/components/data-table/DataTable";
 import { bankSourceService } from "@/services/bankSourceService";
 import type { StatementImportRow } from "@/types/statement-import-row.type";
 import { useEffect, useState } from "react";
