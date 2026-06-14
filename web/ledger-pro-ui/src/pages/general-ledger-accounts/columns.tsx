@@ -1,6 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { type GeneralLedgerAccount } from "@/types/general-ledger-account.types";
-import { sortableHeader } from "@/components/ui/TableSortButton";
+import { sortableHeader } from "@/components/data-table/utils/sortableHeader.utils";
 
 export const columns: ColumnDef<GeneralLedgerAccount>[] = [
     {

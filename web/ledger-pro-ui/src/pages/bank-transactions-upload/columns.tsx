@@ -1,5 +1,6 @@
 import { type ColumnDef } from '@tanstack/react-table';
 import { type StatementImportRow } from '@/types/statement-import-row.type';
+import { formatDate, formatDateTime } from '@/components/data-table/utils/data-table-cell-format.utils';
 
 export const columns: ColumnDef<StatementImportRow>[] = [
     {
@@ -9,11 +10,7 @@ export const columns: ColumnDef<StatementImportRow>[] = [
     {  
         accessorKey: "importDate", 
         header: "Import Date",
-        cell: ({ getValue }) => {
-            const dateStr = getValue() as string;
-            const date = new Date(dateStr);
-            return date.toLocaleString('en-AU');
-        }
+        cell: ({ getValue }) => formatDateTime(getValue() as string)
     },
     {
         accessorKey: "transactionCount",
@@ -22,19 +19,11 @@ export const columns: ColumnDef<StatementImportRow>[] = [
     {
         accessorKey: "firstTransactionDate",
         header: "First Transaction Date",
-        cell: ({ getValue }) => {
-            const dateStr = getValue() as string;
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-AU');
-        }
+        cell: ({ getValue }) => formatDate(getValue() as string)
     },
     {
         accessorKey: "lastTransactionDate",
         header: "Last Transaction Date",
-        cell: ({ getValue }) => {
-            const dateStr = getValue() as string;
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-AU');
-        }
+        cell: ({ getValue }) => formatDate(getValue() as string)
     }
 ];

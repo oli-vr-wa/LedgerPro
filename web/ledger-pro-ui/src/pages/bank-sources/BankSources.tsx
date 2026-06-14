@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { bankSourceService } from '@/services/bankSourceService';
 import { BankSourceForm } from '@/components/BankSourceForm';
 import { LedgerDialog } from '@/components/ui/LedgerDialog';
-import { DataTable } from '@/components/DataTable';
+import { DataTable } from '@/components/data-table/DataTable';
 import { columns } from './columns';
 import type { BankSource } from '@/types/bank-source.types';
 

@@ -1,15 +1,12 @@
 import { type ColumnDef } from '@tanstack/react-table';
 import { type BankTransaction } from '@/types/bank-transaction.types';
+import { formatCurrency, formatDate } from '@/components/data-table/utils/data-table-cell-format.utils';
 
 export const columns: ColumnDef<BankTransaction>[] = [
     {
         accessorKey: "transactionDate",
         header: "Transaction Date",
-        cell: ({ getValue }) => {
-            const dateStr = getValue() as string;
-            const date = new Date(dateStr);
-            return date.toLocaleDateString('en-AU');
-        }
+        cell: ({ getValue }) => formatDate(getValue() as string)
     },
     {
         accessorKey: "description",
@@ -22,10 +19,7 @@ export const columns: ColumnDef<BankTransaction>[] = [
     {
         accessorKey: "amount",
         header: "Amount",
-        cell: ({ getValue }) => {
-            const amount = getValue() as number;
-            return amount.toLocaleString('en-AU', { style: 'currency', currency: 'AUD' });
-        }
+        cell: ({ getValue }) => formatCurrency(getValue() as number)
     },
     {
         accessorKey: "status",

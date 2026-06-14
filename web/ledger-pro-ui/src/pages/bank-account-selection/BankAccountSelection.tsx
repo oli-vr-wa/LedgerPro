@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/DataTable";
+import { DataTable } from "@/components/data-table/DataTable";
 import { bankSourceService } from "@/services/bankSourceService";
 import { useQuery } from "@tanstack/react-query";
 import { columns } from "./columns";

@@ -1,5 +1,5 @@
 import { ArrowUpDown } from "lucide-react";
-import { Button } from "./button";
+import { Button } from "../ui/button";
 
 interface TableSortButtonProps {
     toggle: () => void;
@@ -14,10 +14,3 @@ export function TableSortButton({ toggle, columnName }: TableSortButtonProps) {
         </Button>
     );
 }
-
-export const sortableHeader = (column: any, columnName: string) => {
-    const toggleSorting = () => {
-        column.toggleSorting(column.getIsSorted() === "asc");
-    };
-    return <TableSortButton toggle={toggleSorting} columnName={columnName} />;
-};
