@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { DashboardLayout } from './layouts/DashboardLayout';
-import { BankSources } from './pages/BankSources';
-import { GeneralLedgerAccounts } from './pages/GeneralLedgerAccounts';
-import { BankTransactionMappings } from './pages/BankTransactionMappings';
+import { BankSources } from './pages/bank-sources/BankSources';
+import { GeneralLedgerAccounts } from './pages/general-ledger-accounts/GeneralLedgerAccounts';
+import { BankTransactionMappings } from './pages/bank-transaction-mappings/BankTransactionMappings';
 import { BankTransactionsLayout } from './layouts/BankTransactionsLayout';
-import { BankAccountSelection } from './pages/BankAccountSelection';
+import { BankAccountSelection } from './pages/bank-account-selection/BankAccountSelection';
 import { BankSourceTransactionsLayout } from './layouts/BankSourceTransactionsLayout';
-import { BankTransactionsUpload } from './pages/BankTransactionsUpload';
+import { BankTransactionsUpload } from './pages/bank-transactions-upload/BankTransactionsUpload';
 import { BankTransactionsYearSelection } from './pages/BankTransactionsYearSelection';
 
 // Mock components for pages

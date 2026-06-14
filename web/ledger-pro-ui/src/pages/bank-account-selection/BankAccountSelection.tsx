@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/DataTable";
 import { bankSourceService } from "@/services/bankSourceService";
 import { useQuery } from "@tanstack/react-query";
-import { columns } from "./bank-account-selection/columns";
+import { columns } from "./columns";
 import type { BankSourceTransactionsRow } from "@/types/bank-source-transactions-row.types";
 import { useNavigate } from "react-router-dom";
 

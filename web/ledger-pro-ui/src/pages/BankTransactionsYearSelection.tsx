@@ -3,8 +3,8 @@ import type { BankTransactionsYearRow } from "@/types/bank-transactions-year-row
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { BankTransactionsYear } from "./BankTransactionsYear";
-import { BankTransactionsYearsOverview } from "./BankTransactionsYearsOverview";
+import { BankTransactionsYear } from "./bank-transactions-year/BankTransactionsYear";
+import { BankTransactionsYearsOverview } from "./bank-transactions-years-overview/BankTransactionsYearsOverview";
 
 export function BankTransactionsYearSelection() {
     const [yearSelection, setYearSelection] = useState<number | null>(null);

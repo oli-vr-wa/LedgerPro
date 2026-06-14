@@ -3,7 +3,7 @@ import { bankSourceService } from "@/services/bankSourceService";
 import type { StatementImportRow } from "@/types/statement-import-row.type";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { columns } from "./bank-transactions-upload/columns";
+import { columns } from "./columns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

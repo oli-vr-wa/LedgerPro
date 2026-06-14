@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { bankSourceService } from '../services/bankSourceService';
-import { BankSourceForm } from '../components/BankSourceForm';
+import { bankSourceService } from '@/services/bankSourceService';
+import { BankSourceForm } from '@/components/BankSourceForm';
 import { LedgerDialog } from '@/components/ui/LedgerDialog';
 import { DataTable } from '@/components/DataTable';
-import { columns } from './bank-sources/columns';
+import { columns } from './columns';
 import type { BankSource } from '@/types/bank-source.types';
 
 export function BankSources() {
