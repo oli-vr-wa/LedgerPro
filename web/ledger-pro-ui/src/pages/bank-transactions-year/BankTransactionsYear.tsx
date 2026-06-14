@@ -2,7 +2,7 @@ import { DataTable } from "@/components/DataTable";
 import { bankTransactionsService } from "@/services/bankTransactionsService";
 import type { BankTransaction } from "@/types/bank-transaction.types";
 import { useEffect, useState } from "react";
-import { columns } from "./bank-transactions-year/columns";
+import { columns } from "./columns";
 
 export const BankTransactionsYearProps = {
     bankSourceId: '',

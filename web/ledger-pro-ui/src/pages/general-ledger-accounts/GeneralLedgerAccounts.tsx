@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { generalLedgerAccountService } from '../services/generalLedgerAccountService';
-import { GeneralLedgerAccountForm } from '../components/GeneralLedgerAccountForm';
+import { generalLedgerAccountService } from '../../services/generalLedgerAccountService';
+import { GeneralLedgerAccountForm } from '../../components/GeneralLedgerAccountForm';
 import { LedgerDialog } from '@/components/ui/LedgerDialog';
-import { columns } from './general-ledger-accounts/columns';
+import { columns } from './columns';
 import { DataTable } from '@/components/DataTable';
 import type { GeneralLedgerAccount } from '@/types/general-ledger-account.types';
 
