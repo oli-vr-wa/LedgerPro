@@ -11,4 +11,6 @@ export interface BankTransaction {
     status: TransactionStatus;
     bankSourceId: string;
     statementImportId: string;
+    generalLedgerClassification: string;
+
 }

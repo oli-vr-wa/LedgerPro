@@ -24,5 +24,9 @@ export const columns: ColumnDef<BankTransaction>[] = [
     {
         accessorKey: "status",
         header: "Status"
+    },
+    {
+        accessorKey: "generalLedgerClassification",
+        header: "GL Classification"
     }
 ];
