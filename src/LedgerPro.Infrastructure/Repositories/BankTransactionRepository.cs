@@ -233,6 +233,7 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
                 t.Status,
                 GeneralLedgerAccounts = t.GeneralLedgerItems.Select(item => item.GeneralLedgerAccount.Name).ToList()   
             })
+            .OrderByDescending(t => t.TransactionDate)
             .ToListAsync();
 
         return bankTransactions.Select(t => new BankTransactionRowDto(
