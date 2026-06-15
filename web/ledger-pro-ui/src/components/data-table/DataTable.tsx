@@ -1,6 +1,7 @@
-import { type ColumnDef, type SortingState , flexRender, getCoreRowModel, useReactTable, getSortedRowModel } from "@tanstack/react-table";
+import { type ColumnDef, type SortingState , flexRender, getCoreRowModel, useReactTable, getSortedRowModel, getPaginationRowModel, getFilteredRowModel } from "@tanstack/react-table";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import React from "react";
+import { useMemo, useState } from "react";
+import { DataTablePagination } from "./DataTablePagination";
 
 interface DataTableProps<TData, Tvalue> {
     columns: ColumnDef<TData, Tvalue>[];
@@ -10,17 +11,28 @@ interface DataTableProps<TData, Tvalue> {
 }
 
 export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading }: DataTableProps<TData, Tvalue>) {
-    const [sorting, setSorting] = React.useState<SortingState>([]);
-
+    const tableData = useMemo(() => data ?? [], [data]);
+    const pageSize = 20; // Default page size
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [pagination, setPagination] = useState({
+        pageIndex: 0,
+        pageSize: pageSize,
+    });
+    
     const table = useReactTable({
-        data,
+        data: tableData,
         columns,
         state: {
             sorting,
+            pagination,
         },
+        autoResetPageIndex: false, // Prevent resetting page index when data changes
         onSortingChange: setSorting,
+        onPaginationChange: setPagination,
         getSortedRowModel: getSortedRowModel(),
         getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
     });
 
     return (
@@ -63,6 +75,8 @@ export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading }:
                      )}                    
                 </TableBody>
             </Table>
+            
+            {loading ? null : <DataTablePagination table={table} pagination={pagination} setCurrentPage={setPagination} />}
         </div>
     );
 }
