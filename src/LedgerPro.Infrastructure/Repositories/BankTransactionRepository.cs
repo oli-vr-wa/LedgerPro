@@ -30,6 +30,17 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     }
 
     /// <summary>
+    /// Retrieves a list of BankTransaction entities associated with a specific BankSourceId. 
+    /// This method is used to fetch all transactions for a given bank source (account) from the database,
+    /// typically for display in the UI or for processing during reconciliation. 
+    /// The method filters the transactions based on the provided BankSourceId and returns a list of matching BankTransaction entities.
+    /// </summary>
+    /// <param name="status">The status of the bank transactions to retrieve.</param>
+    /// <returns>A list of BankTransaction entities with the specified status.</returns>
+    public async Task<IEnumerable<BankTransaction>> GetBankTransactionsByStatusAsync(BankTransactionStatus status) =>
+        await _dbContext.BankTransactions.Where(t => t.Status == status).ToListAsync();
+
+    /// <summary>
     /// Retrieves all BankTransactionMapping entities from the database. This method is typically used to get the mapping rules that are applied when importing 
     /// bank transactions, allowing the application to determine how to categorize and create GeneralLedgerItems based on the imported transactions.
     /// </summary>

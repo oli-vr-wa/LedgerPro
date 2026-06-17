@@ -164,11 +164,18 @@ public class BankImportServiceTests
             }
         };   
         // Set the repository to return the mappings
-        _bankTransactionRepository.GetBankTransactionMappingsAsync().Returns(mappings);       
-        
+        _bankTransactionRepository.GetBankTransactionMappingsAsync().Returns(mappings); 
         // Set the transaction match service to return a GeneralLedgerItem when a match is found
-        _transactionMatchService.MatchAndCreateLedgerItem(Arg.Is<BankTransaction>(t => t.Description.Contains("Woolworths")), mappings)
-            .Returns(new GeneralLedgerItem { Id = Guid.NewGuid(), Description = "Grocery purchase - Woolworths", Amount = 100, GeneralLedgerAccountId = 5000 });
+        _transactionMatchService.MatchAndCreateLedgerItems(Arg.Any<IEnumerable<BankTransaction>>(), Arg.Any<IEnumerable<BankTransactionMapping>>())
+            .Returns(mappings.Select(m => new GeneralLedgerItem 
+            { 
+                Id = Guid.NewGuid(), 
+                Description = m.DescriptionTemplate, 
+                Amount = 100, 
+                GeneralLedgerAccountId = m.TargetGeneralLedgerAccountId,
+                TransactionDate = DateTime.Now,
+                Side = TransactionSide.Debit
+            }));                          
 
         // Act
         var result = await _bankImportService.ImportBankStatementAsync(request);

@@ -52,6 +52,7 @@ public static class BankTransactionEndpointExtensions
 
     /// <summary>
     /// Adds a new bank transaction mapping to the database using the IBankTransactionService and commits the transaction using the IUnitOfWork.
+    /// After adding the new mapping, it also attempts to match any pending transactions that may now find a match with the new mapping and commits those changes as well.
     /// </summary>
     /// <param name="mapping">The bank transaction mapping to add.</param>
     /// <param name="service">The service used to manage bank transaction mappings.</param>
@@ -60,6 +61,10 @@ public static class BankTransactionEndpointExtensions
     internal static async Task<IResult> AddBankTransactionMappingAsync(BankTransactionMapping mapping, [FromServices] IBankTransactionService service, [FromServices] IUnitOfWork unitOfWork)
     {
         await service.AddBankTransactionMappingAsync(mapping);
+        await unitOfWork.CommitAsync();
+
+        // After adding a new mapping, attempt to match any pending transactions that may now find a match with the new mapping
+        await service.MatchPendingTransactionsAsync();
         await unitOfWork.CommitAsync();
 
         return Results.Created($"/api/v1/banktransactions/mappings/{mapping.Id}", new ActionResponse("Bank transaction mapping added successfully."));

@@ -4,13 +4,19 @@ using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Enums;
+using LedgerPro.Core.Common;
+using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Application.Services;
 
 public class BankTransactionService(
-    IBankTransactionRepository bankTransactionRepository) : IBankTransactionService
+    IBankTransactionRepository bankTransactionRepository,
+    ITransactionMatchService transactionMatchService,
+    IGeneralLedgerRepository generalLedgerRepository) : IBankTransactionService
 {
     private readonly IBankTransactionRepository _bankTransactionRepository = bankTransactionRepository;    
+    private readonly ITransactionMatchService _transactionMatchService = transactionMatchService;
+    private readonly IGeneralLedgerRepository _generalLedgerRepository = generalLedgerRepository;
 
     /// <summary>
     /// Adds a new bank transaction mapping to the database. 
@@ -34,6 +40,22 @@ public class BankTransactionService(
     }
 
     /// <summary>
+    /// Matches all pending bank transactions against the existing bank transaction mappings and creates corresponding general ledger items for the matched transactions.
+    /// </summary>
+    /// <returns>A Result object indicating whether any general ledger items were created.</returns>
+    public async Task<Result<bool>> MatchPendingTransactionsAsync()
+    {
+        var pendingTransactions = await _bankTransactionRepository.GetBankTransactionsByStatusAsync(BankTransactionStatus.Pending);
+        var mappings = await _bankTransactionRepository.GetBankTransactionMappingsAsync();
+        
+        var generalLedgerItemsToAdd = _transactionMatchService.MatchAndCreateLedgerItems(pendingTransactions, mappings).ToList();
+
+        await _generalLedgerRepository.AddGeneralLedgerItemsAsync(generalLedgerItemsToAdd);
+
+        return Result<bool>.Success(generalLedgerItemsToAdd.Count > 0);
+    }
+
+    /// <summary>
     /// Confirms the reconciliation of a categorized bank transaction by creating a general ledger item for the bank transaction and updating its status to reconciled.
     /// The method first retrieves the bank transaction by its ID and checks if it is in a categorized status. It also verifies that there is at least 
     /// one general ledger item associated with the bank transaction and that no bank transaction general ledger item already exists.
@@ -49,7 +71,7 @@ public class BankTransactionService(
         if (bankTransactionId == Guid.Empty)
             throw new ArgumentException("The bank transaction ID cannot be empty.", nameof(bankTransactionId));
         
-        var bankTransaction = _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Result ?? 
+        var bankTransaction = await _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId) ?? 
             throw new InvalidOperationException("The bank transaction to confirm reconcile was not found.");
 
         if (bankTransaction.Status != BankTransactionStatus.Categorized)

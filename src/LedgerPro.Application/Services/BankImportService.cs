@@ -82,19 +82,8 @@ public class BankImportService : IBankImportService
         // Get all the BankTransactionMappings
         var mappings = await _bankTransactionRepository.GetBankTransactionMappingsAsync();
 
-        // Ledger Items to be added to the database
-        var ledgerItemsToAdd = new List<GeneralLedgerItem>();
-
         // Attempt to match each transaction and create corresponding GeneralLedgerItems
-        foreach (var transaction in transactions)
-        {
-            var glItem = _transactionMatchService.MatchAndCreateLedgerItem(transaction, mappings);
-
-            if (glItem != null)
-            {
-                ledgerItemsToAdd.Add(glItem);                    
-            }
-        }
+        var ledgerItemsToAdd = _transactionMatchService.MatchAndCreateLedgerItems(transactions, mappings).ToList();            
 
         // Save the transactions & general ledger items to the database
         await _bankTransactionRepository.AddStatementImportAsync(statementImport);

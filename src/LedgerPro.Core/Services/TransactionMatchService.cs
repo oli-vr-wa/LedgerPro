@@ -15,6 +15,14 @@ public class TransactionMatchService : ITransactionMatchService
     /// <returns>The matched GeneralLedgerItem, or null if no match is found.</returns>
     public GeneralLedgerItem? MatchAndCreateLedgerItem(BankTransaction bankTransaction, IEnumerable<BankTransactionMapping> mappings)
     {
+        if (bankTransaction == null)
+            throw new ArgumentNullException(nameof(bankTransaction));
+        if (mappings == null)
+            throw new ArgumentNullException(nameof(mappings));
+        
+        if (bankTransaction.Status != BankTransactionStatus.Pending)
+            return null; // Skip already categorized transactions
+
         // Sort Mappings by Priority (lower number means higher priority)
         var sortedMappings = mappings.OrderBy(m => m.Priority);
 
@@ -59,5 +67,28 @@ public class TransactionMatchService : ITransactionMatchService
 
         // If no match is found, return null
         return null;
+    }
+
+    /// <summary>
+    /// Attempts to match a list of bank transactions against a list of mappings and creates corresponding GeneralLedgerItems for each matched transaction.
+    /// Transactions that do not find a match will be skipped and not included in the result.
+    /// </summary>
+    /// <param name="bankTransactions">The list of bank transactions to match.</param>
+    /// <param name="mappings">The list of bank transaction mappings to use for matching.</param>
+    /// <returns>A list of GeneralLedgerItems created from the matched bank transactions.</returns>
+    public IEnumerable<GeneralLedgerItem> MatchAndCreateLedgerItems(IEnumerable<BankTransaction> bankTransactions, IEnumerable<BankTransactionMapping> mappings)
+    {
+        var ledgerItems = new List<GeneralLedgerItem>();
+
+        foreach (var transaction in bankTransactions)
+        {
+            var glItem = MatchAndCreateLedgerItem(transaction, mappings);
+            if (glItem != null)
+            {
+                ledgerItems.Add(glItem);
+            }
+        }
+
+        return ledgerItems;
     }
 }

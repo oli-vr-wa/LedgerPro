@@ -40,7 +40,7 @@ public class AddBankTransactionMappingTests(WebApplicationFactory<Program> facto
         await _bankTransactionService.Received(1).AddBankTransactionMappingAsync(mapping);
 
         // Verify that the unit of work's CommitAsync method was called
-        await _unitOfWork.Received(1).CommitAsync();
+        await _unitOfWork.Received(2).CommitAsync();
     }
 
     /// <summary>
@@ -190,6 +190,6 @@ public class AddBankTransactionMappingTests(WebApplicationFactory<Program> facto
         Assert.Equal($"/api/v1/banktransactions/mappings/{mapping.Id}", response.Headers.Location?.ToString());
 
         await _bankTransactionService.Received(1).AddBankTransactionMappingAsync(Arg.Any<BankTransactionMapping>());
-        await _unitOfWork.Received(1).CommitAsync();
+        await _unitOfWork.Received(2).CommitAsync();
     }
 }
