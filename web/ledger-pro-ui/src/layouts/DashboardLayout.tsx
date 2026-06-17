@@ -10,7 +10,7 @@ export function DashboardLayout() {
     return (
         <div className="flex min-h-screen bg-slate-300">
             {/* Sidebar */}
-            <nav className="w-64 bg-slate-900 text-white p-5">
+            <nav className="fixed w-64 h-screen bg-slate-900 text-white p-5 overflow-y-auto">
                 <h2 className="text-2xl font-bold mb-6">LedgerPro</h2>
                 <ul className="space-y-4">
                     <li><NavLink to="/" end className={getLinkClass}>Dashboard</NavLink></li>
@@ -23,7 +23,7 @@ export function DashboardLayout() {
             </nav>
 
             {/* Main Content */}
-            <main className="flex-1 p-10">
+            <main className="ml-64 flex-1 p-10">
                 <Outlet />
             </main>
         </div>
