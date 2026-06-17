@@ -2,15 +2,17 @@ import { type ColumnDef, type SortingState , flexRender, getCoreRowModel, useRea
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useMemo, useState } from "react";
 import { DataTablePagination } from "./DataTablePagination";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, Tvalue> {
     columns: ColumnDef<TData, Tvalue>[];
     data: TData[];
     onRowClick?: (row: TData) => void; // Optional click handler for rows
     loading?: boolean; // Optional loading state
+    getRowClassName?: (data: TData) => string; // Optional function to get class name for a row
 }
 
-export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading }: DataTableProps<TData, Tvalue>) {
+export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading, getRowClassName }: DataTableProps<TData, Tvalue>) {
     const tableData = useMemo(() => data ?? [], [data]);
     const pageSize = 20; // Default page size
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -53,9 +55,10 @@ export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading }:
                 </TableHeader>
                 <TableBody>
                     {table.getRowModel().rows?.length ? (
-                        table.getRowModel().rows.map((row) => (
+                        table.getRowModel().rows.map((row) => ( 
                             <TableRow
                                 key={row.id}
+                                className={cn(getRowClassName && getRowClassName(row.original))}
                                 data-state={row.getIsSelected() && "selected"}
                                 onClick={() => onRowClick?.(row.original)}
                             >

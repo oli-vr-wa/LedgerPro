@@ -19,10 +19,14 @@ export function BankTransactionsYear({ bankSourceId, year }: typeof BankTransact
             .catch(error => console.error('Error fetching transactions for year:', error));
     }, [bankSourceId, year]);
 
+    const setPendingRowClassName = (transaction: BankTransaction) => {
+        return transaction.status === 'Pending' ? 'bg-red-100' : '';
+    }
+
     return (
         <div className="pt-4">
             <h2 className="text-2xl font-bold mb-4">Bank Transactions for {year}</h2>
-            <DataTable columns={columns} data={bankTransactionsState} />
+            <DataTable columns={columns} data={bankTransactionsState} getRowClassName={setPendingRowClassName} />
         </div>
     );
 }
