@@ -4,18 +4,20 @@ using LedgerPro.Application.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
 using LedgerPro.Core.Exceptions;
+using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Tests.Application.Services.BankTransactionServiceTests;
 
 public class AddBankTransactionMappingTests
 {
     private readonly IBankTransactionRepository _bankTransactionRepository = Substitute.For<IBankTransactionRepository>();
-
+    private readonly ITransactionMatchService _transactionMatchService = Substitute.For<ITransactionMatchService>();
+    private readonly IGeneralLedgerRepository _generalLedgerRepository = Substitute.For<IGeneralLedgerRepository>();
     private readonly BankTransactionService _bankTransactionService;
 
     public AddBankTransactionMappingTests()
     {
-        _bankTransactionService = new BankTransactionService(_bankTransactionRepository);
+        _bankTransactionService = new BankTransactionService(_bankTransactionRepository, _transactionMatchService, _generalLedgerRepository);
     }
 
     /// <summary>

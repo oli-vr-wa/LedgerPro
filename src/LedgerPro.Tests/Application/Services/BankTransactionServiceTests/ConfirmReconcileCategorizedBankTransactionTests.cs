@@ -7,6 +7,7 @@ using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Services;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
+using LedgerPro.Core.Interfaces;
 using NSubstitute;
 
 namespace LedgerPro.Tests.Application.Services.BankTransactionServiceTests;
@@ -14,12 +15,14 @@ namespace LedgerPro.Tests.Application.Services.BankTransactionServiceTests;
 public class ConfirmReconcileCategorizedBankTransactionTests
 {
     private readonly IBankTransactionRepository _bankTransactionRepository = Substitute.For<IBankTransactionRepository>();
-
+    private readonly ITransactionMatchService _transactionMatchService = Substitute.For<ITransactionMatchService>();
+    private readonly IGeneralLedgerRepository _generalLedgerRepository = Substitute.For<IGeneralLedgerRepository>();
     private readonly IBankTransactionService _bankTransactionService;
+    
 
     public ConfirmReconcileCategorizedBankTransactionTests()
     {
-        _bankTransactionService = new BankTransactionService(_bankTransactionRepository);
+        _bankTransactionService = new BankTransactionService(_bankTransactionRepository, _transactionMatchService, _generalLedgerRepository);
     }
 
     [Fact]

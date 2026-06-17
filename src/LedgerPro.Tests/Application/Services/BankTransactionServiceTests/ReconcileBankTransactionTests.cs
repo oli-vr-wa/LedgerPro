@@ -4,17 +4,20 @@ using LedgerPro.Application.Services;
 using LedgerPro.Application.DTOs.BankStatement;
 using LedgerPro.Core.Entities;
 using LedgerPro.Core.Enums;
+using LedgerPro.Core.Interfaces;
 
 namespace LedgerPro.Tests.Application.Services.BankTransactionServiceTests;
 
 public class ReconcileBankTransactionTests
 {
     private readonly IBankTransactionRepository _bankTransactionRepository = Substitute.For<IBankTransactionRepository>();
+    private readonly ITransactionMatchService _transactionMatchService = Substitute.For<ITransactionMatchService>();
+    private readonly IGeneralLedgerRepository _generalLedgerRepository = Substitute.For<IGeneralLedgerRepository>();
     private readonly BankTransactionService _bankTransactionService;
 
     public ReconcileBankTransactionTests()
     {
-        _bankTransactionService = new BankTransactionService(_bankTransactionRepository);
+        _bankTransactionService = new BankTransactionService(_bankTransactionRepository, _transactionMatchService, _generalLedgerRepository);
     }
 
     [Fact]
