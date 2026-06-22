@@ -12,7 +12,8 @@ public interface IBankTransactionRepository
     Task<List<BankTransaction>> GetBankTransactionsAsync(Guid bankSourceId);
     Task<IEnumerable<BankTransaction>> GetBankTransactionsByStatusAsync(BankTransactionStatus status);
     Task<IEnumerable<BankTransactionsFinancialYearRow>> GetBankTransactionsFinancialYearRowsAsync(Guid bankSourceId);
-    Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions);  
+    Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions); 
+    Task<int> GetCurrentFinancialYearSequenceNumberAsync(Guid bankSourceId, DateTime firstTransactionDate);
     Task<List<BankTransactionMapping>> GetBankTransactionMappingsAsync();
     Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping);
     Task<BankTransactionMapping> UpdateBankTransactionMappingAsync(Guid id, BankTransactionMapping mapping);

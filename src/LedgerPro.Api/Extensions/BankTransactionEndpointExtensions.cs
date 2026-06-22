@@ -207,7 +207,16 @@ public static class BankTransactionEndpointExtensions
         return Results.Ok(new ActionResponse("Bank transaction unreconciled successfully."));
     }
 
-    internal static async Task<IResult> CategorizeBankTransactionAsync(BankTransactionCategorize categorizeDto, [FromServices] IGeneralLedgerService generalLedgerService, [FromServices] IBankTransactionRepository bankTransactionRepo, [FromServices] IUnitOfWork unitOfWork)
+    /// <summary>
+    /// Categorizes a bank transaction by creating general ledger items based on the provided categorization details in the request.
+    /// The method first validates the request to ensure that it is not null, contains a valid bank transaction ID, and that the categorize items are provided 
+    /// and their total amount matches the bank transaction amount.
+    /// </summary>
+    /// <param name="categorizeDto">The request containing the categorization details.</param>
+    /// <param name="categorizationService">The service used to categorize bank transactions.</param>
+    /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
+    /// <returns>A result indicating the success of the operation.</returns>
+    internal static async Task<IResult> CategorizeBankTransactionAsync(BankTransactionCategorize categorizeDto, [FromServices] ICategorizationService categorizationService, [FromServices] IUnitOfWork unitOfWork)
     {
         if (categorizeDto == null)
             return Results.BadRequest(new ErrorResponse("The request cannot be null."));
@@ -216,12 +225,10 @@ public static class BankTransactionEndpointExtensions
         if (categorizeDto.CategorizeItems == null || categorizeDto.CategorizeItems.Count == 0)
             return Results.BadRequest(new ErrorResponse("At least one categorize item is required."));
 
-        var result = await generalLedgerService.CreateGeneralLedgerItemsAsync(categorizeDto);
+        var result = await categorizationService.CategorizeBankTransactionAsync(categorizeDto);
         if (!result.IsSuccess)
             return Results.BadRequest(new ErrorResponse(result.Error ?? "An error occurred while categorizing the bank transaction."));
 
-        // If categorization was successful, update the bank transaction status to Categorized
-        await bankTransactionRepo.UpdateBankTransactionStatusAsync(categorizeDto.TransactionId, Core.Enums.BankTransactionStatus.Categorized);
         await unitOfWork.CommitAsync();
 
         return Results.Ok(new ActionResponse("Bank transaction categorized successfully."));

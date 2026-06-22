@@ -27,7 +27,6 @@ public class BankStatementParser : IBankStatementParser
             var culture = new CultureInfo("en-AU"); // Set culture to Australian English for date parsing
             using var csv = new CsvReader(reader, culture);
 
-
             // Register the appropriate mapping based on the bank type
             switch (bankType)
             {

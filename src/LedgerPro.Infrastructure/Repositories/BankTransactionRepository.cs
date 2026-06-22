@@ -209,12 +209,63 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     }
 
     /// <summary>
-    /// Adds a collection of BankTransaction entities to the database context. This method is used during the bank statement import process to add the parsed transactions to the context before saving them to the database.
+    /// Adds a collection of BankTransaction entities to the database context. This method is used during the bank statement import process to add the parsed 
+    /// transactions to the context before saving them to the database.
+    /// Before adding the transactions, the method assigns financial year sequence numbers to each transaction based on their transaction date and the current sequence 
+    /// number for the financial year. This ensures that transactions are ordered correctly within each financial year and allows generating reference numbers for
+    /// general ledger entries. The method sorts the transactions by transaction date, calculates the financial year sequence numbers, and then adds the transactions 
+    /// to the database context.
     /// </summary>
     /// <param name="transactions">The collection of BankTransaction entities to add.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions) =>
-        await _dbContext.BankTransactions.AddRangeAsync(transactions); 
+    public async Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions) 
+    {
+        if (transactions != null && transactions.Any())
+        {
+            var sortedTransactions = transactions.OrderBy(t => t.TransactionDate).ToList();
+            var firstTransaction = sortedTransactions.First();
+            DateTime lastDateLimit = firstTransaction.TransactionDate.GetFinancialYearEnd();
+
+            int currentSequenceNumber = await GetCurrentFinancialYearSequenceNumberAsync(firstTransaction.BankSourceId, firstTransaction.TransactionDate);
+
+            // Assign financial year sequence numbers to the transactions based on their transaction date and the current sequence number for the financial year.
+            foreach (var transaction in sortedTransactions)
+            {
+                if (transaction.TransactionDate > lastDateLimit)
+                {                    
+                    currentSequenceNumber = 0;
+                    lastDateLimit = transaction.TransactionDate.GetFinancialYearEnd();
+                }
+
+                transaction.FinancialYearSequencialNumber = ++currentSequenceNumber;
+            }
+
+            await _dbContext.BankTransactions.AddRangeAsync(transactions); 
+        }
+    }
+
+    /// <summary>
+    /// Retrieves the current financial year sequence number for a given bank source and the date of the first transaction. 
+    /// This method is used to determine the next sequence number for a bank transaction within the current financial year. 
+    /// The sequence number is typically used to maintain an ordered list of transactions for a bank source within a financial year, which can be important for 
+    /// reporting and reconciliation purposes. The method calculates the start and end dates of the financial year based on the date of the first transaction and 
+    /// then queries the database to find the maximum sequence number for transactions that fall within that financial year. If there are no transactions for that 
+    /// financial year, it returns 0, indicating that the next sequence number should start at 1. 
+    /// </summary>
+    /// <param name="bankSourceId"></param>
+    /// <param name="firstTransactionDate"></param>
+    /// <returns></returns>
+    public async Task<int> GetCurrentFinancialYearSequenceNumberAsync(Guid bankSourceId, DateTime firstTransactionDate)
+    {
+        DateTime financialYearStart = firstTransactionDate.GetFinancialYearStart();
+        DateTime financialYearEnd = firstTransactionDate.GetFinancialYearEnding();
+
+        return await _dbContext.BankTransactions
+            .Where(t => t.BankSourceId == bankSourceId && t.TransactionDate >= financialYearStart && t.TransactionDate <= financialYearEnd)
+            .OrderByDescending(t => t.FinancialYearSequencialNumber)
+            .Select(t => t.FinancialYearSequencialNumber)
+            .FirstOrDefaultAsync();
+    }
 
     /// <summary>
     /// Checks if a given BankTransactionMapping already exists in the database to prevent duplicates. 
