@@ -12,7 +12,6 @@ import { LedgerSelect } from "./ui/form-fields/LedgerSelect";
 import { Button } from "./ui/button";
 import type { GeneralLedgerAccount } from "@/types/general-ledger-account.types";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
 import { showApiToast } from "@/lib/toast-utils";
 
 interface BankTransactionMappingFormProps {

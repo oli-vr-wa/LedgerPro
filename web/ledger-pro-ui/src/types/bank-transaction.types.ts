@@ -9,8 +9,5 @@ export interface BankTransaction {
     amount: number;
     transactionType: string;
     status: TransactionStatus;
-    bankSourceId: string;
-    statementImportId: string;
     generalLedgerClassification: string;
-
 }

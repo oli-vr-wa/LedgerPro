@@ -55,7 +55,7 @@ public class BankImportService : IBankImportService
         var bankSource = await _bankSourceRepository.GetBankSourceByIdAsync(request.BankSourceId);
 
         if (bankSource == null)                                       
-            return Result<int>.Failure($"Bank source with ID {request.BankSourceId} not found.");                        
+            return Result<int>.Failure($"Bank source with ID {request.BankSourceId} not found.");          
 
         // Calculate the file hash
         var fileHash = await _fileHasher.CalculateHashAsync(request.FileStream);
@@ -80,14 +80,15 @@ public class BankImportService : IBankImportService
         };            
 
         // Get all the BankTransactionMappings
-        var mappings = await _bankTransactionRepository.GetBankTransactionMappingsAsync();
-
-        // Attempt to match each transaction and create corresponding GeneralLedgerItems
-        var ledgerItemsToAdd = _transactionMatchService.MatchAndCreateLedgerItems(transactions, mappings).ToList();            
+        var mappings = await _bankTransactionRepository.GetBankTransactionMappingsAsync();                   
 
         // Save the transactions & general ledger items to the database
         await _bankTransactionRepository.AddStatementImportAsync(statementImport);
         await _bankTransactionRepository.AddTransactionsAsync(transactions);
+
+        // Attempt to match each transaction and create corresponding GeneralLedgerItems
+        var ledgerItemsToAdd = _transactionMatchService.MatchAndCreateLedgerItems(transactions, mappings).ToList(); 
+
         await _generalLedgerRepository.AddGeneralLedgerItemsAsync(ledgerItemsToAdd);
 
         return Result<int>.Success(transactions.Count());

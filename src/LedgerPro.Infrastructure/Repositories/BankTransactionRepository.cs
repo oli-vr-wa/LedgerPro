@@ -30,6 +30,21 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     }
 
     /// <summary>
+    /// Retrieves a BankTransaction entity along with its associated GeneralLedgerItems by the bank transaction's unique identifier (ID).
+    /// This method is used to fetch a specific bank transaction along with its related general ledger items from the database, typically for reconciliation or detailed viewing purposes.  
+    /// </summary>
+    /// <param name="bankTransactionId">The unique identifier of the bank transaction.</param>
+    /// <returns>The BankTransaction entity with the specified ID, including its associated GeneralLedgerItems.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the bank transaction with the specified ID is not found.</exception>
+    public async Task<BankTransaction> GetBankTransactionWithGlItemsByIdAsync(Guid bankTransactionId)
+    {
+        return await _dbContext.BankTransactions
+            .Include(t => t.GeneralLedgerItems)
+            .FirstOrDefaultAsync(t => t.Id == bankTransactionId) 
+            ?? throw new KeyNotFoundException($"Bank transaction with ID {bankTransactionId} not found.");
+    }
+
+    /// <summary>
     /// Retrieves a list of BankTransaction entities associated with a specific BankSourceId. 
     /// This method is used to fetch all transactions for a given bank source (account) from the database,
     /// typically for display in the UI or for processing during reconciliation. 
@@ -194,12 +209,63 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     }
 
     /// <summary>
-    /// Adds a collection of BankTransaction entities to the database context. This method is used during the bank statement import process to add the parsed transactions to the context before saving them to the database.
+    /// Adds a collection of BankTransaction entities to the database context. This method is used during the bank statement import process to add the parsed 
+    /// transactions to the context before saving them to the database.
+    /// Before adding the transactions, the method assigns financial year sequence numbers to each transaction based on their transaction date and the current sequence 
+    /// number for the financial year. This ensures that transactions are ordered correctly within each financial year and allows generating reference numbers for
+    /// general ledger entries. The method sorts the transactions by transaction date, calculates the financial year sequence numbers, and then adds the transactions 
+    /// to the database context.
     /// </summary>
     /// <param name="transactions">The collection of BankTransaction entities to add.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    public async Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions) =>
-        await _dbContext.BankTransactions.AddRangeAsync(transactions); 
+    public async Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions) 
+    {
+        if (transactions != null && transactions.Any())
+        {
+            var sortedTransactions = transactions.OrderBy(t => t.TransactionDate).ToList();
+            var firstTransaction = sortedTransactions.First();
+            DateTime lastDateLimit = firstTransaction.TransactionDate.GetFinancialYearEnd();
+
+            int currentSequenceNumber = await GetCurrentFinancialYearSequenceNumberAsync(firstTransaction.BankSourceId, firstTransaction.TransactionDate);
+
+            // Assign financial year sequence numbers to the transactions based on their transaction date and the current sequence number for the financial year.
+            foreach (var transaction in sortedTransactions)
+            {
+                if (transaction.TransactionDate > lastDateLimit)
+                {                    
+                    currentSequenceNumber = 0;
+                    lastDateLimit = transaction.TransactionDate.GetFinancialYearEnd();
+                }
+
+                transaction.FinancialYearSequencialNumber = ++currentSequenceNumber;
+            }
+
+            await _dbContext.BankTransactions.AddRangeAsync(transactions); 
+        }
+    }
+
+    /// <summary>
+    /// Retrieves the current financial year sequence number for a given bank source and the date of the first transaction. 
+    /// This method is used to determine the next sequence number for a bank transaction within the current financial year. 
+    /// The sequence number is typically used to maintain an ordered list of transactions for a bank source within a financial year, which can be important for 
+    /// reporting and reconciliation purposes. The method calculates the start and end dates of the financial year based on the date of the first transaction and 
+    /// then queries the database to find the maximum sequence number for transactions that fall within that financial year. If there are no transactions for that 
+    /// financial year, it returns 0, indicating that the next sequence number should start at 1. 
+    /// </summary>
+    /// <param name="bankSourceId"></param>
+    /// <param name="firstTransactionDate"></param>
+    /// <returns></returns>
+    public async Task<int> GetCurrentFinancialYearSequenceNumberAsync(Guid bankSourceId, DateTime firstTransactionDate)
+    {
+        DateTime financialYearStart = firstTransactionDate.GetFinancialYearStart();
+        DateTime financialYearEnd = firstTransactionDate.GetFinancialYearEnding();
+
+        return await _dbContext.BankTransactions
+            .Where(t => t.BankSourceId == bankSourceId && t.TransactionDate >= financialYearStart && t.TransactionDate <= financialYearEnd)
+            .OrderByDescending(t => t.FinancialYearSequencialNumber)
+            .Select(t => t.FinancialYearSequencialNumber)
+            .FirstOrDefaultAsync();
+    }
 
     /// <summary>
     /// Checks if a given BankTransactionMapping already exists in the database to prevent duplicates. 
@@ -256,6 +322,25 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
             t.Status,
             string.Join(", ", t.GeneralLedgerAccounts) // Concatenate account names into a single string
         )).ToList();
+    }
+
+    /// <summary>
+    /// Updates the category of a bank transaction by assigning it to a general ledger account. 
+    /// This method is used to categorize a bank transaction that has been imported but not yet categorized,
+    /// allowing the user to assign it to a specific general ledger account for accurate financial reporting and reconciliation.
+    /// </summary>
+    /// <param name="categorizeDto">The DTO containing the bank transaction ID and the general ledger account ID.</param>
+    /// <returns>True if the update was successful; otherwise, false.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if the bank transaction is not found.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the bank transaction is already reconciled.</exception>
+    public async Task<bool> UpdateBankTransactionStatusAsync(Guid bankTransactionId, BankTransactionStatus newStatus)
+    {
+        var bankTransaction = await _dbContext.BankTransactions.FindAsync(bankTransactionId) ??
+            throw new KeyNotFoundException($"Bank transaction with ID {bankTransactionId} not found.");    
+
+        bankTransaction.Status = newStatus;
+        
+        return true;
     }
 
     /// <summary>

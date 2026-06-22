@@ -99,5 +99,5 @@ public static class GeneralLedgerEndpointExtensions
     {
         var accounts = await repo.GetGeneralLedgerAccountsAsync();
         return Results.Ok(accounts);
-    }
+    }    
 }

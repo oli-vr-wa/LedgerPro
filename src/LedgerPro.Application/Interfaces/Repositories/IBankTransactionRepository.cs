@@ -8,10 +8,12 @@ namespace LedgerPro.Application.Interfaces.Repositories;
 public interface IBankTransactionRepository
 {
     Task<BankTransaction> GetBankTransactionByIdAsync(Guid bankTransactionId);
+    Task<BankTransaction> GetBankTransactionWithGlItemsByIdAsync(Guid bankTransactionId);
     Task<List<BankTransaction>> GetBankTransactionsAsync(Guid bankSourceId);
     Task<IEnumerable<BankTransaction>> GetBankTransactionsByStatusAsync(BankTransactionStatus status);
     Task<IEnumerable<BankTransactionsFinancialYearRow>> GetBankTransactionsFinancialYearRowsAsync(Guid bankSourceId);
-    Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions);  
+    Task AddTransactionsAsync(IEnumerable<BankTransaction> transactions); 
+    Task<int> GetCurrentFinancialYearSequenceNumberAsync(Guid bankSourceId, DateTime firstTransactionDate);
     Task<List<BankTransactionMapping>> GetBankTransactionMappingsAsync();
     Task<BankTransactionMapping> AddBankTransactionMappingAsync(BankTransactionMapping mapping);
     Task<BankTransactionMapping> UpdateBankTransactionMappingAsync(Guid id, BankTransactionMapping mapping);
@@ -20,6 +22,7 @@ public interface IBankTransactionRepository
     Task<IEnumerable<StatementImportRow>> GetStatementImportRowsAsync(Guid bankSourceId);
     Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping);
     Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding);
+    Task<bool> UpdateBankTransactionStatusAsync(Guid bankTransactionId, BankTransactionStatus newStatus);
     Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd);
     Task ConfirmReconcileCategorizedBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem);
     Task UnreconcileBankTransactionAsync(BankTransaction bankTransaction);    

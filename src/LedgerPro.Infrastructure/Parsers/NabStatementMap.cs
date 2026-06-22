@@ -4,7 +4,7 @@ using LedgerPro.Core.Entities;
 namespace LedgerPro.Infrastructure.Parsers;
 
 public class NabStatementMap : ClassMap<BankTransaction>
-{
+{    
     public NabStatementMap(Guid bankSourceId)
     {
         Map(m => m.TransactionDate).Name("Date");

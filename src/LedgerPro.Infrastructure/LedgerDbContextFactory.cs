@@ -8,7 +8,7 @@ public class LedgerDbContextFactory : IDesignTimeDbContextFactory<LedgerDbContex
     public LedgerDbContext CreateDbContext(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<LedgerDbContext>();
-        optionsBuilder.UseSqlite("Data Source=../ledgerpro.db");
+        optionsBuilder.UseSqlite("Data Source=../../ledgerpro.db");
 
         return new LedgerDbContext(optionsBuilder.Options);
     }
