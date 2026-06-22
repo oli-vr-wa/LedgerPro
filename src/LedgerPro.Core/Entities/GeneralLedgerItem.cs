@@ -19,5 +19,5 @@ public class GeneralLedgerItem : BaseGuidEntity
     public GeneralLedgerAccount GeneralLedgerAccount { get; set; } = null!; // Navigation property to the associated general ledger account
 
     public Guid? BankTransactionId { get; set; } // Foreign key to the associated bank transaction (if applicable)
-    public BankTransaction? BankTransaction { get; set; } // Navigation property to the associated bank transaction (if applicable)
+    public BankTransaction? BankTransaction { get; set; } // Navigation property to the associated bank transaction (if applicable)    
 }

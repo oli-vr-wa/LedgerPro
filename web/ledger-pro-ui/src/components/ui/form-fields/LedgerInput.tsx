@@ -1,6 +1,6 @@
 import React from 'react';
 import { Field, FieldLabel, FieldError } from '../field';
-import { Input } from '../input';
+import { Input } from '../Input';
 
 interface LedgerInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;

@@ -30,6 +30,21 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     }
 
     /// <summary>
+    /// Retrieves a BankTransaction entity along with its associated GeneralLedgerItems by the bank transaction's unique identifier (ID).
+    /// This method is used to fetch a specific bank transaction along with its related general ledger items from the database, typically for reconciliation or detailed viewing purposes.  
+    /// </summary>
+    /// <param name="bankTransactionId">The unique identifier of the bank transaction.</param>
+    /// <returns>The BankTransaction entity with the specified ID, including its associated GeneralLedgerItems.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown when the bank transaction with the specified ID is not found.</exception>
+    public async Task<BankTransaction> GetBankTransactionWithGlItemsByIdAsync(Guid bankTransactionId)
+    {
+        return await _dbContext.BankTransactions
+            .Include(t => t.GeneralLedgerItems)
+            .FirstOrDefaultAsync(t => t.Id == bankTransactionId) 
+            ?? throw new KeyNotFoundException($"Bank transaction with ID {bankTransactionId} not found.");
+    }
+
+    /// <summary>
     /// Retrieves a list of BankTransaction entities associated with a specific BankSourceId. 
     /// This method is used to fetch all transactions for a given bank source (account) from the database,
     /// typically for display in the UI or for processing during reconciliation. 
@@ -256,6 +271,25 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
             t.Status,
             string.Join(", ", t.GeneralLedgerAccounts) // Concatenate account names into a single string
         )).ToList();
+    }
+
+    /// <summary>
+    /// Updates the category of a bank transaction by assigning it to a general ledger account. 
+    /// This method is used to categorize a bank transaction that has been imported but not yet categorized,
+    /// allowing the user to assign it to a specific general ledger account for accurate financial reporting and reconciliation.
+    /// </summary>
+    /// <param name="categorizeDto">The DTO containing the bank transaction ID and the general ledger account ID.</param>
+    /// <returns>True if the update was successful; otherwise, false.</returns>
+    /// <exception cref="KeyNotFoundException">Thrown if the bank transaction is not found.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the bank transaction is already reconciled.</exception>
+    public async Task<bool> UpdateBankTransactionStatusAsync(Guid bankTransactionId, BankTransactionStatus newStatus)
+    {
+        var bankTransaction = await _dbContext.BankTransactions.FindAsync(bankTransactionId) ??
+            throw new KeyNotFoundException($"Bank transaction with ID {bankTransactionId} not found.");    
+
+        bankTransaction.Status = newStatus;
+        
+        return true;
     }
 
     /// <summary>

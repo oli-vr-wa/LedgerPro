@@ -212,4 +212,19 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
                 !item.IsReconciled)
             .CountAsync();
     }
+
+    /// <summary>
+    /// Retrieves the count of GeneralLedgerItem entities that are associated with a specific bank transaction ID. 
+    /// This method is used to check if there are any ledger items linked to a particular bank transaction, which can be useful for determining if a 
+    /// transaction has already been categorized or if there are any existing records that reference it before performing operations such as deletion or categorization.
+    /// Also for generating unique reference numbers when not provided by the user during categorization, ensuring that each ledger item can be traced back to its 
+    /// source transaction.
+    /// </summary>
+    /// <param name="bankTransactionId">The ID of the bank transaction for which to count associated ledger items.</param>
+    /// <returns>A task representing the asynchronous operation, containing the count of ledger items associated with the specified bank transaction.</returns>
+    public async Task<int> GetGeneralLedgerItemCountForBankTransactionAsync(Guid bankTransactionId) =>
+        await _dbContext.GeneralLedgerItems
+            .Where(item => item.BankTransactionId == bankTransactionId)
+            .CountAsync();
+    
 }

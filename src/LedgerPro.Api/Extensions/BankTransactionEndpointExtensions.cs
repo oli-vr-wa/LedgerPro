@@ -206,4 +206,24 @@ public static class BankTransactionEndpointExtensions
 
         return Results.Ok(new ActionResponse("Bank transaction unreconciled successfully."));
     }
+
+    internal static async Task<IResult> CategorizeBankTransactionAsync(BankTransactionCategorize categorizeDto, [FromServices] IGeneralLedgerService generalLedgerService, [FromServices] IBankTransactionRepository bankTransactionRepo, [FromServices] IUnitOfWork unitOfWork)
+    {
+        if (categorizeDto == null)
+            return Results.BadRequest(new ErrorResponse("The request cannot be null."));
+        if (categorizeDto.BankTransactionId == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));
+        if (categorizeDto.CategorizeItems == null || categorizeDto.CategorizeItems.Count == 0)
+            return Results.BadRequest(new ErrorResponse("At least one categorize item is required."));
+
+        var result = await generalLedgerService.CreateGeneralLedgerItemsAsync(categorizeDto);
+        if (!result.IsSuccess)
+            return Results.BadRequest(new ErrorResponse(result.Error ?? "An error occurred while categorizing the bank transaction."));
+
+        // If categorization was successful, update the bank transaction status to Categorized
+        await bankTransactionRepo.UpdateBankTransactionStatusAsync(categorizeDto.TransactionId, Core.Enums.BankTransactionStatus.Categorized);
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank transaction categorized successfully."));
+    }
 }

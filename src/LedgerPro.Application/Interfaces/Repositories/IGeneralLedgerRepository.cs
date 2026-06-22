@@ -19,4 +19,5 @@ public interface IGeneralLedgerRepository
     Task<List<GlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate);
     Task<List<GeneralLedgerItemSummaryTotal>> GetDashboardSummaryGeneralLedgerItemsAsync(DateTime fromDate, DateTime toDate, Dictionary<GeneralLedgerAccountType, GeneralLedgerAccountType> accountTypeMapping);
     Task<int> GetUnreconciledTransactionsCountAsync(DateTime fromDate, DateTime toDate);
+    Task<int> GetGeneralLedgerItemCountForBankTransactionAsync(Guid bankTransactionId);
 }
