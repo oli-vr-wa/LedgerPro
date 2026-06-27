@@ -15,9 +15,16 @@ interface LedgerDialogProps {
     isOpen: boolean;
     setIsOpen: (open: boolean) => void;
     showTrigger?: boolean;
+    size?: 'small' | 'medium' | 'large';
 }
 
-export function LedgerDialog({ title, description, children, isOpen, setIsOpen, showTrigger = true }: LedgerDialogProps) {
+const dialogSizeClasses = {
+    small: "w-[90vw] sm:max-w-sm",
+    medium: "w-[95vw] sm:max-w-4xl",
+    large: "w-[95vw] sm:max-w-7xl",
+} as const;
+
+export function LedgerDialog({ title, description, children, isOpen, setIsOpen, showTrigger = true, size = 'small' }: LedgerDialogProps) {    
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             {showTrigger && (
@@ -30,7 +37,7 @@ export function LedgerDialog({ title, description, children, isOpen, setIsOpen, 
                     </Button>
                 </DialogTrigger>
             )}
-            <DialogContent onInteractOutside={(e) => e.preventDefault()}>
+            <DialogContent onInteractOutside={(e) => e.preventDefault()} className={dialogSizeClasses[size]}>
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>{description}</DialogDescription>

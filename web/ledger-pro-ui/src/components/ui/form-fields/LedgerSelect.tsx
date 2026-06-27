@@ -17,9 +17,10 @@ interface LedgerSelectProps<T> extends React.SelectHTMLAttributes<HTMLSelectElem
     options: readonly T[];
     placeholder?: string;
     readOnly?: boolean;
+    className?: string;
 }
 
-export function LedgerSelect<T extends string | SelectOption>({ name, control, label, options, placeholder, readOnly }: LedgerSelectProps<T>) {
+export function LedgerSelect<T extends string | SelectOption>({ name, control, label, options, placeholder, readOnly, className }: LedgerSelectProps<T>) {
     const { field, fieldState: { error } } = useController({ name, control });
 
     // Helper to check if options are simple strings or objects with value/label
@@ -28,7 +29,7 @@ export function LedgerSelect<T extends string | SelectOption>({ name, control, l
     }
 
     return (
-        <Field>
+        <Field className={className}>
             {label && <FieldLabel>{label}</FieldLabel>}
             <Select value={field.value} onValueChange={field.onChange} disabled={readOnly}>
                 <SelectTrigger>

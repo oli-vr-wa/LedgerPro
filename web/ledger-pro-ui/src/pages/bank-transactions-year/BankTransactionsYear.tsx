@@ -41,7 +41,7 @@ export function BankTransactionsYear({ bankSourceId, year }: typeof BankTransact
             <h2 className="text-2xl font-bold mb-4">Bank Transactions for {year}</h2>
             <DataTable columns={columns} data={bankTransactionsState} getRowClassName={setPendingRowClassName} onRowClick={handleRowClick} />
 
-            <LedgerDialog title="Transaction Details" isOpen={isDialogOpen} setIsOpen={handleOpenDialog} showTrigger={false}>
+            <LedgerDialog title="Transaction Details" isOpen={isDialogOpen} setIsOpen={handleOpenDialog} showTrigger={false} size="medium">
                 <BankTransactionCategorizeForm transaction={selectedTransaction!} closeDialog={() => handleOpenDialog(false)} />
             </LedgerDialog>
         </div>

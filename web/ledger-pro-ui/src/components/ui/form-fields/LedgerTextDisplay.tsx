@@ -1,3 +1,4 @@
+import React from "react";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "../field";
 
 interface LedgerTextDisplayProps {
@@ -5,11 +6,11 @@ interface LedgerTextDisplayProps {
     value: string;
 }
 
-export const LedgerTextDisplay: React.FC<LedgerTextDisplayProps> = ({ label, value }) => (
-    <Field>
-        <FieldContent>
+export const LedgerTextDisplay = React.forwardRef<HTMLDivElement, LedgerTextDisplayProps>(({ label, value, ...props }, ref) => (
+    <Field ref={ref}>
+        <FieldContent {...props}>
             {label && <FieldLabel>{label}</FieldLabel>}
             <FieldDescription>{value}</FieldDescription>
         </FieldContent>
     </Field>
-)
+));

@@ -1,4 +1,6 @@
+import type { BankTransactionCategorizeItem } from "./bank-transaction-categorize-item.types";
+
 export interface BankTransactionCategorize {
-    transactionId: string;
-    generalLedgerAccountId: number;
+    bankTransactionId: string;
+    categorizeItems: BankTransactionCategorizeItem[];
 }
