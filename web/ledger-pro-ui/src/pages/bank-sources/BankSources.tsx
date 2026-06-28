@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { bankSourceService } from '@/services/bankSourceService';
-import { BankSourceForm } from '@/components/BankSourceForm';
+import { BankSourceForm } from '@/components/forms/bank-source-form/BankSourceForm';
 import { LedgerDialog } from '@/components/ui/LedgerDialog';
 import { DataTable } from '@/components/data-table/DataTable';
 import { columns } from './columns';

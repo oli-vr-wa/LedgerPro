@@ -7,5 +7,5 @@ export const bankTransactionsService = {
     getTransactionsByBankSourceId: (bankSourceId: string) => api.get<BankTransaction[]>(`/banktransactions/${bankSourceId}/transactions`),
     getTransactionsFinancialYearsOverview: (bankSourceId: string) => api.get<BankTransactionsYearRow[]>(`/banktransactions/${bankSourceId}/transactions/financial-years-overview`),
     getTransactionsByBankSourceIdAndYear: (bankSourceId: string, year: number) => api.get<BankTransaction[]>(`/banktransactions/${bankSourceId}/transactions/${year}`),
-    categorizeTransaction: (transactionId: string, data: BankTransactionCategorize) => api.put(`/banktransactions/transactions/${transactionId}/categorize`, data),
+    categorizeTransaction: (categorizeDto: BankTransactionCategorize) => api.post(`/banktransactions/categorize`, categorizeDto),
 };
