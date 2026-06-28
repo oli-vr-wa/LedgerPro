@@ -1,10 +1,11 @@
 import { DataTable } from "@/components/data-table/DataTable";
 import { bankTransactionsService } from "@/services/bankTransactionsService";
 import type { BankTransaction } from "@/types/bank-transaction.types";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { columns } from "./columns";
 import { LedgerDialog } from "@/components/ui/LedgerDialog";
-import { BankTransactionCategorizeForm } from "@/components/BankTransactionCategorizeForm";
+import { BankTransactionCategorizeForm } from "@/components/forms/bank-transaction-categorize-form/BankTransactionCategorizeForm";
+import { useQuery } from "@tanstack/react-query";
 
 export const BankTransactionsYearProps = {
     bankSourceId: '',
@@ -14,14 +15,12 @@ export const BankTransactionsYearProps = {
 export function BankTransactionsYear({ bankSourceId, year }: typeof BankTransactionsYearProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState<BankTransaction | undefined>(undefined);
-    const [bankTransactionsState, setBankTransactionsState] = useState<BankTransaction[]>([]);
-
-    useEffect(() => {
-        if (!bankSourceId || !year) return;
-        bankTransactionsService.getTransactionsByBankSourceIdAndYear(bankSourceId, year)
-            .then(response => setBankTransactionsState(response.data))
-            .catch(error => console.error('Error fetching transactions for year:', error));
-    }, [bankSourceId, year]);
+    const { data: bankTransactionsState = [], isLoading } = useQuery({
+        queryKey: ['bankTransactions', bankSourceId, year],
+        queryFn: () => bankTransactionsService.getTransactionsByBankSourceIdAndYear(bankSourceId, year)
+            .then(response => response.data),
+        enabled: !!bankSourceId && !!year
+    });
 
     const handleRowClick = (transaction: BankTransaction) => {
         setSelectedTransaction(transaction);
@@ -39,7 +38,7 @@ export function BankTransactionsYear({ bankSourceId, year }: typeof BankTransact
     return (
         <div className="pt-4">
             <h2 className="text-2xl font-bold mb-4">Bank Transactions for {year}</h2>
-            <DataTable columns={columns} data={bankTransactionsState} getRowClassName={setPendingRowClassName} onRowClick={handleRowClick} />
+            <DataTable columns={columns} data={bankTransactionsState} loading={isLoading} getRowClassName={setPendingRowClassName} onRowClick={handleRowClick} />
 
             <LedgerDialog title="Transaction Details" isOpen={isDialogOpen} setIsOpen={handleOpenDialog} showTrigger={false} size="medium">
                 <BankTransactionCategorizeForm transaction={selectedTransaction!} closeDialog={() => handleOpenDialog(false)} />

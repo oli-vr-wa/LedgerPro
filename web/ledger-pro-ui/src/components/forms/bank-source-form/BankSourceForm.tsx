@@ -1,14 +1,14 @@
 import { useForm } from 'react-hook-form';
-import { bankSourceService } from '../services/bankSourceService';
-import { BANK_TYPES, type BankSource, type BankSourcePayload } from '../types/bank-source.types';
+import { bankSourceService } from '@/services/bankSourceService';
+import { BANK_TYPES, type BankSource, type BankSourcePayload } from '@/types/bank-source.types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { LedgerSelect } from './ui/form-fields/LedgerSelect';
-import { bankSourceSchema, type BankSourceFormData } from '../schemas/bank-source.schemas';
+import { LedgerSelect } from '@/components/ui/form-fields/LedgerSelect';
+import { bankSourceSchema, type BankSourceFormData } from '@/schemas/bank-source.schemas';
 import type z from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LedgerForm, LedgerFormBody, LedgerFormFooter } from './ui/form-fields/LedgerForm';
-import { LedgerInput } from './ui/form-fields/LedgerInput';
-import { Button } from './ui/button';
+import { LedgerForm, LedgerFormBody, LedgerFormFooter } from '@/components/ui/form-fields/LedgerForm';
+import { LedgerInput } from '@/components/ui/form-fields/LedgerInput';
+import { Button } from '@/components/ui/button';
 import { showApiToast } from '@/lib/toast-utils';
 
 interface BankSourceFormProps {

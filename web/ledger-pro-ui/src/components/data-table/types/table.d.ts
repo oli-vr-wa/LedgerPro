@@ -7,6 +7,7 @@ declare module '@tanstack/react-table' {
         register?: UseFormRegister<any>; // Add the register property to TableMeta
         errors?: FieldErrors<any>; // Add the errors property to TableMeta
         removeRow?: (index: number) => void; // Add the removeRow property to TableMeta
+        removeRowById?: (rowId: string) => void; // Optional stable-id row removal callback
         onRowEnter?: (row: TData) => void; // Add the onRowEnter property to TableMeta
     }
 }

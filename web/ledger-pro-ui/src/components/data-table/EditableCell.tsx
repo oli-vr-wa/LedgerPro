@@ -43,7 +43,7 @@ export const EditableCell = ({ name, control, error, type = 'text', options, onE
                     className={error ? 'border-destructive bg-destructive/10 h-8' : 'h-8'}
                 />
             )}
-            {error && <span className="text-destructive text-sm absolute -bottom-4 left-0">{error}</span>}
+            {/* {error && type !== 'select' && <span className="text-destructive text-sm absolute -bottom-4 left-0">{error}</span>} */}
         </div>
     );
 }

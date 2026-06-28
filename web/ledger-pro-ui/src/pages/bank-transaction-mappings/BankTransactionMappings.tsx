@@ -3,7 +3,7 @@ import { bankTransactionMappingService } from '@/services/bankTransactionMapping
 import { columns } from './columns';
 import { DataTable } from '@/components/data-table/DataTable';
 import { LedgerDialog } from '@/components/ui/LedgerDialog';
-import { BankTransactionMappingForm } from '@/components/BankTransactionMappingForm';
+import { BankTransactionMappingForm } from '@/components/forms/bank-transaction-mapping-form/BankTransactionMappingForm';
 import { useState } from 'react';
 import type { BankTransactionMapping } from '@/types/bank-transaction-mapping.types';
 

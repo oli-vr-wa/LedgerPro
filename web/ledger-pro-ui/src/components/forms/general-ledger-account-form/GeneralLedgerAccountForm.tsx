@@ -1,14 +1,14 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { generalLedgerAccountService } from '../services/generalLedgerAccountService';
-import { LedgerForm, LedgerFormBody, LedgerFormFooter } from './ui/form-fields/LedgerForm';
-import { LedgerInput } from './ui/form-fields/LedgerInput';
-import { LedgerTextarea } from './ui/form-fields/LedgerTextarea';
-import { LedgerSelect } from './ui/form-fields/LedgerSelect';
-import { Button } from './ui/button';
-import { GENERAL_LEDGER_ACCOUNT_TYPES, type GeneralLedgerAccount } from '../types/general-ledger-account.types';
-import { glAccountSchema, type glAccountFormData } from '../schemas/general-ledger-account.schemas';
+import { generalLedgerAccountService } from '@/services/generalLedgerAccountService';
+import { LedgerForm, LedgerFormBody, LedgerFormFooter } from '@/components/ui/form-fields/LedgerForm';
+import { LedgerInput } from '@/components/ui/form-fields/LedgerInput';
+import { LedgerTextarea } from '@/components/ui/form-fields/LedgerTextarea';
+import { LedgerSelect } from '@/components/ui/form-fields/LedgerSelect';
+import { Button } from '@/components/ui/button';
+import { GENERAL_LEDGER_ACCOUNT_TYPES, type GeneralLedgerAccount } from '@/types/general-ledger-account.types';
+import { glAccountSchema, type glAccountFormData } from '@/schemas/general-ledger-account.schemas';
 import { z } from 'zod';
 import { showApiToast } from '@/lib/toast-utils';
 

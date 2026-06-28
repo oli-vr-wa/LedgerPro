@@ -10,10 +10,11 @@ interface DataTableProps<TData, Tvalue> {
     onRowClick?: (row: TData) => void; // Optional click handler for rows
     loading?: boolean; // Optional loading state
     getRowClassName?: (data: TData) => string; // Optional function to get class name for a row
+    getRowId?: (originalRow: TData, index: number) => string; // Optional stable row id resolver
     meta?: any; // Optional meta property for additional data
 }
 
-export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading, getRowClassName, meta }: DataTableProps<TData, Tvalue>) {
+export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading, getRowClassName, getRowId, meta }: DataTableProps<TData, Tvalue>) {
     const tableData = useMemo(() => data ?? [], [data]);
     const pageSize = 20; // Default page size
     const [sorting, setSorting] = useState<SortingState>([]);
@@ -25,6 +26,7 @@ export function DataTable<TData, Tvalue>({ columns, data, onRowClick, loading, g
     const table = useReactTable({
         data: tableData,
         columns,
+        getRowId,
         state: {
             sorting,
             pagination,
