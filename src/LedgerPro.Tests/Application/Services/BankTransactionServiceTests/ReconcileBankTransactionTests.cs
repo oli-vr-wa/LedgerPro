@@ -21,32 +21,15 @@ public class ReconcileBankTransactionTests
     }
 
     [Fact]
-    public async Task ReconcileBankTransactionAsync_ThrowsArgumentNullException_WhenRequestIsNull()
+    public async Task ReconcileBankTransactionAsync_ThrowsArgumentNullException_WhenEmptyGuidProvided()
     {
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => _bankTransactionService.ReconcileBankTransactionAsync(null!));        
-        Assert.Equal("The reconcile bank transaction request cannot be null. (Parameter 'request')", exception.Message);
+        var exception = await Assert.ThrowsAsync<ArgumentNullException>(() => _bankTransactionService.ReconcileBankTransactionAsync(Guid.Empty));        
+        Assert.Equal("The bank transaction ID cannot be empty. (Parameter 'bankTransactionId')", exception.Message);
 
         // Verify that the repository's GetBankTransactionByIdAsync method was not called since the request is null
         await _bankTransactionRepository.DidNotReceive().GetBankTransactionByIdAsync(Arg.Any<Guid>());
-    }
-
-    [Fact]
-    public async Task ReconcileBankTransactionAsync_ThrowsArgumentException_WhenNoSplitItemsProvided()
-    {
-        // Arrange
-        var request = new ReconcileBankTransactionRequest(
-            Guid.NewGuid(),
-            new List<SplitGeneralLedgerItemRequest>() // No split items provided
-        );
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => _bankTransactionService.ReconcileBankTransactionAsync(request));
-        Assert.Equal("At least one split general ledger item is required for reconciliation.", exception.Message);
-
-        // Verify that the repository's GetBankTransactionByIdAsync method was not called since no split items are provided
-        await _bankTransactionRepository.DidNotReceive().GetBankTransactionByIdAsync(Arg.Any<Guid>());
-    }    
+    }  
 
     [Fact]
     public async Task ReconcileBankTransactionAsync_ThrowsInvalidOperationException_WhenBankTransactionNotFound()
@@ -54,26 +37,17 @@ public class ReconcileBankTransactionTests
         // Arrange
         var bankTransactionId = Guid.NewGuid();
 
-        _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Returns((BankTransaction?)null!);
-        
-        var request = new ReconcileBankTransactionRequest(
-            bankTransactionId,
-            new List<SplitGeneralLedgerItemRequest>
-            {
-                new SplitGeneralLedgerItemRequest(5000, "GL Account - 1", "GLA-1", 500), // Total does not match bank transaction amount
-                new SplitGeneralLedgerItemRequest(5001, "GL Account - 2", "GLA-2", 200)
-            }
-        );
+        _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Returns((BankTransaction?)null!);    
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _bankTransactionService.ReconcileBankTransactionAsync(request));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _bankTransactionService.ReconcileBankTransactionAsync(bankTransactionId));
         Assert.Equal("The bank transaction to reconcile was not found.", exception.Message);
 
-        // Verify that the repository's GetBankTransactionByIdAsync method was called with the correct bank transaction ID
-        await _bankTransactionRepository.Received(1).GetBankTransactionByIdAsync(bankTransactionId);
+        // Verify that the repository's GetBankTransactionWithGlItemsByIdAsync method was called with the correct bank transaction ID
+        await _bankTransactionRepository.Received(1).GetBankTransactionWithGlItemsByIdAsync(bankTransactionId);
 
         // Verify that the repository's ReconcileBankTransactionAsync method was not called since the bank transaction was not found
-        await _bankTransactionRepository.DidNotReceive().ReconcileBankTransactionAsync(Arg.Any<BankTransaction>(), Arg.Any<List<GeneralLedgerItem>>());
+        await _bankTransactionRepository.DidNotReceive().ReconcileBankTransactionAsync(Arg.Any<BankTransaction>());
     }
 
     [Fact]
@@ -88,26 +62,17 @@ public class ReconcileBankTransactionTests
             Status = BankTransactionStatus.Reconciled
         };
 
-        _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Returns(bankTransaction);
-        
-        var request = new ReconcileBankTransactionRequest(
-            bankTransactionId,
-            new List<SplitGeneralLedgerItemRequest>
-            {
-                new SplitGeneralLedgerItemRequest(5000, "GL Account - 1", "GLA-1", 500),
-                new SplitGeneralLedgerItemRequest(5001, "GL Account - 2", "GLA-2", 200)
-            }
-        );
+        _bankTransactionRepository.GetBankTransactionWithGlItemsByIdAsync(bankTransactionId).Returns(bankTransaction);        
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _bankTransactionService.ReconcileBankTransactionAsync(request));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _bankTransactionService.ReconcileBankTransactionAsync(bankTransactionId));
         Assert.Equal("The bank transaction has already been reconciled.", exception.Message);
 
-        // Verify that the repository's GetBankTransactionByIdAsync method was called with the correct bank transaction ID
-        await _bankTransactionRepository.Received(1).GetBankTransactionByIdAsync(bankTransactionId);
+        // Verify that the repository's GetBankTransactionWithGlItemsByIdAsync method was called with the correct bank transaction ID
+        await _bankTransactionRepository.Received(1).GetBankTransactionWithGlItemsByIdAsync(bankTransactionId);
 
         // Verify that the repository's ReconcileBankTransactionAsync method was not called since the bank transaction was already reconciled
-        await _bankTransactionRepository.DidNotReceive().ReconcileBankTransactionAsync(Arg.Any<BankTransaction>(), Arg.Any<List<GeneralLedgerItem>>());
+        await _bankTransactionRepository.DidNotReceive().ReconcileBankTransactionAsync(Arg.Any<BankTransaction>());
     }
 
     [Fact]
@@ -119,29 +84,25 @@ public class ReconcileBankTransactionTests
         {
             Id = bankTransactionId,
             Amount = 1000,
-            Status = BankTransactionStatus.Pending
+            Status = BankTransactionStatus.Pending,
+            GeneralLedgerItems = new List<GeneralLedgerItem>
+            {
+                new GeneralLedgerItem { Id = Guid.NewGuid(), Amount = 500, GeneralLedgerAccountId = 5000, Side = TransactionSide.Debit },
+                new GeneralLedgerItem { Id = Guid.NewGuid(), Amount = 200, GeneralLedgerAccountId = 5001, Side = TransactionSide.Debit }
+            }
         };
 
-        _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Returns(bankTransaction);
-        
-        var request = new ReconcileBankTransactionRequest(
-            bankTransactionId,
-            new List<SplitGeneralLedgerItemRequest>
-            {
-                new SplitGeneralLedgerItemRequest(5000, "GL Account - 1", "GLA-1", 500), // Total does not match bank transaction amount
-                new SplitGeneralLedgerItemRequest(5001, "GL Account - 2", "GLA-2", 200)
-            }
-        );
+        _bankTransactionRepository.GetBankTransactionWithGlItemsByIdAsync(bankTransactionId).Returns(bankTransaction);        
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _bankTransactionService.ReconcileBankTransactionAsync(request));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => _bankTransactionService.ReconcileBankTransactionAsync(bankTransactionId));
         Assert.Equal("The total amount of the split general ledger items must equal the amount of the bank transaction.", exception.Message);
 
-        // Verify that the repository's GetBankTransactionByIdAsync method was called with the correct bank transaction ID
-        await _bankTransactionRepository.Received(1).GetBankTransactionByIdAsync(bankTransactionId);
+        // Verify that the repository's GetBankTransactionWithGlItemsByIdAsync method was called with the correct bank transaction ID
+        await _bankTransactionRepository.Received(1).GetBankTransactionWithGlItemsByIdAsync(bankTransactionId);
 
         // Verify that the repository's ReconcileBankTransactionAsync method was not called since the split items total does not match the bank transaction amount
-        await _bankTransactionRepository.DidNotReceive().ReconcileBankTransactionAsync(Arg.Any<BankTransaction>(), Arg.Any<List<GeneralLedgerItem>>());
+        await _bankTransactionRepository.DidNotReceive().ReconcileBankTransactionAsync(Arg.Any<BankTransaction>());
     }
 
     [Fact]
@@ -158,38 +119,30 @@ public class ReconcileBankTransactionTests
             BankSource = new BankSource
             {
                 GeneralLedgerAccountId = 1001
+            },
+            GeneralLedgerItems = new List<GeneralLedgerItem>
+            {
+                new GeneralLedgerItem { Id = Guid.NewGuid(), Amount = 600, GeneralLedgerAccountId = 5000, Side = TransactionSide.Debit },
+                new GeneralLedgerItem { Id = Guid.NewGuid(), Amount = 400, GeneralLedgerAccountId = 5001, Side = TransactionSide.Debit }
             }
         };
 
-        _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId).Returns(bankTransaction);
-        
-        var request = new ReconcileBankTransactionRequest(
-            bankTransactionId,
-            new List<SplitGeneralLedgerItemRequest>
-            {
-                new SplitGeneralLedgerItemRequest(5000, "GL Account - 1", "GLA-1", 600),
-                new SplitGeneralLedgerItemRequest(5001, "GL Account - 2", "GLA-2", 400)
-            }
-        );
+        _bankTransactionRepository.GetBankTransactionWithGlItemsByIdAsync(bankTransactionId).Returns(bankTransaction);        
 
-        _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction, Arg.Any<List<GeneralLedgerItem>>()).Returns(3);
+        _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction).Returns(true);
 
         // Act
-        int glItemsAdded = await _bankTransactionService.ReconcileBankTransactionAsync(request);
+        bool result = await _bankTransactionService.ReconcileBankTransactionAsync(bankTransactionId);
 
         // Assert
-        Assert.Equal(3, glItemsAdded);
+        Assert.True(result);
 
-        // Verify that the repository's GetBankTransactionByIdAsync method was called with the correct bank transaction ID
-        await _bankTransactionRepository.Received(1).GetBankTransactionByIdAsync(bankTransactionId);
+        // Verify that the repository's GetBankTransactionWithGlItemsByIdAsync method was called with the correct bank transaction ID
+        await _bankTransactionRepository.Received(1).GetBankTransactionWithGlItemsByIdAsync(bankTransactionId);
 
         // Verify that the repository's ReconcileBankTransactionAsync method was called with the correct parameters
         await _bankTransactionRepository.Received(1).ReconcileBankTransactionAsync(
-            Arg.Is<BankTransaction>(bt => bt.Id == bankTransactionId),
-            Arg.Is<List<GeneralLedgerItem>>(gli => gli.Count == 3 &&
-                gli[0].GeneralLedgerAccountId == 5000 && gli[0].Amount == 600 &&
-                gli[1].GeneralLedgerAccountId == 5001 && gli[1].Amount == 400 &&
-                gli[2].GeneralLedgerAccountId == 1001 && gli[2].Amount == 1000)
+            Arg.Is<BankTransaction>(bt => bt.Id == bankTransactionId)
         );
     }
 }

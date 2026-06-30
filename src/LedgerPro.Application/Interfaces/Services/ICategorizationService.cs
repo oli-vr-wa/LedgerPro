@@ -10,4 +10,5 @@ namespace LedgerPro.Application.Interfaces.Services;
 public interface ICategorizationService
 {
     Task<Result<bool>> CategorizeBankTransactionAsync(BankTransactionCategorize categorizeDto);
+    Task<Result<bool>> UncategorizeBankTransactionAsync(Guid bankTransactionId);
 }
