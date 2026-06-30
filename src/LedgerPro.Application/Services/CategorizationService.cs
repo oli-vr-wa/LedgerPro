@@ -61,4 +61,29 @@ public class CategorizationService(IGeneralLedgerRepository generalLedgerReposit
 
         return Result<bool>.Success(true);
     }
+
+    /// <summary>
+    /// Uncategorizes a bank transaction by removing its associated general ledger items and setting its status to pending.
+    /// </summary>
+    /// <param name="bankTransactionId">The ID of the bank transaction to uncategorize.</param>
+    /// <returns>A result indicating the success or failure of the operation.</returns>
+    public async Task<Result<bool>> UncategorizeBankTransactionAsync(Guid bankTransactionId)
+    {
+        var bankTransaction = await _bankTransactionRepository.GetBankTransactionWithGlItemsByIdAsync(bankTransactionId);
+
+        if (bankTransaction == null)
+            return Result<bool>.Failure($"Bank transaction with ID {bankTransactionId} not found.");
+
+        // Check that the bank transaction is not already reconciled.
+        if (bankTransaction.Status == BankTransactionStatus.Reconciled)
+            return Result<bool>.Failure($"Bank transaction with ID {bankTransactionId} is already reconciled and cannot be uncategorized.");
+
+        // Clear current general ledger items
+        bankTransaction.GeneralLedgerItems.Clear();
+
+        // Set Bank Transaction status to Pending after successfully removing the general ledger items
+        bankTransaction.Status = BankTransactionStatus.Pending;
+
+        return Result<bool>.Success(true);
+    }
 }

@@ -34,6 +34,7 @@ public static class BankTransactionEndpointExtensions
         group.MapGet("/{bankSourceId:guid}/transactions/{financialYearEnding:int}", GetBankTransactionsForFinancialYearAsync);
         group.MapGet("/{bankSourceId:guid}/transactions/financial-years-overview", GetBankTransactionsFinancialYearsRowsAsync);
         group.MapPost("/categorize", CategorizeBankTransactionAsync);
+        group.MapPost("/uncategorize/{bankTransactionId:guid}", UncategorizeBankTransactionAsync);
         group.MapPost("/reconcile", ReconcileBankTransactionAsync);
         group.MapPost("/unreconcile", UnreconcileBankTransactionAsync);
 
@@ -148,24 +149,19 @@ public static class BankTransactionEndpointExtensions
     }
 
     /// <summary>
-    /// Reconciles a bank transaction by creating general ledger items based on the provided split general ledger items in the request. 
-    /// The method first validates the request to ensure that it is not null, contains at least one split general ledger item, 
-    /// and that the total amount of the split items matches the bank transaction amount.
+    /// Reconciles a bank transaction by calling the IBankTransactionService to perform the reconciliation logic and then commits the transaction using the IUnitOfWork.
+    /// This endpoint is used to mark a bank transaction as reconciled, indicating that it has been matched with the corresponding general ledger items and is considered finalized in the accounting system.
     /// </summary>
-    /// <param name="request">The request containing the bank transaction ID and split general ledger items.</param>
+    /// <param name="bankTransactionId">The ID of the bank transaction to reconcile.</param>
     /// <param name="service">The service used to manage bank transactions.</param>
     /// <param name="unitOfWork">The unit of work used to manage transactions.</param>
     /// <returns>A result indicating the success of the operation.</returns>
-    internal static async Task<IResult> ReconcileBankTransactionAsync(ReconcileBankTransactionRequest request, [FromServices] IBankTransactionService service, [FromServices] IUnitOfWork unitOfWork)
+    internal static async Task<IResult> ReconcileBankTransactionAsync(Guid bankTransactionId, [FromServices] IBankTransactionService service, [FromServices] IUnitOfWork unitOfWork)
     {
-        if (request == null)
-            return Results.BadRequest(new ErrorResponse("The request cannot be null."));
-        if (request.BankTransactionId == Guid.Empty)
-            return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));
-        if (request.SplitGeneralLedgerItems == null || request.SplitGeneralLedgerItems.Count == 0)
-            return Results.BadRequest(new ErrorResponse("At least one split general ledger item is required for reconciliation."));         
+        if (bankTransactionId == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));        
 
-        await service.ReconcileBankTransactionAsync(request);
+        await service.ReconcileBankTransactionAsync(bankTransactionId);
         await unitOfWork.CommitAsync();
 
         return Results.Ok(new ActionResponse("Bank transaction reconciled successfully."));
@@ -233,5 +229,19 @@ public static class BankTransactionEndpointExtensions
         await unitOfWork.CommitAsync();
 
         return Results.Ok(new ActionResponse("Bank transaction categorized successfully."));
+    }
+
+    internal static async Task<IResult> UncategorizeBankTransactionAsync([FromRoute] Guid bankTransactionId, [FromServices] ICategorizationService categorizationService, [FromServices] IUnitOfWork unitOfWork)
+    {
+        if (bankTransactionId == Guid.Empty)
+            return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));
+
+        var result = await categorizationService.UncategorizeBankTransactionAsync(bankTransactionId);
+        if (!result.IsSuccess)
+            return Results.BadRequest(new ErrorResponse(result.Error ?? "An error occurred while uncategorizing the bank transaction."));
+
+        await unitOfWork.CommitAsync();
+
+        return Results.Ok(new ActionResponse("Bank transaction uncategorized successfully."));
     }
 }

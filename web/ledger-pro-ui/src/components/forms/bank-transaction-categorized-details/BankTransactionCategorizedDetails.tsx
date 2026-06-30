@@ -9,13 +9,19 @@ import type { BankTransaction } from "@/types/bank-transaction.types";
 import type { GeneralLedgerItemTransaction } from "@/types/general-ledger-item-transaction.types";
 import { useEffect, useState } from "react";
 import { columns } from "./columns";
+import { bankTransactionsService } from "@/services/bankTransactionsService";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface BankTransactionCategorizedDetailsProps {
     transaction: BankTransaction;
+    closeDialog: () => void;
 }
 
-export function BankTransactionCategorizedDetails({ transaction }: BankTransactionCategorizedDetailsProps) {
+export function BankTransactionCategorizedDetails({ transaction, closeDialog }: BankTransactionCategorizedDetailsProps) {
     const [generalLedgerItems, setGeneralLedgerItems] = useState<GeneralLedgerItemTransaction[]>([]);
+
+    // React Query client for invalidating queries after uncategorizing/reconciling/unreconciling
+    const queryClient = useQueryClient();
 
     useEffect(() => {
         // Fetch GL items for the bank transaction when the component mounts
@@ -28,6 +34,30 @@ export function BankTransactionCategorizedDetails({ transaction }: BankTransacti
             });
     }, [transaction.id]);
     
+    const handleUncategorize = (e: React.MouseEvent) => {
+        e.preventDefault();
+        
+        // Call the API to uncategorize the transaction
+        bankTransactionsService.uncategorizeTransaction(transaction.id)
+            .then(() => {
+                showApiToast("Transaction uncategorized successfully.");
+                queryClient.invalidateQueries({ queryKey: ['bankTransactions']});
+                closeDialog();
+            })
+            .catch(() => {
+                showApiToast("Failed to uncategorize the transaction.", "error");
+            });
+    };
+
+    const handleReconcile = (e: React.MouseEvent) => {
+        e.preventDefault();
+        // Add reconcile logic here
+    };
+
+    const handleUnreconcile = (e: React.MouseEvent) => {
+        e.preventDefault();
+        // Add unreconcile logic here
+    };
 
     return (
         <LedgerForm onSubmit={() => {}}>
@@ -60,11 +90,11 @@ export function BankTransactionCategorizedDetails({ transaction }: BankTransacti
             </LedgerFormBody>
             <LedgerFormFooter>                
                 {transaction.status === 'Reconciled' ? 
-                    <Button variant="destructive">Unreconcile</Button> : 
+                    <Button variant="destructive" onClick={handleUnreconcile}>Unreconcile</Button> : 
                     (
                         <>
-                            <Button variant="destructive">Uncategorize</Button>
-                            <Button variant="submit">Reconcile</Button>
+                            <Button variant="destructive" onClick={handleUncategorize}>Uncategorize</Button>
+                            <Button variant="submit" onClick={handleReconcile}>Reconcile</Button>
                         </>                        
                     )}
             </LedgerFormFooter>

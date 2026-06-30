@@ -23,7 +23,7 @@ public interface IBankTransactionRepository
     Task<bool> IsBankTransactionMappingDuplicateAsync(BankTransactionMapping mapping);
     Task<List<BankTransactionRowDto>> GetBankTransactionRowsAsync(Guid bankSourceId, int? financialYearEnding);
     Task<bool> UpdateBankTransactionStatusAsync(Guid bankTransactionId, BankTransactionStatus newStatus);
-    Task<int> ReconcileBankTransactionAsync(BankTransaction bankTransaction, List<GeneralLedgerItem> generalLedgerItemsToAdd);
+    Task<bool> ReconcileBankTransactionAsync(BankTransaction bankTransaction);
     Task ConfirmReconcileCategorizedBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem);
     Task UnreconcileBankTransactionAsync(BankTransaction bankTransaction);    
     Task<int> GetPendingReconciliationCountAsync(DateTime fromDate, DateTime toDate);
