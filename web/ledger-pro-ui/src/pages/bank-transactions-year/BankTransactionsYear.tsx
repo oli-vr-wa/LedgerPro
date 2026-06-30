@@ -6,6 +6,7 @@ import { columns } from "./columns";
 import { LedgerDialog } from "@/components/ui/LedgerDialog";
 import { BankTransactionCategorizeForm } from "@/components/forms/bank-transaction-categorize-form/BankTransactionCategorizeForm";
 import { useQuery } from "@tanstack/react-query";
+import { BankTransactionCategorizedDetails } from "@/components/forms/bank-transaction-categorized-details/BankTransactionCategorizedDetails";
 
 export const BankTransactionsYearProps = {
     bankSourceId: '',
@@ -41,7 +42,11 @@ export function BankTransactionsYear({ bankSourceId, year }: typeof BankTransact
             <DataTable columns={columns} data={bankTransactionsState} loading={isLoading} getRowClassName={setPendingRowClassName} onRowClick={handleRowClick} />
 
             <LedgerDialog title="Transaction Details" isOpen={isDialogOpen} setIsOpen={handleOpenDialog} showTrigger={false} size="medium">
-                <BankTransactionCategorizeForm transaction={selectedTransaction!} closeDialog={() => handleOpenDialog(false)} />
+                {selectedTransaction?.status === 'Pending' ? (
+                    <BankTransactionCategorizeForm transaction={selectedTransaction!} closeDialog={() => handleOpenDialog(false)} />
+                ) : (
+                    <BankTransactionCategorizedDetails transaction={selectedTransaction!} />
+                )}
             </LedgerDialog>
         </div>
     );

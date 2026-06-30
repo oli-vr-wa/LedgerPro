@@ -4,6 +4,7 @@ using LedgerPro.Application.Interfaces.Repositories;
 using LedgerPro.Application.DTOs.Reports;
 using Microsoft.EntityFrameworkCore;
 using LedgerPro.Infrastructure.Extensions;
+using LedgerPro.Application.DTOs.GeneralLedgerItem;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -21,6 +22,24 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     /// <returns>A list of GeneralLedgerItem entities.</returns>
     public async Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsAsync() =>
         await _dbContext.GeneralLedgerItems.ToListAsync();
+
+    /// <summary>
+    /// Retrieves a list of GeneralLedgerItemTransaction DTOs that are associated with a specific bank transaction ID.
+    /// This method is used to fetch the ledger items that belong to a particular bank transaction.
+    /// </summary>
+    /// <param name="bankTransactionId">The ID of the bank transaction.</param>
+    /// <returns>A list of GeneralLedgerItemTransaction DTOs.</returns>
+    public async Task<List<GeneralLedgerItemTransaction>> GetGeneralLedgerItemsForBankTransactionAsync(Guid bankTransactionId) =>
+        await _dbContext.GeneralLedgerItems
+            .Where(item => item.BankTransactionId == bankTransactionId)
+            .Select(item => new GeneralLedgerItemTransaction
+            {
+                Description = item.Description,
+                Reference = item.Reference,
+                Amount = item.Amount,
+                GeneralLedgerAccountName = item.GeneralLedgerAccount.Name
+            })
+            .ToListAsync();
 
     /// <summary>
     /// Adds a collection of GeneralLedgerItem entities to the database context. This method is used 
