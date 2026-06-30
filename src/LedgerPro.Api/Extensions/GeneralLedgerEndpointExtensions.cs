@@ -25,6 +25,7 @@ public static class GeneralLedgerEndpointExtensions
         var group = app.MapGroup("/api/v1/ledger").WithTags("General Ledger");
 
         group.MapGet("/items", GetGeneralLedgerItemsAsync);
+        group.MapGet("/items/bank-transaction/{bankTransactionId:guid}", GetGeneralLedgerItemsForBankTransactionAsync);
         group.MapGet("/accounts", GetGeneralLedgerAccountsAsync);
         group.MapPost("/account", AddGeneralLedgerAccountAsync);
         group.MapPut("/account/{id:int}", UpdateGeneralLedgerAccountAsync);
@@ -41,6 +42,18 @@ public static class GeneralLedgerEndpointExtensions
     internal static async Task<IResult> GetGeneralLedgerItemsAsync([FromServices] IGeneralLedgerRepository repo)
     {
         var items = await repo.GetGeneralLedgerItemsAsync();
+        return Results.Ok(items);
+    }
+
+    /// <summary>
+    /// Retrieves a list of GeneralLedgerItemTransaction DTOs that are associated with a specific bank transaction ID.
+    /// </summary>
+    /// <param name="bankTransactionId">The ID of the bank transaction.</param>
+    /// <param name="repo">The repository used to access general ledger items.</param>
+    /// <returns>A list of GeneralLedgerItemTransaction DTOs.</returns>
+    internal static async Task<IResult> GetGeneralLedgerItemsForBankTransactionAsync(Guid bankTransactionId, [FromServices] IGeneralLedgerRepository repo)
+    {
+        var items = await repo.GetGeneralLedgerItemsForBankTransactionAsync(bankTransactionId);
         return Results.Ok(items);
     }
 

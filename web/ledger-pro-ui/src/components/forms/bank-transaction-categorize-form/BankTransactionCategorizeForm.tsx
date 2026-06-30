@@ -87,9 +87,7 @@ export function BankTransactionCategorizeForm({ transaction, closeDialog }: Bank
             }))
         };
         categorizeTransaction(payload);
-    };
-
-    // if (isLoadingAccounts) return <div>Loading...</div>;    
+    };   
 
     // Handler for adding a new row to the items array when the user presses Enter in the last row
     const onRowEnter = () => {
@@ -103,6 +101,8 @@ export function BankTransactionCategorizeForm({ transaction, closeDialog }: Bank
 
     const { fields, append, remove } = useFieldArray({ control: form.control, name: "items" });    
     const watchedItems = useWatch({ control: form.control, name: "items" });
+
+    // Extract the error message for the items array. An Error can happen when the sum of the amounts does not equal the transaction amount.
     const itemsError = form.formState.errors.items as
         | { message?: string; root?: { message?: string } }
         | undefined;
@@ -181,8 +181,7 @@ export function BankTransactionCategorizeForm({ transaction, closeDialog }: Bank
                 )}                            
 
             </LedgerFormBody>
-            <LedgerFormFooter>
-                {transaction.status === 'Reconciled' && <Button variant="destructive">Unreconcile</Button>}
+            <LedgerFormFooter>                
                 <Button type="button" variant="cancel" onClick={closeDialog}>Cancel</Button>
                 {transaction.status !== 'Reconciled' && <Button type="submit" variant="submit" disabled={isPending}>{isPending ? 'Saving...' : 'Save'}</Button>}
             </LedgerFormFooter>
