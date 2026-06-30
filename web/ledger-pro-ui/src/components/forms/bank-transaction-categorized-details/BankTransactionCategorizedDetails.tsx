@@ -12,10 +12,9 @@ import { columns } from "./columns";
 
 interface BankTransactionCategorizedDetailsProps {
     transaction: BankTransaction;
-    closeDialog: () => void;
 }
 
-export function BankTransactionCategorizedDetails({ transaction, closeDialog }: BankTransactionCategorizedDetailsProps) {
+export function BankTransactionCategorizedDetails({ transaction }: BankTransactionCategorizedDetailsProps) {
     const [generalLedgerItems, setGeneralLedgerItems] = useState<GeneralLedgerItemTransaction[]>([]);
 
     useEffect(() => {

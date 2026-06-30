@@ -45,7 +45,7 @@ export function BankTransactionsYear({ bankSourceId, year }: typeof BankTransact
                 {selectedTransaction?.status === 'Pending' ? (
                     <BankTransactionCategorizeForm transaction={selectedTransaction!} closeDialog={() => handleOpenDialog(false)} />
                 ) : (
-                    <BankTransactionCategorizedDetails transaction={selectedTransaction!} closeDialog={() => handleOpenDialog(false)} />
+                    <BankTransactionCategorizedDetails transaction={selectedTransaction!} />
                 )}
             </LedgerDialog>
         </div>
