@@ -31,7 +31,7 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     /// <returns>A list of GeneralLedgerItemTransaction DTOs.</returns>
     public async Task<List<GeneralLedgerItemTransaction>> GetGeneralLedgerItemsForBankTransactionAsync(Guid bankTransactionId) =>
         await _dbContext.GeneralLedgerItems
-            .Where(item => item.BankTransactionId == bankTransactionId)
+            .Where(item => item.BankTransactionId == bankTransactionId && item.GeneralLedgerAccountId > 1010) // Exclude bank-side ledger items
             .Select(item => new GeneralLedgerItemTransaction
             {
                 Description = item.Description,

@@ -9,6 +9,6 @@ export const bankTransactionsService = {
     getTransactionsByBankSourceIdAndYear: (bankSourceId: string, year: number) => api.get<BankTransaction[]>(`/banktransactions/${bankSourceId}/transactions/${year}`),
     categorizeTransaction: (categorizeDto: BankTransactionCategorize) => api.post(`/banktransactions/categorize`, categorizeDto),
     uncategorizeTransaction: (bankTransactionId: string) => api.post(`/banktransactions/uncategorize/${bankTransactionId}`),
-    reconcileTransaction: (bankTransactionId: string) => api.post(`/banktransactions/reconcile`, bankTransactionId),
-    unreconcileTransaction: (bankTransactionId: string) => api.post(`/banktransactions/unreconcile`, bankTransactionId)
+    reconcileTransaction: (bankTransactionId: string) => api.post(`/banktransactions/reconcile/${bankTransactionId}`),
+    unreconcileTransaction: (bankTransactionId: string) => api.post(`/banktransactions/unreconcile/${bankTransactionId}`)
 };

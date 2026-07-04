@@ -120,7 +120,7 @@ public class BankTransactionService(
             throw new InvalidOperationException("The bank transaction has already been reconciled.");
 
         // Verify that the total amount of gl items matches the bank transaction amount before proceeding with reconciliation.
-        if (bankTransaction.GeneralLedgerItems.Sum(i => i.Amount) != bankTransaction.Amount)
+        if (Math.Abs(bankTransaction.GeneralLedgerItems.Sum(i => i.Amount)) != Math.Abs(bankTransaction.Amount))
             throw new InvalidOperationException("The total amount of the split general ledger items must equal the amount of the bank transaction.");
 
         // Create bank transaction general ledger item.
@@ -130,16 +130,14 @@ public class BankTransactionService(
             BankTransactionId = bankTransaction.Id,
             GeneralLedgerAccountId = bankTransaction.BankSource.GeneralLedgerAccountId,
             Description = $"{bankTransaction.Description} - Reconciled Bank Transaction",
-            Amount = bankTransaction.Amount,
+            Amount = Math.Abs(bankTransaction.Amount),
             Reference = GenerateBankTransactionGlItemReference(bankTransaction),
             TransactionDate = bankTransaction.TransactionDate,
             IsReconciled = true,
             Side = bankTransaction.Amount < 0 ? TransactionSide.Debit : TransactionSide.Credit
         };
 
-        bankTransaction.GeneralLedgerItems.Add(bankTransactionGeneralLedgerItem);
-    
-        return await _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction);                
+        return await _bankTransactionRepository.ReconcileBankTransactionAsync(bankTransaction, bankTransactionGeneralLedgerItem);                
     }
 
     /// <summary>
@@ -150,7 +148,7 @@ public class BankTransactionService(
     /// <exception cref="InvalidOperationException">Thrown if the bank transaction is not found or is not reconciled.</exception>
     public async Task UnreconcileBankTransactionAsync(Guid bankTransactionId)
     {
-        var bankTransaction = await _bankTransactionRepository.GetBankTransactionByIdAsync(bankTransactionId) ?? 
+        var bankTransaction = await _bankTransactionRepository.GetBankTransactionWithGlItemsByIdAsync(bankTransactionId) ?? 
             throw new InvalidOperationException("The bank transaction to unreconcile was not found.");
 
         if (bankTransaction.Status != BankTransactionStatus.Reconciled)
