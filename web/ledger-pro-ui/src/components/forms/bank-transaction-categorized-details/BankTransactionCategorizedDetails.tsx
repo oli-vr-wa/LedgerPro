@@ -51,12 +51,32 @@ export function BankTransactionCategorizedDetails({ transaction, closeDialog }: 
 
     const handleReconcile = (e: React.MouseEvent) => {
         e.preventDefault();
-        // Add reconcile logic here
+        
+        bankTransactionsService.reconcileTransaction(transaction.id)
+            .then(() => {
+                showApiToast("Transaction reconciled successfully.");
+                queryClient.invalidateQueries({ queryKey: ['bankTransactions']});
+                closeDialog();
+            })
+            .catch((error) => {
+                //console.log(error.response.data);
+                showApiToast("Failed to reconcile the transaction.", error.response.statusText, { error });
+            });
     };
 
     const handleUnreconcile = (e: React.MouseEvent) => {
         e.preventDefault();
-        // Add unreconcile logic here
+
+        bankTransactionsService.unreconcileTransaction(transaction.id)
+            .then(() => {
+                showApiToast("Transaction unreconciled successfully.");
+                queryClient.invalidateQueries({ queryKey: ['bankTransactions']});
+                closeDialog();
+            })
+            .catch((error) => {                
+                showApiToast("Failed to unreconcile the transaction.", error, { error });
+            });
+
     };
 
     return (

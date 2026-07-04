@@ -35,8 +35,8 @@ public static class BankTransactionEndpointExtensions
         group.MapGet("/{bankSourceId:guid}/transactions/financial-years-overview", GetBankTransactionsFinancialYearsRowsAsync);
         group.MapPost("/categorize", CategorizeBankTransactionAsync);
         group.MapPost("/uncategorize/{bankTransactionId:guid}", UncategorizeBankTransactionAsync);
-        group.MapPost("/reconcile", ReconcileBankTransactionAsync);
-        group.MapPost("/unreconcile", UnreconcileBankTransactionAsync);
+        group.MapPost("/reconcile/{bankTransactionId:guid}", ReconcileBankTransactionAsync);
+        group.MapPost("/unreconcile/{bankTransactionId:guid}", UnreconcileBankTransactionAsync);
 
         return app;
     }
@@ -162,6 +162,16 @@ public static class BankTransactionEndpointExtensions
             return Results.BadRequest(new ErrorResponse("The bank transaction ID is required."));        
 
         await service.ReconcileBankTransactionAsync(bankTransactionId);
+        try
+        {
+            await unitOfWork.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+            Console.WriteLine($"Error committing transaction: {ex.Message}, StackTrace: {ex.StackTrace}, InnerException: {ex.InnerException?.Message}");
+            return Results.BadRequest(new ErrorResponse("An error occurred while committing the transaction."));
+        }
         await unitOfWork.CommitAsync();
 
         return Results.Ok(new ActionResponse("Bank transaction reconciled successfully."));

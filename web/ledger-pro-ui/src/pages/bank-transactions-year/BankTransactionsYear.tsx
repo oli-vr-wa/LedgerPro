@@ -32,14 +32,21 @@ export function BankTransactionsYear({ bankSourceId, year }: typeof BankTransact
         setIsDialogOpen(isOpen);
     };
 
-    const setPendingRowClassName = (transaction: BankTransaction) => {
-        return transaction.status === 'Pending' ? 'bg-red-100' : '';
+    const setStatusRowClassName = (transaction: BankTransaction) => {
+        switch (transaction.status) {
+            case 'Pending':
+                return 'bg-red-100';
+            case 'Reconciled':
+                return 'bg-green-100';
+            default:
+                return '';
+        }
     };   
 
     return (
         <div className="pt-4">
             <h2 className="text-2xl font-bold mb-4">Bank Transactions for {year}</h2>
-            <DataTable columns={columns} data={bankTransactionsState} loading={isLoading} getRowClassName={setPendingRowClassName} onRowClick={handleRowClick} />
+            <DataTable columns={columns} data={bankTransactionsState} loading={isLoading} getRowClassName={setStatusRowClassName} onRowClick={handleRowClick} />
 
             <LedgerDialog title="Transaction Details" isOpen={isDialogOpen} setIsOpen={handleOpenDialog} showTrigger={false} size="medium">
                 {selectedTransaction?.status === 'Pending' ? (

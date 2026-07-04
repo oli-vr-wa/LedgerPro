@@ -40,6 +40,7 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     {
         return await _dbContext.BankTransactions
             .Include(t => t.GeneralLedgerItems)
+            .Include(t => t.BankSource)
             .FirstOrDefaultAsync(t => t.Id == bankTransactionId) 
             ?? throw new KeyNotFoundException($"Bank transaction with ID {bankTransactionId} not found.");
     }
@@ -308,7 +309,9 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
                 t.Amount,
                 t.TransactionType,
                 t.Status,
-                GeneralLedgerAccounts = t.GeneralLedgerItems.Select(item => item.GeneralLedgerAccount.Name).ToList()   
+                GeneralLedgerAccounts = t.GeneralLedgerItems
+                    .Where(item => item.GeneralLedgerAccountId > 1010) // Exclude bank-side ledger items
+                    .Select(item => item.GeneralLedgerAccount.Name).ToList()   
             })
             .OrderByDescending(t => t.TransactionDate)
             .ToListAsync();
@@ -354,18 +357,24 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
     /// <exception cref="ArgumentNullException">Thrown if the bank transaction is null.</exception>
     /// <exception cref="ArgumentException">Thrown if the list of general ledger items is null or empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown if the bank transaction has already been reconciled or if the total amount of the general ledger items does not match the bank transaction amount.</exception>
-    public async Task<bool> ReconcileBankTransactionAsync(BankTransaction bankTransaction)
+    public async Task<bool> ReconcileBankTransactionAsync(BankTransaction bankTransaction, GeneralLedgerItem bankTransactionGlItem)
     {
         if (bankTransaction == null)
             throw new ArgumentNullException(nameof(bankTransaction), "The bank transaction cannot be null.");
+
+        if (bankTransactionGlItem == null)
+            throw new ArgumentNullException(nameof(bankTransactionGlItem), "The bank transaction general ledger item cannot be null.");
 
         if (bankTransaction.Status == BankTransactionStatus.Reconciled)
             throw new InvalidOperationException("The bank transaction has already been reconciled.");
 
         // Ensure that the total amount of the general ledger items matches the amount of the bank transaction to maintain data integrity.
         // Do not include bank transaction items to calculate the total correctly.
-        if (bankTransaction.GeneralLedgerItems.Where(i => i.GeneralLedgerAccountId > 1010).Sum(i => i.Amount) != bankTransaction.Amount)
+        if (Math.Abs(bankTransaction.GeneralLedgerItems.Where(i => i.GeneralLedgerAccountId > 1010).Sum(i => i.Amount)) != Math.Abs(bankTransaction.Amount))
             throw new InvalidOperationException("The total amount of the general ledger items must equal the amount of the bank transaction.");
+
+        // Explicitly add the new bank-side ledger item so EF always tracks it as Added.
+        _dbContext.GeneralLedgerItems.Add(bankTransactionGlItem);
         
         // Set as reconciled.
         bankTransaction.Status = BankTransactionStatus.Reconciled;                
@@ -397,7 +406,7 @@ public class BankTransactionRepository(LedgerDbContext dbContext) : IBankTransac
         _dbContext.GeneralLedgerItems.RemoveRange(bankTransaction.GeneralLedgerItems);
         
         // Update the bank transaction.
-        _dbContext.BankTransactions.Update(bankTransaction);
+        //_dbContext.BankTransactions.Update(bankTransaction);
     }
 
     /// <summary>
