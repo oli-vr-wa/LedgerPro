@@ -30,7 +30,7 @@ public static class GeneralLedgerEndpointExtensions
         group.MapPost("/account", AddGeneralLedgerAccountAsync);
         group.MapPut("/account/{id:int}", UpdateGeneralLedgerAccountAsync);
         group.MapDelete("/account/{id:int}", DeleteGeneralLedgerAccountAsync);
-        group.MapGet("/financial-year-overview", GetGeneralLedgerFinancialYearOverviewAsync);
+        group.MapGet("/financial-years-overview", GetGeneralLedgerFinancialYearOverviewAsync);
 
         return app;
     }

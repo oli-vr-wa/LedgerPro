@@ -8,6 +8,8 @@ import { BankAccountSelection } from './pages/bank-account-selection/BankAccount
 import { BankSourceTransactionsLayout } from './layouts/BankSourceTransactionsLayout';
 import { BankTransactionsUpload } from './pages/bank-transactions-upload/BankTransactionsUpload';
 import { BankTransactionsYearSelection } from './pages/BankTransactionsYearSelection';
+import { GeneralLedgerYearsOverview } from './pages/general-ledger-years-overview/GeneralLedgerYearsOverview';
+import { GeneralLedgerLayout } from './layouts/GeneralLedgerLayout';
 
 // Mock components for pages
 const DashboardPage = () => <div>Dashboard Content</div>;
@@ -28,6 +30,9 @@ function App() {
               <Route index element={<BankTransactionsYearSelection />} />
               <Route path="upload" element={<BankTransactionsUpload />} />
             </Route>
+          </Route>
+          <Route path="generalLedger" element={<GeneralLedgerLayout />}>
+            <Route index element={<GeneralLedgerYearsOverview />} />
           </Route>
           <Route path="settings" element={<SettingsPage />} />
         </Route>
