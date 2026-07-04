@@ -2,6 +2,7 @@ using LedgerPro.Core.Entities;
 using LedgerPro.Application.DTOs.Reports;
 using LedgerPro.Core.Enums;
 using LedgerPro.Application.DTOs.GeneralLedgerItem;
+using LedgerPro.Application.DTOs.GeneralLedger;
 
 namespace LedgerPro.Application.Interfaces.Repositories;
 
@@ -18,6 +19,7 @@ public interface IGeneralLedgerRepository
     Task UpdateGeneralLedgerAccountAsync(int id, GeneralLedgerAccount glAccount);
     Task DeleteGeneralLedgerAccountAsync(int id);
     Task<bool> IsGeneralLedgerAccountIdInUseAsync(int accountId);
+    Task<List<GeneralLedgerFinancialYearRow>> GetGeneralLedgerFinancialYearRowsAsync();
     Task<List<GlAccountFinancialTotal>> GetGlAccountFinancialTotalAsync(DateTime startDate, DateTime endDate);
     Task<List<GeneralLedgerItemSummaryTotal>> GetDashboardSummaryGeneralLedgerItemsAsync(DateTime fromDate, DateTime toDate, Dictionary<GeneralLedgerAccountType, GeneralLedgerAccountType> accountTypeMapping);
     Task<int> GetUnreconciledTransactionsCountAsync(DateTime fromDate, DateTime toDate);

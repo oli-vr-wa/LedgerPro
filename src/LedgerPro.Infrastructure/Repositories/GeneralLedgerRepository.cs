@@ -5,6 +5,7 @@ using LedgerPro.Application.DTOs.Reports;
 using Microsoft.EntityFrameworkCore;
 using LedgerPro.Infrastructure.Extensions;
 using LedgerPro.Application.DTOs.GeneralLedgerItem;
+using LedgerPro.Application.DTOs.GeneralLedger;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -142,6 +143,22 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     }
 
     /// <summary>
+    /// Retrieves a list of GeneralLedgerFinancialYearRow entities that represent the financial years for which there are general ledger accounts with unreconciled items.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<GeneralLedgerFinancialYearRow>> GetGeneralLedgerFinancialYearRowsAsync()
+    {
+        return await _dbContext.GeneralLedgerAccounts
+            .Where(account => account.Id > 1010) // Exclude bank transaction accounts
+            .GroupBy(account => account.GeneralLedgerItems
+                .Where(item => !item.IsReconciled)
+                .Select(item => item.TransactionDate.Year)
+                .FirstOrDefault())
+            .Select(group => new GeneralLedgerFinancialYearRow(group.Key))
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Retrieves financial totals (total debits and total credits) for each general ledger account within a specified date range.
     /// </summary>
     /// <param name="startDate">The start date of the period for which to calculate totals.</param>
@@ -163,7 +180,10 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
                     .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.Side == TransactionSide.Credit)
                     .Sum(item => item.Amount)
             ))
-            .ToListAsync();
+            .ToListAsync()
+            // Remove any accounts that have no transactions in the specified date range (both debit and credit totals are zero)
+            .ContinueWith(task => task.Result.Where(total => total.TotalDebits != 0 || total.TotalCredits != 0)
+            .ToList());
     } 
 
     /// <summary>

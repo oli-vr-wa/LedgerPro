@@ -30,6 +30,7 @@ public static class GeneralLedgerEndpointExtensions
         group.MapPost("/account", AddGeneralLedgerAccountAsync);
         group.MapPut("/account/{id:int}", UpdateGeneralLedgerAccountAsync);
         group.MapDelete("/account/{id:int}", DeleteGeneralLedgerAccountAsync);
+        group.MapGet("/financial-year-overview", GetGeneralLedgerFinancialYearOverviewAsync);
 
         return app;
     }
@@ -113,4 +114,15 @@ public static class GeneralLedgerEndpointExtensions
         var accounts = await repo.GetGeneralLedgerAccountsAsync();
         return Results.Ok(accounts);
     }    
+
+    /// <summary>
+    /// Retrieves a list of GeneralLedgerFinancialYearRow DTOs that provide an overview of the financial years available in the general ledger.
+    /// </summary>
+    /// <param name="repo">The repository used to access general ledger accounts.</param>
+    /// <returns>A list of GeneralLedgerFinancialYearRow DTOs.</returns>
+    internal static async Task<IResult> GetGeneralLedgerFinancialYearOverviewAsync([FromServices] IGeneralLedgerRepository repo)
+    {
+        var financialYearRows = await repo.GetGeneralLedgerFinancialYearRowsAsync();
+        return Results.Ok(financialYearRows);
+    }
 }
