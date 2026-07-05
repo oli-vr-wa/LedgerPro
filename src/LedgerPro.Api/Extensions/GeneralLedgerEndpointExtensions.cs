@@ -2,6 +2,7 @@ using LedgerPro.Core.Entities;
 using LedgerPro.Application.Interfaces.Services;
 using LedgerPro.Application.Interfaces.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using LedgerPro.Application.Extensions;
 
 namespace LedgerPro.Api.Extensions;
 
@@ -31,6 +32,8 @@ public static class GeneralLedgerEndpointExtensions
         group.MapPut("/account/{id:int}", UpdateGeneralLedgerAccountAsync);
         group.MapDelete("/account/{id:int}", DeleteGeneralLedgerAccountAsync);
         group.MapGet("/financial-years-overview", GetGeneralLedgerFinancialYearOverviewAsync);
+        group.MapGet("/accounts/financial-year/{financialYear:int}", GetGeneralLedgerAccountsForFinancialYearAsync);
+        group.MapGet("/items/financial-year/{financialYear:int}/account/{accountId:int}", GetGeneralLedgerItemsForFinancialYearAndAccountAsync);
 
         return app;
     }
@@ -124,6 +127,22 @@ public static class GeneralLedgerEndpointExtensions
     {
         var financialYearRows = await repo.GetGeneralLedgerFinancialYearRowsAsync();
         return Results.Ok(financialYearRows);
+    }
+
+    /// <summary>
+    /// Retrieves a list of GlAccountFinancialTotal DTOs that provide the financial totals for each general ledger account within a specific financial year.
+    /// This method is to be used for generating the double-entry general ledger report.    
+    /// </summary>
+    /// <param name="financialYear">The financial year for which to retrieve ledger accounts.</param>
+    /// <param name="repo">The repository used to access general ledger accounts.</param>
+    /// <returns>A list of GlAccountFinancialTotal DTOs.</returns>
+    internal static async Task<IResult> GetGeneralLedgerAccountsForFinancialYearAsync(int financialYear, [FromServices] IGeneralLedgerRepository repo)
+    {
+        DateTime startDate = financialYear.GetFinancialYearStart();
+        DateTime endDate = financialYear.GetFinancialYearEnd();
+
+        var accounts = await repo.GetGlAccountFinancialTotalAsync(startDate, endDate);
+        return Results.Ok(accounts);
     }
 
     /// <summary>

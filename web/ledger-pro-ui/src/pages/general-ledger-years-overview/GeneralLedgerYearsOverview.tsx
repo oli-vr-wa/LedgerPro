@@ -3,9 +3,11 @@ import type { GeneralLedgerYearRow } from "@/types/general-ledger-year-row.types
 import { useQuery } from "@tanstack/react-query";
 import { columns } from "./columns";
 import { DataTable } from "@/components/data-table/DataTable";
+import { useNavigate } from "react-router-dom";
 
 
 export function GeneralLedgerYearsOverview() {
+    const navigate = useNavigate();
     const { data: generalLedgerYearsOverviewState = [], isLoading } = useQuery({
         queryKey: ['generalLedgerYearsOverview'],
         queryFn: () => generalLedgerService.getGeneralLedgerFinancialYearsOverview()
@@ -14,8 +16,8 @@ export function GeneralLedgerYearsOverview() {
     });
 
     const handleRowClick = (row: GeneralLedgerYearRow) => {
-        console.log('Row clicked:', row);
-        // Implement your logic for handling row click here
+        // Navigate to the GeneralLedgerAccountsYearTotals page for the selected financial year
+        navigate(`/generalLedger/${row.yearEnding}`);
     }
 
     return (

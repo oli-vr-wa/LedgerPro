@@ -181,7 +181,7 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
             .Where(account => account.Id > 1010) // Exclude bank transaction accounts
             .GroupBy(account => account.GeneralLedgerItems
                 .Where(item => !item.IsReconciled)
-                .Select(item => item.TransactionDate.Year)
+                .Select(item => item.TransactionDate.Month >= 7 ? item.TransactionDate.Year + 1 : item.TransactionDate.Year)
                 .FirstOrDefault())
             .Select(group => new GeneralLedgerFinancialYearRow(group.Key))
             .ToListAsync();
