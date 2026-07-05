@@ -111,6 +111,31 @@ public class GeneralLedgerService(IGeneralLedgerRepository generalLedgerReposito
         })
         .ToList();
 
+        // Add default items for missing account types with 0 values
+        var allAccountTypes = new[] 
+        { 
+            GeneralLedgerAccountType.Asset, 
+            GeneralLedgerAccountType.Liability, 
+            GeneralLedgerAccountType.Revenue, 
+            GeneralLedgerAccountType.Expense 
+        };
+
+        foreach (var accountType in allAccountTypes)
+        {
+            if (!accountSummaries.Any(summary => summary.AccountType == accountType))
+            {
+                accountSummaries.Add(new AccountSummaryRowDto
+                {
+                    AccountId = 0,
+                    AccountName = accountType.ToString(),
+                    AccountType = accountType,
+                    TotalDebits = 0m,
+                    TotalCredits = 0m,
+                    Balance = 0m
+                });
+            }
+        }
+
         return accountSummaries;
     } 
 

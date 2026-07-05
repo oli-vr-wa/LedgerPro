@@ -53,6 +53,20 @@ public class GetFinancialYearAccountsSummaryTests : GeneralLedgerServiceTestsBas
                 GeneralLedgerAccountType.Liability,
                 5000m,
                 8000m
+            ),
+            new GlAccountFinancialTotal(
+                3000,
+                "Revenue",
+                GeneralLedgerAccountType.Revenue,
+                15000m,
+                5000m
+            ),
+            new GlAccountFinancialTotal(
+                4000,
+                "Expenses",
+                GeneralLedgerAccountType.Expense,
+                7000m,
+                3000m
             )
         };
 

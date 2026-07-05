@@ -2,7 +2,7 @@ import { DataTable } from "@/components/data-table/DataTable";
 import { columns } from "./columns";
 import { generalLedgerService } from "@/services/generalLedgerService";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
