@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using LedgerPro.Infrastructure.Extensions;
 using LedgerPro.Application.DTOs.GeneralLedgerItem;
 using LedgerPro.Application.DTOs.GeneralLedger;
+using LedgerPro.Application.Extensions;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -43,6 +44,25 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
             .ToListAsync();
 
     /// <summary>
+    /// Retrieves a list of GeneralLedgerItem entities for a specific date range and account ID.
+    /// This method is used to fetch the ledger items that belong to a particular account within a specified date range.
+    /// </summary>
+    /// <param name="startDate">The start date of the range for which to retrieve ledger items.</param>
+    /// <param name="endDate">The end date of the range for which to retrieve ledger items.</param>
+    /// <param name="accountId">The ID of the account for which to retrieve ledger items.</param>
+    /// <returns>A list of GeneralLedgerItem entities.</returns>
+    public async Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsForRangeAndAccountAsync(DateTime startDate, DateTime endDate, int accountId)
+    {
+        var ledgerItems = await _dbContext.GeneralLedgerItems
+            .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.GeneralLedgerAccountId == accountId)
+            .OrderBy(item => item.TransactionDate)
+            .ThenBy(item => item.Id)
+            .ToListAsync();
+
+        return ledgerItems;
+    }
+
+    /// <summary>
     /// Adds a collection of GeneralLedgerItem entities to the database context. This method is used 
     /// during the bank statement import process to add the generated GeneralLedgerItems (based on matched transactions) 
     /// to the context before saving them to the database.
@@ -62,6 +82,15 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task DeleteGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems) =>
         _dbContext.GeneralLedgerItems.RemoveRange(ledgerItems);
+
+    /// <summary>
+    /// Retrieves a GeneralLedgerAccount entity by its ID. This method is used to fetch the details of a specific general ledger account,
+    /// which can be useful for displaying account information or validating account existence before performing operations related to that account.
+    /// </summary>
+    /// <param name="accountId">The ID of the general ledger account to retrieve.</param>
+    /// <returns>The GeneralLedgerAccount entity if found; otherwise, null.</returns>
+    public async Task<GeneralLedgerAccount?> GetAccountByIdAsync(int accountId) =>
+        await _dbContext.GeneralLedgerAccounts.FindAsync(accountId);
 
     /// <summary>
     /// Retrieves all GeneralLedgerAccount entities from the database. This method is used to get the list of available 

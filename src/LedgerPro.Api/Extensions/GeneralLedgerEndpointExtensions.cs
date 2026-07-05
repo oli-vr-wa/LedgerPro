@@ -125,4 +125,18 @@ public static class GeneralLedgerEndpointExtensions
         var financialYearRows = await repo.GetGeneralLedgerFinancialYearRowsAsync();
         return Results.Ok(financialYearRows);
     }
+
+    /// <summary>
+    /// Retrieves a list of GeneralLedgerItemRowBalanceDto objects for a specific financial year and account ID.
+    /// This method is to be used for generating the double-entry general ledger report.
+    /// </summary>
+    /// <param name="financialYear">The financial year for which to retrieve ledger items.</param>
+    /// <param name="accountId">The ID of the account for which to retrieve ledger items.</param>
+    /// <param name="reportService">The service used to generate the general ledger report.</param>
+    /// <returns>A list of GeneralLedgerItemRowBalanceDto objects.</returns>
+    internal static async Task<IResult> GetGeneralLedgerItemsForFinancialYearAndAccountAsync(int financialYear, int accountId, [FromServices] IGeneralLedgerReportService reportService)
+    {
+        var ledgerItems = await reportService.GetGeneralLedgerItemsForFinancialYearAndAccountAsync(financialYear, accountId);
+        return Results.Ok(ledgerItems);
+    }
 }

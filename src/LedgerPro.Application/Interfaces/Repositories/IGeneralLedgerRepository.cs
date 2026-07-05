@@ -11,8 +11,10 @@ public interface IGeneralLedgerRepository
     Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsAsync();
     Task<List<GeneralLedgerItemLight>> GetMonthlyTotalsForDateRangeAsync(DateTime startDate, DateTime endDate);
     Task<List<GeneralLedgerItemTransaction>> GetGeneralLedgerItemsForBankTransactionAsync(Guid bankTransactionId);
+    Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsForRangeAndAccountAsync(DateTime startDate, DateTime endDate, int accountId);
     Task AddGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);
     Task DeleteGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems);
+    Task<GeneralLedgerAccount?> GetAccountByIdAsync(int accountId);
     Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsAsync();
     Task<List<GeneralLedgerAccount>> GetGeneralLedgerAccountsByRangeAsync(int startAccountId, int endAccountId);
     Task AddGeneralLedgerAccountAsync(GeneralLedgerAccount glAccount);
