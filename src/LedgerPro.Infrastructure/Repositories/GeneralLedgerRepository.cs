@@ -5,6 +5,8 @@ using LedgerPro.Application.DTOs.Reports;
 using Microsoft.EntityFrameworkCore;
 using LedgerPro.Infrastructure.Extensions;
 using LedgerPro.Application.DTOs.GeneralLedgerItem;
+using LedgerPro.Application.DTOs.GeneralLedger;
+using LedgerPro.Application.Extensions;
 
 namespace LedgerPro.Infrastructure.Repositories;
 
@@ -42,6 +44,25 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
             .ToListAsync();
 
     /// <summary>
+    /// Retrieves a list of GeneralLedgerItem entities for a specific date range and account ID.
+    /// This method is used to fetch the ledger items that belong to a particular account within a specified date range.
+    /// </summary>
+    /// <param name="startDate">The start date of the range for which to retrieve ledger items.</param>
+    /// <param name="endDate">The end date of the range for which to retrieve ledger items.</param>
+    /// <param name="accountId">The ID of the account for which to retrieve ledger items.</param>
+    /// <returns>A list of GeneralLedgerItem entities.</returns>
+    public async Task<List<GeneralLedgerItem>> GetGeneralLedgerItemsForRangeAndAccountAsync(DateTime startDate, DateTime endDate, int accountId)
+    {
+        var ledgerItems = await _dbContext.GeneralLedgerItems
+            .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.GeneralLedgerAccountId == accountId)
+            .OrderBy(item => item.TransactionDate)
+            .ThenBy(item => item.Id)
+            .ToListAsync();
+
+        return ledgerItems;
+    }
+
+    /// <summary>
     /// Adds a collection of GeneralLedgerItem entities to the database context. This method is used 
     /// during the bank statement import process to add the generated GeneralLedgerItems (based on matched transactions) 
     /// to the context before saving them to the database.
@@ -61,6 +82,15 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task DeleteGeneralLedgerItemsAsync(IEnumerable<GeneralLedgerItem> ledgerItems) =>
         _dbContext.GeneralLedgerItems.RemoveRange(ledgerItems);
+
+    /// <summary>
+    /// Retrieves a GeneralLedgerAccount entity by its ID. This method is used to fetch the details of a specific general ledger account,
+    /// which can be useful for displaying account information or validating account existence before performing operations related to that account.
+    /// </summary>
+    /// <param name="accountId">The ID of the general ledger account to retrieve.</param>
+    /// <returns>The GeneralLedgerAccount entity if found; otherwise, null.</returns>
+    public async Task<GeneralLedgerAccount?> GetAccountByIdAsync(int accountId) =>
+        await _dbContext.GeneralLedgerAccounts.FindAsync(accountId);
 
     /// <summary>
     /// Retrieves all GeneralLedgerAccount entities from the database. This method is used to get the list of available 
@@ -142,6 +172,22 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
     }
 
     /// <summary>
+    /// Retrieves a list of GeneralLedgerFinancialYearRow entities that represent the financial years for which there are general ledger accounts with unreconciled items.
+    /// </summary>
+    /// <returns></returns>
+    public async Task<List<GeneralLedgerFinancialYearRow>> GetGeneralLedgerFinancialYearRowsAsync()
+    {
+        return await _dbContext.GeneralLedgerAccounts
+            .Where(account => account.Id > 1010) // Exclude bank transaction accounts
+            .GroupBy(account => account.GeneralLedgerItems
+                .Where(item => !item.IsReconciled)
+                .Select(item => item.TransactionDate.Month >= 7 ? item.TransactionDate.Year + 1 : item.TransactionDate.Year)
+                .FirstOrDefault())
+            .Select(group => new GeneralLedgerFinancialYearRow(group.Key))
+            .ToListAsync();
+    }
+
+    /// <summary>
     /// Retrieves financial totals (total debits and total credits) for each general ledger account within a specified date range.
     /// </summary>
     /// <param name="startDate">The start date of the period for which to calculate totals.</param>
@@ -163,7 +209,10 @@ public class GeneralLedgerRepository(LedgerDbContext dbContext) : IGeneralLedger
                     .Where(item => item.TransactionDate >= startDate && item.TransactionDate <= endDate && item.Side == TransactionSide.Credit)
                     .Sum(item => item.Amount)
             ))
-            .ToListAsync();
+            .ToListAsync()
+            // Remove any accounts that have no transactions in the specified date range (both debit and credit totals are zero)
+            .ContinueWith(task => task.Result.Where(total => total.TotalDebits != 0 || total.TotalCredits != 0)
+            .ToList());
     } 
 
     /// <summary>
