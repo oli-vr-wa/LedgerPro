@@ -22,19 +22,23 @@ This project follows **Clean Architecture** principles to ensure the business lo
 - **Parsing:** CsvHelper for robust file ingestion
 
 ## Roadmap
-- [x] Core Domain Modeling (Current)
+- [x] Core Domain Modeling 
 - [x] Bank Statement Parsing Service
 - [x] SQLite Integration & Migrations
 - [x] Categorization Engine (Auto-mapping descriptions to accounts)
 - [x] Advanced Read-Model Aggregations (UI Bridge)
-- [ ] Basic Financial Report API
-- [ ] LedgerPro Web UI
-- [ ] Account Register View
-- [ ] Statement Upload Portal
-- [ ] Reporting Dashboard
+- [x] LedgerPro Web UI
+- [x] Account Register View
+- [x] Statement Upload Portal
+- [X] Transactions Web UI with General Ledger Categorize tool
+- [x] General Ledger Reporting UI
 
 ## Local Setup
 1. Clone the repository.
 2. Ensure you have the **.NET 10 SDK** installed.
 3. Run `dotnet restore` to install dependencies.
 4. Run `dotnet build` to verify the project structure.
+5. Navigate to `src\LedgerPro.Api\`.
+6. Run `dotnet run` to run the backend API.
+7. Navigate to `web\ledger-pro-ui`.
+6. Run `npm run dev` to run the front end.
